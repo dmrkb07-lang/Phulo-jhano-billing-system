@@ -23,112 +23,135 @@ header h1{margin:0;font-size:24px}
 header p{margin:6px 0 0;font-size:13px}
 
 .container{
-  max-width:1100px;
+  max-width:1000px;
   margin:auto;
   padding:15px;
 }
+
 .card{
   background:white;
   border-radius:12px;
-  padding:15px;
+  padding:18px;
   margin-bottom:15px;
   box-shadow:0 2px 8px #0001;
 }
+
 h2{
   margin-top:0;
   color:#176b3a;
   font-size:20px;
 }
+
+label{
+  display:block;
+  margin-top:10px;
+  font-weight:bold;
+}
+
 input,select,button{
   width:100%;
-  padding:11px;
-  margin:5px 0;
+  padding:12px;
+  margin-top:5px;
   border:1px solid #ccc;
   border-radius:7px;
   font-size:15px;
 }
+
 button{
-  border:0;
   background:#176b3a;
   color:white;
+  border:0;
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{opacity:.9}
-.red{background:#c62828}
-.blue{background:#1565c0}
-.orange{background:#ef6c00}
-.gray{background:#555}
 
-.grid{
+button:hover{opacity:.9}
+
+.row{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:10px;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+
+@media(max-width:600px){
+  .row{grid-template-columns:1fr}
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:10px;
-  background:white;
+  margin-top:15px;
 }
+
 th,td{
   border:1px solid #ddd;
-  padding:8px;
-  text-align:center;
+  padding:9px;
+  text-align:left;
   font-size:14px;
 }
+
 th{
   background:#176b3a;
   color:white;
 }
 
-.summary{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:10px;
-}
-.box{
-  background:#eef8f1;
-  padding:15px;
-  border-radius:10px;
-  text-align:center;
-}
-.box b{
-  display:block;
-  font-size:22px;
-  color:#176b3a;
-  margin-top:5px;
-}
-
-.invoice{
-  border:2px solid #176b3a;
-  padding:15px;
+.total{
+  font-size:20px;
+  font-weight:bold;
+  text-align:right;
   margin-top:15px;
 }
+
+.commission{
+  background:#e8f5e9;
+  padding:12px;
+  border-radius:8px;
+  margin-top:10px;
+  color:#176b3a;
+  font-weight:bold;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:15px;
+}
+
+@media(max-width:600px){
+  .actions{grid-template-columns:1fr}
+}
+
+.red{background:#c62828}
+.blue{background:#1565c0}
+.orange{background:#ef6c00}
+
+.invoice{
+  background:white;
+  padding:20px;
+}
+
 .invoice-head{
   text-align:center;
   border-bottom:2px solid #176b3a;
   padding-bottom:10px;
 }
-.invoice-head h2{margin:0}
-.total{
-  text-align:right;
-  font-size:18px;
-  font-weight:bold;
-  margin-top:10px;
+
+.small{
+  font-size:12px;
+  color:#666;
 }
 
 @media print{
   body{background:white}
-  header,.no-print,.card:not(.print-card){
+  header,.no-print,.actions,.card:not(.print-card){
     display:none!important;
   }
   .print-card{
     display:block!important;
     box-shadow:none;
+    margin:0;
   }
-  .invoice{border:0}
 }
 </style>
 </head>
@@ -136,101 +159,372 @@ th{
 <body>
 
 <header>
-  <h1>🌿 Phulo Jhano Pvt. Ltd.</h1>
-  <p>Direct Selling • Billing & Commission System</p>
+  <h1>🌿 Phulo Jhano Billing System</h1>
+  <p>Direct Selling • Billing • Commission Management</p>
 </header>
 
 <div class="container">
 
-<!-- CUSTOMER -->
 <div class="card no-print">
-<h2>👤 Customer Information</h2>
+<h2>🧾 Customer & Billing</h2>
 
-<div class="grid">
+<div class="row">
 <div>
 <label>Customer Name</label>
-<input id="customerName" placeholder="গ্রাহকের নাম">
+<input id="customerName" placeholder="Customer name">
 </div>
 
+<div>
+<label>Customer / Member ID</label>
+<input id="memberId" placeholder="PJ0001">
+</div>
+</div>
+
+<div class="row">
 <div>
 <label>Mobile Number</label>
-<input id="customerMobile" placeholder="মোবাইল নম্বর">
+<input id="mobile" placeholder="10 digit mobile number">
 </div>
 
 <div>
-<label>Member ID</label>
-<input id="memberId" placeholder="Member ID">
+<label>Payment Method</label>
+<select id="payment">
+<option>Cash</option>
+<option>UPI</option>
+<option>Google Pay</option>
+<option>Bank Transfer</option>
+</select>
+</div>
 </div>
 
-<div>
-<label>Sales Person</label>
-<input id="salesPerson" placeholder="সেলস পার্সনের নাম">
-</div>
-</div>
-</div>
+<h2 style="margin-top:20px">🛒 Add Product</h2>
 
-
-<!-- PRODUCT -->
-<div class="card no-print">
-<h2>🛒 Add Product</h2>
-
-<div class="grid">
-
+<div class="row">
 <div>
 <label>Product Name</label>
-<input id="productName" placeholder="যেমন: Phulo Jhano Soap">
-</div>
-
-<div>
-<label>Price (₹)</label>
-<input id="productPrice" type="number" placeholder="100">
+<input id="product" placeholder="Example: Bath Soap">
 </div>
 
 <div>
 <label>Quantity</label>
-<input id="productQty" type="number" value="1" min="1">
+<input id="qty" type="number" value="1" min="1">
+</div>
 </div>
 
+<div class="row">
+<div>
+<label>Price per Unit (₹)</label>
+<input id="price" type="number" placeholder="100">
 </div>
-
-<button onclick="addProduct()">➕ Add Product</button>
-</div>
-
-
-<!-- BILL -->
-<div class="card print-card">
-
-<div class="invoice">
-
-<div class="invoice-head">
-<h2>Phulo Jhano Pvt. Ltd.</h2>
-<p>DIRECT SELLING BILL / INVOICE</p>
-<p id="invoiceNumber"></p>
-<p id="invoiceDate"></p>
-</div>
-
-<br>
 
 <div>
+<label>Commission %</label>
+<input id="commissionRate" type="number" value="10" min="0">
+</div>
+</div>
+
+<button onclick="addProduct()" style="margin-top:15px">
+➕ Add Product
+</button>
+
+</div>
+
+
+<div class="card print-card">
+
+<div class="invoice-head">
+<h2>PHULO JHANO</h2>
+<b>Billing & Sales Invoice</b>
+<p class="small">Phulo Jhano Billing System</p>
+</div>
+
+<div style="margin-top:15px">
+<b>Invoice No:</b> <span id="invoiceNo"></span><br>
+<b>Date:</b> <span id="invoiceDate"></span><br>
 <b>Customer:</b> <span id="showCustomer">-</span><br>
-<b>Mobile:</b> <span id="showMobile">-</span><br>
 <b>Member ID:</b> <span id="showMember">-</span><br>
-<b>Sales Person:</b> <span id="showSales">-</span>
+<b>Mobile:</b> <span id="showMobile">-</span>
 </div>
 
 <table>
 <thead>
 <tr>
-<th>SL</th>
+<th>#</th>
 <th>Product</th>
-<th>Price</th>
 <th>Qty</th>
+<th>Rate</th>
 <th>Total</th>
-<th class="no-print">Action</th>
+<th>Commission</th>
 </tr>
 </thead>
 
-<tbody id="billItems"></tbody>
+<tbody id="billBody">
+<tr>
+<td colspan="6" style="text-align:center">
+No product added
+</td>
+</tr>
+</tbody>
 </table>
 
-<div class="total
+<div class="total">
+Subtotal: ₹<span id="subtotal">0.00</span><br>
+Commission: ₹<span id="totalCommission">0.00</span><br>
+Grand Total: ₹<span id="grandTotal">0.00</span>
+</div>
+
+<div class="commission">
+💰 Customer Commission: ₹<span id="commissionBox">0.00</span>
+</div>
+
+<div style="margin-top:15px">
+<b>Payment:</b> <span id="showPayment">Cash</span>
+</div>
+
+<div class="actions no-print">
+<button onclick="printBill()">🖨️ Print Bill</button>
+<button class="blue" onclick="saveBill()">💾 Save Bill</button>
+<button class="orange" onclick="newBill()">➕ New Bill</button>
+</div>
+
+</div>
+
+
+<div class="card no-print">
+<h2>📊 Saved Bills</h2>
+<div id="savedBills">
+No saved bills
+</div>
+</div>
+
+</div>
+
+
+<script>
+
+let products=[];
+let billCounter=Number(localStorage.getItem("pjBillCounter")||0);
+
+function generateInvoice(){
+  billCounter++;
+  localStorage.setItem("pjBillCounter",billCounter);
+  return "PJ-" + String(billCounter).padStart(5,"0");
+}
+
+let currentInvoice=generateInvoice();
+
+document.getElementById("invoiceNo").innerText=currentInvoice;
+
+function updateDate(){
+  let d=new Date();
+  document.getElementById("invoiceDate").innerText=
+  d.toLocaleDateString("en-IN")+" "+
+  d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+}
+
+updateDate();
+
+function addProduct(){
+
+  let product=document.getElementById("product").value.trim();
+  let qty=Number(document.getElementById("qty").value);
+  let price=Number(document.getElementById("price").value);
+  let commissionRate=Number(document.getElementById("commissionRate").value);
+
+  if(!product){
+    alert("Product name দিন");
+    return;
+  }
+
+  if(qty<=0 || price<=0){
+    alert("Quantity এবং Price সঠিকভাবে দিন");
+    return;
+  }
+
+  products.push({
+    product:product,
+    qty:qty,
+    price:price,
+    commissionRate:commissionRate
+  });
+
+  document.getElementById("product").value="";
+  document.getElementById("qty").value=1;
+  document.getElementById("price").value="";
+
+  renderBill();
+}
+
+function renderBill(){
+
+  let body=document.getElementById("billBody");
+
+  body.innerHTML="";
+
+  let subtotal=0;
+  let totalCommission=0;
+
+  products.forEach((p,index)=>{
+
+    let total=p.qty*p.price;
+    let commission=total*p.commissionRate/100;
+
+    subtotal+=total;
+    totalCommission+=commission;
+
+    let row=document.createElement("tr");
+
+    row.innerHTML=`
+      <td>${index+1}</td>
+      <td>${p.product}</td>
+      <td>${p.qty}</td>
+      <td>₹${p.price.toFixed(2)}</td>
+      <td>₹${total.toFixed(2)}</td>
+      <td>₹${commission.toFixed(2)}</td>
+    `;
+
+    body.appendChild(row);
+  });
+
+  if(products.length===0){
+    body.innerHTML=`
+    <tr>
+    <td colspan="6" style="text-align:center">
+    No product added
+    </td>
+    </tr>`;
+  }
+
+  document.getElementById("subtotal").innerText=subtotal.toFixed(2);
+  document.getElementById("totalCommission").innerText=
+  totalCommission.toFixed(2);
+  document.getElementById("grandTotal").innerText=subtotal.toFixed(2);
+  document.getElementById("commissionBox").innerText=
+  totalCommission.toFixed(2);
+
+  updateCustomer();
+}
+
+function updateCustomer(){
+
+  document.getElementById("showCustomer").innerText=
+  document.getElementById("customerName").value || "-";
+
+  document.getElementById("showMember").innerText=
+  document.getElementById("memberId").value || "-";
+
+  document.getElementById("showMobile").innerText=
+  document.getElementById("mobile").value || "-";
+
+  document.getElementById("showPayment").innerText=
+  document.getElementById("payment").value;
+}
+
+document.getElementById("customerName").addEventListener("input",updateCustomer);
+document.getElementById("memberId").addEventListener("input",updateCustomer);
+document.getElementById("mobile").addEventListener("input",updateCustomer);
+document.getElementById("payment").addEventListener("change",updateCustomer);
+
+
+function saveBill(){
+
+  if(products.length===0){
+    alert("আগে অন্তত একটি Product যোগ করুন");
+    return;
+  }
+
+  let bills=JSON.parse(localStorage.getItem("pjBills")||"[]");
+
+  let bill={
+    invoice:currentInvoice,
+    date:new Date().toLocaleString("en-IN"),
+    customer:document.getElementById("customerName").value,
+    member:document.getElementById("memberId").value,
+    mobile:document.getElementById("mobile").value,
+    payment:document.getElementById("payment").value,
+    products:products,
+    total:document.getElementById("grandTotal").innerText,
+    commission:document.getElementById("commissionBox").innerText
+  };
+
+  bills.push(bill);
+
+  localStorage.setItem("pjBills",JSON.stringify(bills));
+
+  alert("Bill সফলভাবে Save হয়েছে ✅");
+
+  showSavedBills();
+}
+
+
+function showSavedBills(){
+
+  let bills=JSON.parse(localStorage.getItem("pjBills")||"[]");
+
+  let box=document.getElementById("savedBills");
+
+  if(bills.length===0){
+    box.innerText="No saved bills";
+    return;
+  }
+
+  box.innerHTML="";
+
+  bills.slice().reverse().forEach(b=>{
+
+    let div=document.createElement("div");
+
+    div.style.borderBottom="1px solid #ddd";
+    div.style.padding="10px 0";
+
+    div.innerHTML=`
+      <b>${b.invoice}</b><br>
+      Customer: ${b.customer||"-"}<br>
+      Total: ₹${b.total}<br>
+      Commission: ₹${b.commission}<br>
+      <span class="small">${b.date}</span>
+    `;
+
+    box.appendChild(div);
+  });
+}
+
+
+function printBill(){
+  updateCustomer();
+  window.print();
+}
+
+
+function newBill(){
+
+  if(!confirm("নতুন Bill শুরু করবেন?")){
+    return;
+  }
+
+  products=[];
+
+  currentInvoice=generateInvoice();
+
+  document.getElementById("invoiceNo").innerText=currentInvoice;
+
+  document.getElementById("customerName").value="";
+  document.getElementById("memberId").value="";
+  document.getElementById("mobile").value="";
+  document.getElementById("payment").value="Cash";
+
+  document.getElementById("product").value="";
+  document.getElementById("qty").value=1;
+  document.getElementById("price").value="";
+
+  updateDate();
+  renderBill();
+}
+
+
+showSavedBills();
+
+</script>
+
+</body>
+</html>
