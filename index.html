@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phulo Jhano Billing System</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f4f6f8;
+  color: #222;
+}
+
+header {
+  background: #0b5d3b;
+  color: white;
+  padding: 18px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 24px;
+}
+
+header p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 15px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #00000015;
+}
+
+.card h3 {
+  font-size: 14px;
+  color: #666;
+}
+
+.card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 24px;
+  color: #0b5d3b;
+}
+
+.menu {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.menu button {
+  border: none;
+  background: #0b5d3b;
+  color: white;
+  padding: 11px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: #08462d;
+}
+
+.section {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #00000015;
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  margin-bottom: 15px;
+  color: #0b5d3b;
+}
+
+input, select {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.btn {
+  background: #0b5d3b;
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background: #c62828;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background: #0b5d3b;
+  color: white;
+}
+
+.total {
+  text-align: right;
+  font-size: 20px;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+#invoice {
+  display: none;
+}
+
+.invoice-box {
+  background: white;
+  padding: 25px;
+  max-width: 700px;
+  margin: auto;
+}
+
+@media(max-width: 700px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  table {
+    font-size: 13px;
+  }
+}
+
+@media(max-width: 450px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>PHULO JHANO</h1>
+  <p>Direct Selling Billing & Stock Management System</p>
+</header>
+
+<div class="container">
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total Products</h3>
+      <strong id="productCount">0</strong>
+    </div>
+
+    <div class="card">
+      <h3>Total Stock</h3>
+      <strong id="stockCount">0</strong>
+    </div>
+
+    <div class="card">
+      <h3>Total Sales</h3>
+      <strong id="salesCount">0</strong>
+    </div>
+
+    <div class="card">
+      <h3>Total Revenue</h3>
+      <strong id="revenue">₹0</strong>
+    </div>
+  </div>
+
+  <div class="menu">
+    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button onclick="showSection('products')">Product Master</button>
+    <button onclick="showSection('billing')">Billing / POS</button>
+    <button onclick="showSection('stock')">Stock</button>
+    <button onclick="showSection('sales')">Sales Report</button>
+  </div>
+
+  <!-- DASHBOARD -->
+
+  <div id="dashboard" class="section">
+    <h2>Dashboard</h2>
+    <p>Welcome to Phulo Jhano Billing System.</p>
+    <p style="margin-top:10px;">
+      Manage products, billing, stock and sales from one place.
+    </p>
+  </div>
+
+  <!-- PRODUCT MASTER -->
+
+  <div id="products" class="section" style="display:none;">
+    <h2>Product Master</h2>
+
+    <div class="form-grid">
+      <div>
+        <label>Product Name</label>
+        <input id="productName" placeholder="Example: Phulo Jhano Soap">
+      </div>
+
+      <div>
+        <label>Barcode</label>
+        <input id="productBarcode" placeholder="Enter barcode">
+      </div>
+
+      <div>
+        <label>Purchase Price</label>
+        <input id="purchasePrice" type="number" placeholder="₹">
+      </div>
+
+      <div>
+        <label>Sale Price</label>
+        <input id="salePrice" type="number" placeholder="₹">
+      </div>
+
+      <div>
+        <label>Opening Stock</label>
+        <input id="openingStock" type="number" placeholder="Quantity">
+      </div>
+
+      <div>
+        <label>Category</label>
+        <input id="productCategory" placeholder="FMCG / Soap / Spice">
+      </div>
+    </div>
+
+    <button class="btn" onclick="addProduct()">Add Product</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Barcode</th>
+          <th>Sale Price</th>
+          <th>Stock</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="productTable"></tbody>
+    </table>
+  </div>
+
+  <!-- BILLING -->
+
+  <div id="billing" class="section" style="display:none;">
+    <h2>Billing / POS</h2>
+
+    <label>Select Product</label>
+    <select id="billingProduct"></select>
+
+    <label>Quantity</label>
+    <input id="billingQty" type="number" value="1" min="1">
+
+    <button class="btn" onclick="addToCart()">Add to Cart</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="cartTable"></tbody>
+    </table>
+
+    <div class="total">
+      Total: ₹<span id="cartTotal">0</span>
+    </div>
+
+    <br>
+
+    <button class="btn" onclick="completeSale()">
+      Complete Sale
+    </button>
+
+    <button class="btn" onclick="printInvoice()">
+      Print Invoice
+    </button>
+  </div>
+
+  <!-- STOCK -->
+
+  <div id="stock" class="section" style="display:none;">
+    <h2>Stock Management</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Barcode</th>
+          <th>Category</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+
+      <tbody id="stockTable"></tbody>
+    </table>
+  </div>
+
+  <!-- SALES -->
+
+  <div id="sales" class="section" style="display:none;">
+    <h2>Sales Report</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Items</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody id="salesTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- PRINT INVOICE -->
+
+<div id="invoice">
+  <div class="invoice-box">
+
+    <h1 style="text-align:center;">PHULO JHANO</h1>
+
+    <p style="text-align:center;">
+      Direct Selling Company
+    </p>
+
+    <hr><br>
+
+    <p>
+      Invoice No: <span id="invoiceNo"></span>
+    </p>
+
+    <p>
+      Date: <span id="invoiceDate"></span>
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody id="invoiceItems"></tbody>
+    </table>
+
+    <h2 style="text-align:right;margin-top:20px;">
+      Total: ₹<span id="invoiceTotal"></span>
+    </h2>
+
+    <br>
+
+    <p style="text-align:center;">
+      Thank you for shopping with Phulo Jhano
+    </p>
+
+  </div>
+</div>
+
+<script>
+
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+let sales = JSON.parse(localStorage.getItem("sales")) || [];
+
+let cart = [];
+
+
+/* SECTION */
+
+function showSection(id) {
+
+  document.querySelectorAll(".section").forEach(section => {
+    section.style.display = "none";
+  });
+
+  document.getElementById(id).style.display = "block";
+
+  updateDashboard();
+}
+
+
+/* ADD PRODUCT */
+
+function addProduct() {
+
+  const name = document.getElementById("productName").value;
+
+  const barcode = document.getElementById("productBarcode").value;
+
+  const purchase = Number(
+    document.getElementById("purchasePrice").value
+  );
+
+  const sale = Number(
+    document.getElementById("salePrice").value
+  );
+
+  const stock = Number(
+    document.getElementById("openingStock").value
+  );
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  if (!name || !sale || stock < 0) {
+    alert("Please enter product name, sale price and stock.");
+    return;
+  }
+
+  const product = {
+
+    id: Date.now(),
+
+    name: name,
+
+    barcode: barcode,
+
+    purchase: purchase,
+
+    sale: sale,
+
+    stock: stock,
+
+    category: category
+
+  };
+
+  products.push(product);
+
+  saveData();
+
+  clearProductForm();
+
+  updateAll();
+
+  alert("Product added successfully.");
+
+}
+
+
+/* CLEAR PRODUCT FORM */
+
+function clearProductForm() {
+
+  document.getElementById("productName").value = "";
+
+  document.getElementById("productBarcode").value = "";
+
+  document.getElementById("purchasePrice").value = "";
+
+  document.getElementById("salePrice").value = "";
+
+  document.getElementById("openingStock").value = "";
+
+  document.getElementById("productCategory").value = "";
+
+}
+
+
+/* DELETE PRODUCT */
+
+function deleteProduct(id) {
+
+  if (!confirm("Delete this product?")) return;
+
+  products = products.filter(p => p.id !== id);
+
+  saveData();
+
+  updateAll();
+
+}
+
+
+/* PRODUCT TABLE */
+
+function renderProducts() {
+
+  const table = document.getElementById("productTable");
+
+  table.innerHTML = "";
+
+  products.forEach(product => {
+
+    table.innerHTML += `
+
+      <tr>
+
+        <td>${product.name}</td>
+
+        <td>${product.barcode}</td>
+
+        <td>₹${product.sale}</td>
+
+        <td>${product.stock}</td>
+
+        <td>
+
+          <button class="btn btn-danger"
+          onclick="deleteProduct(${product.id})">
+          Delete
+          </button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+
+/* BILLING PRODUCT DROPDOWN */
+
+function renderBillingProducts() {
+
+  const select =
+    document.getElementById("billingProduct");
+
+  select.innerHTML =
+    '<option value="">Select Product</option>';
+
+  products.forEach(product => {
+
+    select.innerHTML += `
+
+      <option value="${product.id}">
+
+        ${product.name} - ₹${product.sale}
+
+      </option>
+
+    `;
+
+  });
+
+}
+
+
+/* ADD TO CART */
+
+function addToCart() {
+
+  const productId =
+    Number(document.getElementById("billingProduct").value);
+
+  const qty =
+    Number(document.getElementById("billingQty").value);
+
+  const product =
+    products.find(p => p.id === productId);
+
+  if (!product) {
+
+    alert("Please select a product.");
+
+    return;
+
+  }
+
+  if (qty <= 0) {
+
+    alert("Enter valid quantity.");
+
+    return;
+
+  }
+
+  if (qty > product.stock) {
+
+    alert("Not enough stock available.");
+
+    return;
+
+  }
+
+  const existing =
+    cart.find(item => item.id === productId);
+
+  if (existing) {
+
+    existing.qty += qty;
+
+  } else {
+
+    cart.push({
+
+      id: product.id,
+
+      name: product.name,
+
+      price: product.sale,
+
+      qty: qty
+
+    });
+
+  }
+
+  renderCart();
+
+}
+
+
+/* CART */
+
+function renderCart() {
+
+  const table =
+    document.getElementById("cartTable");
+
+  table.innerHTML = "";
+
+  let total = 0;
+
+  cart.forEach((item, index) => {
+
+    const itemTotal =
+      item.price * item.qty;
+
+    total += itemTotal;
+
+    table.innerHTML += `
+
+      <tr>
+
+        <td>${item.name}</td>
+
+        <td>${item.qty}</td>
+
+        <td>₹${item.price}</td>
+
+        <td>₹${itemTotal}</td>
+
+        <td>
+
+          <button class="btn btn-danger"
+          onclick="removeFromCart(${index})">
+          Remove
+          </button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("cartTotal").innerText =
+    total;
+
+}
+
+
+/* REMOVE CART ITEM */
+
+function removeFromCart(index) {
+
+  cart.splice(index, 1);
+
+  renderCart();
+
+}
+
+
+/* COMPLETE SALE */
+
+function completeSale() {
+
+  if (cart.length === 0) {
+
+    alert("Cart is empty.");
+
+    return;
+
+  }
+
+  let total = 0;
+
+  cart.forEach(item => {
+
+    const product =
+      products.find(p => p.id === item.id);
+
+    if (product) {
+
+      product.stock -= item.qty;
+
+      total += item.price * item.qty;
+
+    }
+
+  });
+
+  const saleRecord = {
+
+    date: new Date().toLocaleString(),
+
+    items: cart.length,
+
+    total: total
+
+  };
+
+  sales.push(saleRecord);
+
+  saveData();
+
+  createInvoice();
+
+  cart = [];
+
+  renderCart();
+
+  updateAll();
+
+  alert("Sale completed successfully.");
+
+}
+
+
+/* CREATE INVOICE */
+
+function createInvoice() {
+
+  const invoiceNo =
+    "PJ-" + Date.now();
+
+  document.getElementById("invoiceNo").innerText =
+    invoiceNo;
+
+  document.getElementById("invoiceDate").innerText =
+    new Date().toLocaleString();
+
+  const invoiceItems =
+    document.getElementById("invoiceItems");
+
+  invoiceItems.innerHTML = "";
+
+  let total = 0;
+
+  cart.forEach(item => {
+
+    const itemTotal =
+      item.price * item.qty;
+
+    total += itemTotal;
+
+    invoiceItems.innerHTML += `
+
+      <tr>
+
+        <td>${item.name}</td>
+
+        <td>${item.qty}</td>
+
+        <td>₹${itemTotal}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("invoiceTotal").innerText =
+    total;
+
+}
+
+
+/* PRINT */
+
+function printInvoice() {
+
+  if (cart.length === 0) {
+
+    alert("Please add products to cart first.");
+
+    return;
+
+  }
+
+  createInvoice();
+
+  const invoice =
+    document.getElementById("invoice");
+
+  invoice.style.display = "block";
+
+  window.print();
+
+  invoice.style.display = "none";
+
+}
+
+
+/* STOCK TABLE */
+
+function renderStock() {
+
+  const table =
+    document.getElementById("stockTable");
+
+  table.innerHTML = "";
+
+  products.forEach(product => {
+
+    table.innerHTML += `
+
+      <tr>
+
+        <td>${product.name}</td>
+
+        <td>${product.barcode}</td>
+
+        <td>${product.category}</td>
+
+        <td>${product.stock}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+
+/* SALES TABLE */
+
+function renderSales() {
+
+  const table =
+    document.getElementById("salesTable");
+
+  table.innerHTML = "";
+
+  sales.forEach(sale => {
+
+    table.innerHTML += `
+
+      <tr>
+
+        <td>${sale.date}</td>
+
+        <td>${sale.items}</td>
+
+        <td>₹${sale.total}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+
+/* DASHBOARD */
+
+function updateDashboard() {
+
+  document.getElementById("productCount").innerText =
+    products.length;
+
+  let stock = 0;
+
+  products.forEach(product => {
+
+    stock += Number(product.stock);
+
+  });
+
+  document.getElementById("stockCount").innerText =
+    stock;
+
+  document.getElementById("salesCount").innerText =
+    sales.length;
+
+  let revenue = 0;
+
+  sales.forEach(sale => {
+
+    revenue += Number(sale.total);
+
+  });
+
+  document.getElementById("revenue").innerText =
+    "₹" + revenue;
+
+}
+
+
+/* SAVE */
+
+function saveData() {
+
+  localStorage.setItem(
+    "products",
+    JSON.stringify(products)
+  );
+
+  localStorage.setItem(
+    "sales",
+    JSON.stringify(sales)
+  );
+
+}
+
+
+/* UPDATE ALL */
+
+function updateAll() {
+
+  renderProducts();
+
+  renderBillingProducts();
+
+  renderStock();
+
+  renderSales();
+
+  updateDashboard();
+
+}
+
+
+/* START */
+
+updateAll();
+
+</script>
+
+</body>
+</html>
