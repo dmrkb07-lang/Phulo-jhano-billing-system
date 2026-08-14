@@ -20,13 +20,13 @@ body{
 header{
   background:#176b3a;
   color:white;
-  padding:16px 12px;
+  padding:15px;
   text-align:center;
 }
 
 header h1{
   margin:0;
-  font-size:23px;
+  font-size:22px;
 }
 
 header p{
@@ -43,18 +43,13 @@ header p{
 .card{
   background:white;
   padding:15px;
-  margin-bottom:14px;
-  border-radius:10px;
+  margin-bottom:15px;
+  border-radius:12px;
   box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 h2{
   margin-top:0;
-  color:#176b3a;
-  font-size:19px;
-}
-
-h3{
   color:#176b3a;
 }
 
@@ -62,8 +57,8 @@ input,select,button{
   width:100%;
   padding:11px;
   margin:5px 0;
-  border:1px solid #ccc;
   border-radius:7px;
+  border:1px solid #ccc;
   font-size:15px;
 }
 
@@ -71,8 +66,8 @@ button{
   background:#176b3a;
   color:white;
   border:none;
-  font-weight:bold;
   cursor:pointer;
+  font-weight:bold;
 }
 
 button:hover{
@@ -97,27 +92,26 @@ button:hover{
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:10px;
 }
 
-@media(max-width:650px){
-  .grid{
-    grid-template-columns:1fr;
-  }
+.hidden{
+  display:none !important;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
   margin-top:10px;
+  background:white;
 }
 
 th,td{
   border:1px solid #ddd;
   padding:8px;
   text-align:center;
-  font-size:13px;
+  font-size:14px;
 }
 
 th{
@@ -126,80 +120,69 @@ th{
 }
 
 .total-box{
-  background:#eef7f1;
+  font-size:18px;
+  font-weight:bold;
+  background:#e8f5e9;
   padding:12px;
   border-radius:8px;
   margin-top:10px;
 }
 
-.big-total{
-  font-size:22px;
-  font-weight:bold;
+.commission{
   color:#176b3a;
+  font-weight:bold;
 }
 
-.scanner-box{
-  border:2px dashed #176b3a;
-  padding:12px;
-  border-radius:10px;
-  background:#f7fff9;
+#loginPage{
+  max-width:420px;
+  margin:50px auto;
+  padding:20px;
 }
 
-#camera{
+.nav{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  margin-bottom:15px;
+}
+
+.nav button{
+  font-size:13px;
+}
+
+#scanner{
   width:100%;
-  max-height:300px;
-  background:#000;
+  max-width:500px;
+  height:300px;
+  background:#111;
+  margin:auto;
   border-radius:10px;
-  display:none;
-  margin-top:10px;
+  object-fit:cover;
 }
 
-.status{
-  padding:9px;
-  border-radius:7px;
-  margin:7px 0;
-  display:none;
+.invoice{
+  background:white;
+  padding:20px;
+  max-width:800px;
+  margin:auto;
 }
 
-.success{
-  background:#dff5e5;
-  color:#146c2e;
-}
-
-.error{
-  background:#ffe1e1;
-  color:#a00000;
-}
-
-.hidden{
-  display:none;
+.invoice-header{
+  text-align:center;
+  border-bottom:2px solid #176b3a;
+  padding-bottom:10px;
 }
 
 .small{
   font-size:12px;
-  color:#666;
 }
 
-#loginScreen{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-}
-
-.login-box{
-  background:white;
-  width:100%;
-  max-width:400px;
-  padding:25px;
-  border-radius:12px;
-  box-shadow:0 3px 15px rgba(0,0,0,.15);
+.stat{
+  background:#e8f5e9;
+  padding:15px;
+  border-radius:10px;
   text-align:center;
-}
-
-#app{
-  display:none;
+  font-weight:bold;
 }
 
 @media print{
@@ -220,7 +203,7 @@ th{
   }
 
   .no-print{
-    display:none!important;
+    display:none !important;
   }
 }
 </style>
@@ -228,362 +211,367 @@ th{
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-  <div class="login-box">
-    <h2>🌿 Phulo Jhano</h2>
-    <p>Billing System Login</p>
-
-    <input
-      type="text"
-      id="username"
-      placeholder="Username"
-      value="admin"
-    >
-
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
-
-    <button onclick="login()">LOGIN</button>
-
-    <p class="small">
-      Default Username: admin<br>
-      Default Password: 1234
-    </p>
-  </div>
-</div>
-
-
-<!-- MAIN APP -->
-<div id="app">
-
 <header>
-  <h1>🌿 Phulo Jhano Billing System</h1>
-  <p>Billing • Barcode • GST • Commission • Stock</p>
+  <h1>Phulo Jhano Billing System</h1>
+  <p>Adivasi Direct Selling • POS • Barcode • Commission</p>
 </header>
 
-<div class="container">
+<!-- LOGIN -->
+<div id="loginPage" class="card">
+  <h2>Admin Login</h2>
 
-<!-- COMPANY SETTINGS -->
-<div class="card">
-  <h2>🏢 Company Details</h2>
+  <input id="loginUser" placeholder="Username">
+  <input id="loginPass" type="password" placeholder="Password">
 
-  <div class="grid">
+  <button onclick="login()">Login</button>
 
-    <input
-      id="companyName"
-      placeholder="Company Name"
-      value="Phulo Jhano Pvt Ltd"
-    >
+  <p class="small">
+    Demo Login: admin / 1234
+  </p>
+</div>
 
-    <input
-      id="gstin"
-      placeholder="GSTIN Number (যদি থাকে)"
-    >
+<!-- MAIN APP -->
+<div id="app" class="container hidden">
 
-    <input
-      id="companyPhone"
-      placeholder="Mobile Number"
-    >
-
-    <input
-      id="companyAddress"
-      placeholder="Company Address"
-    >
-
+  <div class="nav">
+    <button onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('products')">Product Master</button>
+    <button onclick="showPage('billing')">Billing</button>
+    <button onclick="showPage('savedBills')">Saved Bills</button>
+    <button onclick="showPage('reports')">Sales Report</button>
+    <button class="btn-red" onclick="logout()">Logout</button>
   </div>
 
-  <button onclick="saveCompany()">Save Company Details</button>
-</div>
-
-
-<!-- PRODUCT MASTER -->
-<div class="card">
-
-<h2>📦 Product Master</h2>
-
-<div class="grid">
-
-<input
-  id="pBarcode"
-  placeholder="Barcode"
->
-
-<input
-  id="pName"
-  placeholder="Product Name"
->
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="page">
+
+    <div class="card">
+      <h2>Dashboard</h2>
 
-<input
-  id="pPrice"
-  type="number"
-  step="0.01"
-  placeholder="Selling Price"
->
+      <div class="grid">
+        <div class="stat">
+          Products
+          <br>
+          <span id="dashProducts">0</span>
+        </div>
 
-<input
-  id="pGST"
-  type="number"
-  step="0.01"
-  placeholder="GST %"
-  value="0"
->
+        <div class="stat">
+          Stock
+          <br>
+          <span id="dashStock">0</span>
+        </div>
+
+        <div class="stat">
+          Bills
+          <br>
+          <span id="dashBills">0</span>
+        </div>
+
+        <div class="stat">
+          Sales
+          <br>
+          ₹<span id="dashSales">0.00</span>
+        </div>
+
+        <div class="stat">
+          Commission
+          <br>
+          ₹<span id="dashCommission">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Company Settings</h2>
+
+      <div class="grid">
+        <input id="companyName" placeholder="Company Name">
+        <input id="companyAddress" placeholder="Address">
+        <input id="companyPhone" placeholder="Phone">
+        <input id="companyGSTIN" placeholder="GSTIN (যদি থাকে)">
+      </div>
 
-<input
-  id="pCommission"
-  type="number"
-  step="0.01"
-  placeholder="Commission %"
-  value="0"
->
+      <button onclick="saveSettings()">Save Company Settings</button>
+    </div>
 
-<input
-  id="pStock"
-  type="number"
-  placeholder="Stock"
-  value="0"
->
+  </section>
+
+  <!-- PRODUCT MASTER -->
+  <section id="products" class="page hidden">
 
-</div>
+    <div class="card">
 
-<button onclick="addProduct()">➕ Add / Update Product</button>
+      <h2>Product Master</h2>
 
-<button class="btn-gray" onclick="clearProductForm()">
-Clear Product Form
-</button>
+      <input id="productId" type="hidden">
 
-<div id="productStatus" class="status"></div>
+      <div class="grid">
 
-<table>
-<thead>
-<tr>
-<th>Barcode</th>
-<th>Product</th>
-<th>Price</th>
-<th>GST</th>
-<th>Commission</th>
-<th>Stock</th>
-<th>Action</th>
-</tr>
-</thead>
+        <input id="barcode"
+               placeholder="Barcode *"
+               inputmode="numeric"
+               onkeydown="barcodeEnter(event)">
 
-<tbody id="productTable"></tbody>
-</table>
+        <input id="productName"
+               placeholder="Product Name *">
 
-</div>
+        <input id="productSize"
+               placeholder="Size যেমন 100g / 200g / 500ml">
 
+        <input id="price"
+               type="number"
+               step="0.01"
+               placeholder="Selling Price ₹">
 
-<!-- BARCODE -->
-<div class="card">
+        <input id="gst"
+               type="number"
+               step="0.01"
+               placeholder="GST %">
 
-<h2>🔎 Barcode Scanner</h2>
+        <input id="commission"
+               type="number"
+               step="0.01"
+               placeholder="Commission %">
 
-<div class="scanner-box">
+        <input id="stock"
+               type="number"
+               step="1"
+               placeholder="Stock Quantity">
 
-<p>
-<strong>Option 1:</strong>
-Barcode machine দিয়ে স্ক্যান করুন।
-</p>
+      </div>
 
-<p class="small">
-Barcode scanner সাধারণত keyboard-এর মতো কাজ করে।
-Barcode scan করার পর Enter চাপলে Product Billing-এ চলে আসবে।
-</p>
+      <button onclick="saveProduct()">Save Product</button>
+      <button class="btn-gray" onclick="clearProductForm()">Clear</button>
 
-<input
-  id="scanInput"
-  placeholder="এখানে Barcode Scan করুন / Type করুন"
-  autocomplete="off"
->
+    </div>
 
-<button onclick="searchBarcode()">
-🔍 Search Barcode
-</button>
+    <div class="card">
 
-<button class="btn-blue" onclick="startCamera()">
-📷 Camera Barcode Scanner চালু করুন
-</button>
+      <h2>Product List</h2>
 
-<button class="btn-gray" onclick="stopCamera()">
-⛔ Camera বন্ধ করুন
-</button>
+      <input
+        id="productSearch"
+        placeholder="Barcode বা Product Name দিয়ে Search"
+        oninput="renderProducts()">
 
-<video id="camera" autoplay playsinline></video>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Barcode</th>
+              <th>Product</th>
+              <th>Size</th>
+              <th>Price</th>
+              <th>GST</th>
+              <th>Commission</th>
+              <th>Stock</th>
+              <th>Action</th>
+            </tr>
+          </thead>
 
-<div id="scanStatus" class="status"></div>
+          <tbody id="productTable"></tbody>
+        </table>
+      </div>
 
-</div>
+    </div>
 
-</div>
+  </section>
 
+  <!-- BILLING -->
+  <section id="billing" class="page hidden">
 
-<!-- BILLING -->
-<div class="card">
+    <div class="card">
 
-<h2>🧾 Billing</h2>
+      <h2>Barcode Billing</h2>
 
-<div class="grid">
+      <div class="grid">
 
-<input
-  id="customerName"
-  placeholder="Customer Name"
->
+        <input
+          id="billBarcode"
+          placeholder="Barcode Scan / Type করুন"
+          autofocus
+          onkeydown="billBarcodeEnter(event)">
 
-<input
-  id="customerPhone"
-  placeholder="Customer Mobile"
->
+        <input
+          id="customerName"
+          placeholder="Customer Name">
 
-</div>
+        <input
+          id="customerPhone"
+          placeholder="Customer Phone">
 
-<div class="grid">
+      </div>
 
-<input
-  id="billBarcode"
-  placeholder="Barcode"
-  onkeydown="billBarcodeEnter(event)"
->
+      <button onclick="findBarcode()">Add Barcode Product</button>
 
-<input
-  id="billQty"
-  type="number"
-  min="1"
-  value="1"
-  placeholder="Quantity"
->
+      <button class="btn-blue" onclick="startScanner()">
+        📷 Camera Barcode Scanner
+      </button>
 
-</div>
+      <video id="scanner" class="hidden"></video>
 
-<button onclick="addBarcodeToBill()">
-➕ Add Product to Bill
-</button>
+      <button
+        id="stopScannerBtn"
+        class="btn-red hidden"
+        onclick="stopScanner()">
+        Stop Scanner
+      </button>
 
-<div id="billStatus" class="status"></div>
+      <p id="scanStatus"></p>
 
-<table>
-<thead>
-<tr>
-<th>Product</th>
-<th>Qty</th>
-<th>Price</th>
-<th>GST</th>
-<th>Commission</th>
-<th>Total</th>
-<th>Remove</th>
-</tr>
-</thead>
+    </div>
 
-<tbody id="billTable"></tbody>
-</table>
+    <div class="card">
 
+      <h2>Current Bill</h2>
 
-<div class="total-box">
+      <div style="overflow-x:auto">
 
-<p>
-Subtotal:
-₹ <span id="subtotal">0.00</span>
-</p>
+        <table>
 
-<p>
-GST:
-₹ <span id="gstTotal">0.00</span>
-</p>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Barcode</th>
+              <th>Price</th>
+              <th>GST</th>
+              <th>Qty</th>
+              <th>Total</th>
+              <th>Commission</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
 
-<p>
-<strong>Total Bill:</strong>
-₹ <span id="grandTotal">0.00</span>
-</p>
+          <tbody id="cartTable"></tbody>
 
-<p>
-Commission:
-₹ <span id="commissionTotal">0.00</span>
-</p>
+        </table>
 
-<p class="big-total">
-Payable: ₹ <span id="payableTotal">0.00</span>
-</p>
+      </div>
 
-</div>
+      <div class="total-box">
 
+        Subtotal:
+        ₹<span id="subtotal">0.00</span>
+        <br>
 
-<div class="grid">
+        GST:
+        ₹<span id="gstTotal">0.00</span>
+        <br>
 
-<button onclick="saveBill()">
-💾 Save Bill
-</button>
+        Grand Total:
+        ₹<span id="grandTotal">0.00</span>
+        <br>
 
-<button class="btn-blue" onclick="printCurrentBill()">
-🖨️ Print Bill
-</button>
+        Commission:
+        ₹<span id="commissionTotal">0.00</span>
 
-<button class="btn-orange" onclick="newBill()">
-🆕 New Bill
-</button>
+      </div>
 
-</div>
+      <button onclick="saveBill()">💾 Save Bill</button>
 
-</div>
+      <button class="btn-blue" onclick="previewCurrentBill()">
+        Print Bill
+      </button>
 
+      <button class="btn-red" onclick="clearCart()">
+        Clear Bill
+      </button>
 
-<!-- SAVED BILLS -->
-<div class="card">
+    </div>
 
-<h2>💾 Saved Bills</h2>
+  </section>
 
-<button onclick="showBills()">
-📋 Show Saved Bills
-</button>
+  <!-- SAVED BILLS -->
+  <section id="savedBills" class="page hidden">
 
-<div id="savedBills"></div>
+    <div class="card">
 
-</div>
+      <h2>Saved Bills</h2>
 
+      <div style="overflow-x:auto">
 
-<!-- REPORT -->
-<div class="card">
+        <table>
 
-<h2>📊 Sales & Commission Report</h2>
+          <thead>
+            <tr>
+              <th>Bill No</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Total</th>
+              <th>Commission</th>
+              <th>Action</th>
+            </tr>
+          </thead>
 
-<button onclick="generateReport()">
-Generate Report
-</button>
+          <tbody id="billsTable"></tbody>
 
-<div id="report"></div>
+        </table>
 
-</div>
+      </div>
 
+    </div>
 
-<!-- PRODUCT DATA MANAGEMENT -->
-<div class="card">
+  </section>
 
-<h2>⚙️ Data Management</h2>
+  <!-- REPORT -->
+  <section id="reports" class="page hidden">
 
-<div class="grid">
+    <div class="card">
 
-<button class="btn-blue" onclick="exportData()">
-⬇️ Backup Data
-</button>
+      <h2>Sales Report</h2>
 
-<button class="btn-red" onclick="deleteAllData()">
-🗑️ Delete All Data
-</button>
+      <div class="grid">
 
-</div>
+        <div class="stat">
+          Total Sales
+          <br>
+          ₹<span id="reportSales">0.00</span>
+        </div>
 
-<input
-  type="file"
-  id="importFile"
-  accept=".json"
-  onchange="importData(event)"
->
+        <div class="stat">
+          Total GST
+          <br>
+          ₹<span id="reportGST">0.00</span>
+        </div>
 
-</div>
+        <div class="stat">
+          Total Commission
+          <br>
+          ₹<span id="reportCommission">0.00</span>
+        </div>
 
+        <div class="stat">
+          Total Bills
+          <br>
+          <span id="reportBills">0</span>
+        </div>
 
-</div>
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>Bill History</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Bill</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Commission</th>
+          </tr>
+        </thead>
+
+        <tbody id="reportTable"></tbody>
+      </table>
+
+    </div>
+
+  </section>
+
 </div>
 
 
@@ -594,24 +582,21 @@ Generate Report
 <script>
 
 /* =========================
-   DATA
+   DATABASE
 ========================= */
 
 let products =
-JSON.parse(localStorage.getItem("pj_products") || "[]");
+  JSON.parse(localStorage.getItem("pj_products") || "[]");
 
 let bills =
-JSON.parse(localStorage.getItem("pj_bills") || "[]");
+  JSON.parse(localStorage.getItem("pj_bills") || "[]");
+
+let settings =
+  JSON.parse(localStorage.getItem("pj_settings") || "{}");
 
 let cart = [];
 
-let company =
-JSON.parse(
-  localStorage.getItem("pj_company") ||
-  '{"name":"Phulo Jhano Pvt Ltd","gstin":"","phone":"","address":""}'
-);
-
-let cameraStream = null;
+let scannerStream = null;
 
 
 /* =========================
@@ -621,167 +606,316 @@ let cameraStream = null;
 function login(){
 
   const user =
-    document.getElementById("username").value.trim();
+    document.getElementById("loginUser").value.trim();
 
   const pass =
-    document.getElementById("password").value;
+    document.getElementById("loginPass").value;
 
   if(user === "admin" && pass === "1234"){
 
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("app").style.display="block";
+    document.getElementById("loginPage")
+      .classList.add("hidden");
 
-    loadCompany();
-    renderProducts();
+    document.getElementById("app")
+      .classList.remove("hidden");
+
+    loadSettings();
+    updateDashboard();
+    showPage("dashboard");
 
   }else{
 
-    alert("Username অথবা Password ভুল।");
+    alert("Username বা Password ভুল।\n\nDemo Login:\nadmin\n1234");
 
   }
+
+}
+
+
+function logout(){
+
+  document.getElementById("app")
+    .classList.add("hidden");
+
+  document.getElementById("loginPage")
+    .classList.remove("hidden");
+
 }
 
 
 /* =========================
-   COMPANY
+   PAGE NAVIGATION
 ========================= */
 
-function loadCompany(){
+function showPage(page){
 
-  document.getElementById("companyName").value =
-    company.name || "";
+  document.querySelectorAll(".page")
+    .forEach(p => p.classList.add("hidden"));
 
-  document.getElementById("gstin").value =
-    company.gstin || "";
+  document.getElementById(page)
+    .classList.remove("hidden");
 
-  document.getElementById("companyPhone").value =
-    company.phone || "";
+  if(page === "products")
+    renderProducts();
 
-  document.getElementById("companyAddress").value =
-    company.address || "";
+  if(page === "billing")
+    renderCart();
+
+  if(page === "savedBills")
+    renderBills();
+
+  if(page === "reports")
+    renderReports();
+
+  updateDashboard();
 }
 
 
-function saveCompany(){
+/* =========================
+   SETTINGS
+========================= */
 
-  company = {
+function loadSettings(){
+
+  document.getElementById("companyName").value =
+    settings.name || "Phulo Jhano Pvt Ltd";
+
+  document.getElementById("companyAddress").value =
+    settings.address || "";
+
+  document.getElementById("companyPhone").value =
+    settings.phone || "";
+
+  document.getElementById("companyGSTIN").value =
+    settings.gstin || "";
+
+}
+
+
+function saveSettings(){
+
+  settings = {
 
     name:
       document.getElementById("companyName").value.trim(),
 
-    gstin:
-      document.getElementById("gstin").value.trim(),
+    address:
+      document.getElementById("companyAddress").value.trim(),
 
     phone:
       document.getElementById("companyPhone").value.trim(),
 
-    address:
-      document.getElementById("companyAddress").value.trim()
+    gstin:
+      document.getElementById("companyGSTIN").value.trim()
 
   };
 
   localStorage.setItem(
-    "pj_company",
-    JSON.stringify(company)
+    "pj_settings",
+    JSON.stringify(settings)
   );
 
-  alert("Company details saved.");
+  alert("Company Settings Save হয়েছে।");
+
 }
 
 
 /* =========================
-   PRODUCT
+   PRODUCT MASTER
 ========================= */
 
-function addProduct(){
+function saveProduct(){
 
   const barcode =
-    document.getElementById("pBarcode").value.trim();
+    document.getElementById("barcode").value.trim();
 
   const name =
-    document.getElementById("pName").value.trim();
+    document.getElementById("productName").value.trim();
+
+  const size =
+    document.getElementById("productSize").value.trim();
 
   const price =
-    parseFloat(document.getElementById("pPrice").value);
+    Number(document.getElementById("price").value);
 
   const gst =
-    parseFloat(document.getElementById("pGST").value) || 0;
+    Number(document.getElementById("gst").value) || 0;
 
   const commission =
-    parseFloat(document.getElementById("pCommission").value) || 0;
+    Number(document.getElementById("commission").value) || 0;
 
   const stock =
-    parseInt(document.getElementById("pStock").value) || 0;
+    Number(document.getElementById("stock").value) || 0;
 
   if(!barcode){
+
     alert("Barcode দিন।");
     return;
+
   }
 
   if(!name){
+
     alert("Product Name দিন।");
     return;
+
   }
 
-  if(isNaN(price)){
-    alert("Price দিন।");
+  if(price <= 0){
+
+    alert("Selling Price দিন।");
     return;
+
   }
 
-  const existing =
-    products.find(
-      p => p.barcode === barcode
-    );
+  const id =
+    document.getElementById("productId").value;
 
-  if(existing){
+  if(id){
 
-    existing.name = name;
-    existing.price = price;
-    existing.gst = gst;
-    existing.commission = commission;
-    existing.stock = stock;
+    const index =
+      products.findIndex(p => p.id == id);
 
-    showStatus(
-      "productStatus",
-      "Product updated successfully.",
-      "success"
-    );
+    if(index >= 0){
+
+      products[index] = {
+
+        ...products[index],
+
+        barcode,
+        name,
+        size,
+        price,
+        gst,
+        commission,
+        stock
+
+      };
+
+    }
 
   }else{
+
+    const existing =
+      products.find(p => p.barcode === barcode);
+
+    if(existing){
+
+      alert(
+        "এই Barcode আগে থেকেই আছে।\nEdit করে Stock/Details পরিবর্তন করুন।"
+      );
+
+      return;
+
+    }
 
     products.push({
 
       id: Date.now(),
 
-      barcode: barcode,
-
-      name: name,
-
-      price: price,
-
-      gst: gst,
-
-      commission: commission,
-
-      stock: stock
+      barcode,
+      name,
+      size,
+      price,
+      gst,
+      commission,
+      stock
 
     });
 
-    showStatus(
-      "productStatus",
-      "Product added successfully.",
-      "success"
-    );
   }
+
+  saveProducts();
+
+  clearProductForm();
+
+  renderProducts();
+
+  updateDashboard();
+
+  alert("Product Save হয়েছে।");
+
+}
+
+
+function saveProducts(){
 
   localStorage.setItem(
     "pj_products",
     JSON.stringify(products)
   );
 
+}
+
+
+function clearProductForm(){
+
+  document.getElementById("productId").value = "";
+
+  document.getElementById("barcode").value = "";
+  document.getElementById("productName").value = "";
+  document.getElementById("productSize").value = "";
+  document.getElementById("price").value = "";
+  document.getElementById("gst").value = "";
+  document.getElementById("commission").value = "";
+  document.getElementById("stock").value = "";
+
+}
+
+
+function editProduct(id){
+
+  const p =
+    products.find(x => x.id == id);
+
+  if(!p) return;
+
+  document.getElementById("productId").value =
+    p.id;
+
+  document.getElementById("barcode").value =
+    p.barcode;
+
+  document.getElementById("productName").value =
+    p.name;
+
+  document.getElementById("productSize").value =
+    p.size || "";
+
+  document.getElementById("price").value =
+    p.price;
+
+  document.getElementById("gst").value =
+    p.gst;
+
+  document.getElementById("commission").value =
+    p.commission;
+
+  document.getElementById("stock").value =
+    p.stock;
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+function deleteProduct(id){
+
+  if(!confirm("এই Product Delete করবেন?"))
+    return;
+
+  products =
+    products.filter(p => p.id != id);
+
+  saveProducts();
+
   renderProducts();
 
-  clearProductForm();
+  updateDashboard();
+
 }
 
 
@@ -790,179 +924,108 @@ function renderProducts(){
   const tbody =
     document.getElementById("productTable");
 
+  const search =
+    document.getElementById("productSearch")
+      ?.value.toLowerCase() || "";
+
   tbody.innerHTML = "";
 
-  products.forEach((p,index)=>{
+  products
+    .filter(p =>
+      p.name.toLowerCase().includes(search) ||
+      p.barcode.toLowerCase().includes(search)
+    )
+    .forEach(p => {
 
-    const tr =
-      document.createElement("tr");
+      const tr =
+        document.createElement("tr");
 
-    tr.innerHTML = `
+      tr.innerHTML = `
 
-      <td>${escapeHtml(p.barcode)}</td>
+        <td>${escapeHtml(p.barcode)}</td>
 
-      <td>${escapeHtml(p.name)}</td>
+        <td>${escapeHtml(p.name)}</td>
 
-      <td>₹${Number(p.price).toFixed(2)}</td>
+        <td>${escapeHtml(p.size || "")}</td>
 
-      <td>${Number(p.gst).toFixed(2)}%</td>
+        <td>₹${money(p.price)}</td>
 
-      <td>${Number(p.commission).toFixed(2)}%</td>
+        <td>${p.gst}%</td>
 
-      <td>${p.stock}</td>
+        <td>${p.commission}%</td>
 
-      <td>
-        <button
-          onclick="editProduct(${index})"
-          class="btn-blue"
-        >
-        Edit
-        </button>
+        <td>${p.stock}</td>
 
-        <button
-          onclick="deleteProduct(${index})"
-          class="btn-red"
-        >
-        Delete
-        </button>
-      </td>
+        <td>
 
-    `;
+          <button
+            class="btn-blue"
+            onclick="editProduct(${p.id})">
+            Edit
+          </button>
 
-    tbody.appendChild(tr);
+          <button
+            class="btn-red"
+            onclick="deleteProduct(${p.id})">
+            Delete
+          </button>
 
-  });
-}
+        </td>
 
+      `;
 
-function editProduct(index){
+      tbody.appendChild(tr);
 
-  const p = products[index];
-
-  document.getElementById("pBarcode").value =
-    p.barcode;
-
-  document.getElementById("pName").value =
-    p.name;
-
-  document.getElementById("pPrice").value =
-    p.price;
-
-  document.getElementById("pGST").value =
-    p.gst;
-
-  document.getElementById("pCommission").value =
-    p.commission;
-
-  document.getElementById("pStock").value =
-    p.stock;
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-}
-
-
-function deleteProduct(index){
-
-  if(!confirm("এই Product delete করবেন?")){
-    return;
-  }
-
-  products.splice(index,1);
-
-  localStorage.setItem(
-    "pj_products",
-    JSON.stringify(products)
-  );
-
-  renderProducts();
-}
-
-
-function clearProductForm(){
-
-  document.getElementById("pBarcode").value="";
-  document.getElementById("pName").value="";
-  document.getElementById("pPrice").value="";
-  document.getElementById("pGST").value="0";
-  document.getElementById("pCommission").value="0";
-  document.getElementById("pStock").value="0";
+    });
 
 }
 
 
 /* =========================
-   BARCODE SEARCH
+   BARCODE
 ========================= */
 
-function searchBarcode(){
+function barcodeEnter(e){
 
-  const barcode =
-    document.getElementById("scanInput").value.trim();
+  if(e.key === "Enter"){
 
-  if(!barcode){
-    alert("Barcode scan/type করুন।");
-    return;
-  }
+    e.preventDefault();
 
-  findProductByBarcode(barcode);
+    const value =
+      document.getElementById("barcode").value.trim();
 
-}
+    if(value){
 
+      const found =
+        products.find(p => p.barcode === value);
 
-function findProductByBarcode(barcode){
+      if(found){
 
-  const product =
-    products.find(
-      p => String(p.barcode) === String(barcode)
-    );
+        document.getElementById("productName").value =
+          found.name;
 
-  if(!product){
+        document.getElementById("productSize").value =
+          found.size || "";
 
-    showStatus(
-      "scanStatus",
-      "এই Barcode-এর Product পাওয়া যায়নি। আগে Product Master-এ Add করুন।",
-      "error"
-    );
+        document.getElementById("price").value =
+          found.price;
 
-    document.getElementById("billBarcode").value =
-      barcode;
+        document.getElementById("gst").value =
+          found.gst;
 
-    return null;
-  }
+        document.getElementById("commission").value =
+          found.commission;
 
-  showStatus(
-    "scanStatus",
-    "Product পাওয়া গেছে: " + product.name,
-    "success"
-  );
+        document.getElementById("stock").value =
+          found.stock;
 
-  document.getElementById("billBarcode").value =
-    product.barcode;
-
-  return product;
-}
-
-
-/* =========================
-   HARDWARE SCANNER
-========================= */
-
-document
-  .getElementById("scanInput")
-  .addEventListener("keydown",function(e){
-
-    if(e.key === "Enter"){
-
-      e.preventDefault();
-
-      searchBarcode();
+      }
 
     }
 
-  });
+  }
+
+}
 
 
 function billBarcodeEnter(e){
@@ -971,198 +1034,93 @@ function billBarcodeEnter(e){
 
     e.preventDefault();
 
-    addBarcodeToBill();
+    findBarcode();
 
   }
 
 }
 
 
-/* =========================
-   CAMERA SCANNER
-========================= */
+function findBarcode(){
 
-async function startCamera(){
+  const input =
+    document.getElementById("billBarcode");
 
-  if(!("BarcodeDetector" in window)){
+  const code =
+    input.value.trim();
 
-    alert(
-      "এই Browser-এ Camera Barcode Scanner support নেই।\n\n" +
-      "Barcode machine অথবা Barcode input box ব্যবহার করুন।"
-    );
-
-    return;
-  }
-
-  try{
-
-    cameraStream =
-      await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:{
-            ideal:"environment"
-          }
-        },
-        audio:false
-      });
-
-    const video =
-      document.getElementById("camera");
-
-    video.srcObject =
-      cameraStream;
-
-    video.style.display="block";
-
-    const detector =
-      new BarcodeDetector();
-
-    scanCameraFrame(detector);
-
-  }catch(error){
-
-    alert(
-      "Camera চালু করা যায়নি। Browser Camera Permission Allow করুন।"
-    );
-
-  }
-
-}
-
-
-async function scanCameraFrame(detector){
-
-  const video =
-    document.getElementById("camera");
-
-  if(!cameraStream){
-    return;
-  }
-
-  try{
-
-    const codes =
-      await detector.detect(video);
-
-    if(codes.length > 0){
-
-      const value =
-        codes[0].rawValue;
-
-      document.getElementById("scanInput").value =
-        value;
-
-      document.getElementById("billBarcode").value =
-        value;
-
-      stopCamera();
-
-      findProductByBarcode(value);
-
-      addBarcodeToBill();
-
-      return;
-    }
-
-  }catch(e){
-
-  }
-
-  requestAnimationFrame(
-    ()=>scanCameraFrame(detector)
-  );
-
-}
-
-
-function stopCamera(){
-
-  if(cameraStream){
-
-    cameraStream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    cameraStream = null;
-
-  }
-
-  document.getElementById("camera").style.display =
-    "none";
-}
-
-
-/* =========================
-   BILLING
-========================= */
-
-function addBarcodeToBill(){
-
-  const barcode =
-    document.getElementById("billBarcode").value.trim();
-
-  const qty =
-    parseInt(
-      document.getElementById("billQty").value
-    ) || 1;
-
-  if(!barcode){
+  if(!code){
 
     alert("Barcode scan/type করুন।");
-
     return;
+
   }
 
   const product =
-    products.find(
-      p => String(p.barcode) === String(barcode)
-    );
+    products.find(p => p.barcode === code);
 
   if(!product){
 
-    showStatus(
-      "billStatus",
-      "Product পাওয়া যায়নি। Product Master-এ আগে Add করুন।",
-      "error"
-    );
-
-    return;
-  }
-
-  if(product.stock < qty){
-
     alert(
-      "Stock কম আছে। Available Stock: " +
-      product.stock
+      "এই Barcode Product Master-এ পাওয়া যায়নি।\n\nBarcode: "
+      + code
     );
 
+    input.select();
+
     return;
+
   }
 
+  addToCart(product);
+
+  input.value = "";
+
+  input.focus();
+
+}
+
+
+/* =========================
+   CART
+========================= */
+
+function addToCart(product){
 
   const existing =
-    cart.find(
-      item => item.barcode === barcode
-    );
+    cart.find(x => x.id === product.id);
 
   if(existing){
 
-    if(existing.qty + qty > product.stock){
+    if(existing.qty >= product.stock){
 
-      alert("Stock-এর চেয়ে বেশি quantity দেওয়া যাবে না.");
+      alert("Stock শেষ। Available: " + product.stock);
 
       return;
+
     }
 
-    existing.qty += qty;
+    existing.qty++;
 
   }else{
 
+    if(product.stock <= 0){
+
+      alert("এই Product-এর Stock নেই।");
+
+      return;
+
+    }
+
     cart.push({
+
+      id:product.id,
 
       barcode:product.barcode,
 
       name:product.name,
+
+      size:product.size,
 
       price:Number(product.price),
 
@@ -1170,42 +1128,86 @@ function addBarcodeToBill(){
 
       commission:Number(product.commission) || 0,
 
-      qty:qty
+      qty:1
 
     });
 
   }
 
-  renderBill();
-
-  document.getElementById("billBarcode").value="";
-
-  document.getElementById("billQty").value="1";
-
-  showStatus(
-    "billStatus",
-    product.name + " Bill-এ যোগ হয়েছে।",
-    "success"
-  );
+  renderCart();
 
 }
 
 
-function renderBill(){
+function changeQty(index,value){
 
-  const tbody =
-    document.getElementById("billTable");
+  const qty =
+    Number(value);
 
-  tbody.innerHTML="";
+  if(qty < 1){
+
+    cart[index].qty = 1;
+
+  }else{
+
+    const product =
+      products.find(p => p.id == cart[index].id);
+
+    if(product && qty > product.stock){
+
+      alert(
+        "Stock available: " +
+        product.stock
+      );
+
+      cart[index].qty =
+        product.stock;
+
+    }else{
+
+      cart[index].qty = qty;
+
+    }
+
+  }
+
+  renderCart();
+
+}
+
+
+function removeCart(index){
+
+  cart.splice(index,1);
+
+  renderCart();
+
+}
+
+
+function clearCart(){
+
+  if(cart.length === 0)
+    return;
+
+  if(confirm("Current Bill Clear করবেন?")){
+
+    cart = [];
+
+    renderCart();
+
+  }
+
+}
+
+
+function calculateCart(){
 
   let subtotal = 0;
-
   let gstTotal = 0;
-
   let commissionTotal = 0;
 
-
-  cart.forEach((item,index)=>{
+  cart.forEach(item => {
 
     const base =
       item.price * item.qty;
@@ -1216,46 +1218,86 @@ function renderBill(){
     const commissionAmount =
       base * item.commission / 100;
 
-    const total =
-      base + gstAmount;
-
     subtotal += base;
 
     gstTotal += gstAmount;
 
-    commissionTotal +=
-      commissionAmount;
+    commissionTotal += commissionAmount;
 
+  });
+
+  return {
+
+    subtotal,
+    gstTotal,
+    grandTotal:subtotal + gstTotal,
+    commissionTotal
+
+  };
+
+}
+
+
+function renderCart(){
+
+  const tbody =
+    document.getElementById("cartTable");
+
+  tbody.innerHTML = "";
+
+  cart.forEach((item,index) => {
+
+    const base =
+      item.price * item.qty;
+
+    const gstAmount =
+      base * item.gst / 100;
+
+    const total =
+      base + gstAmount;
+
+    const commissionAmount =
+      base * item.commission / 100;
 
     const tr =
       document.createElement("tr");
 
     tr.innerHTML = `
 
-      <td>${escapeHtml(item.name)}</td>
-
-      <td>${item.qty}</td>
-
-      <td>₹${base.toFixed(2)}</td>
-
       <td>
-        ${item.gst}%<br>
-        ₹${gstAmount.toFixed(2)}
+        ${escapeHtml(item.name)}
+        <br>
+        <span class="small">
+          ${escapeHtml(item.size || "")}
+        </span>
       </td>
 
+      <td>${escapeHtml(item.barcode)}</td>
+
+      <td>₹${money(item.price)}</td>
+
+      <td>${item.gst}%</td>
+
       <td>
-        ${item.commission}%<br>
-        ₹${commissionAmount.toFixed(2)}
+        <input
+          type="number"
+          min="1"
+          value="${item.qty}"
+          onchange="changeQty(${index},this.value)"
+          style="width:75px">
       </td>
 
-      <td>₹${total.toFixed(2)}</td>
+      <td>₹${money(total)}</td>
+
+      <td class="commission">
+        ₹${money(commissionAmount)}
+      </td>
 
       <td>
         <button
           class="btn-red"
-          onclick="removeFromBill(${index})"
-        >
-        X
+          onclick="removeCart(${index})">
+          X
         </button>
       </td>
 
@@ -1265,34 +1307,20 @@ function renderBill(){
 
   });
 
+  const totals =
+    calculateCart();
 
-  const grandTotal =
-    subtotal + gstTotal;
+  document.getElementById("subtotal").textContent =
+    money(totals.subtotal);
 
+  document.getElementById("gstTotal").textContent =
+    money(totals.gstTotal);
 
-  document.getElementById("subtotal").innerText =
-    subtotal.toFixed(2);
+  document.getElementById("grandTotal").textContent =
+    money(totals.grandTotal);
 
-  document.getElementById("gstTotal").innerText =
-    gstTotal.toFixed(2);
-
-  document.getElementById("grandTotal").innerText =
-    grandTotal.toFixed(2);
-
-  document.getElementById("commissionTotal").innerText =
-    commissionTotal.toFixed(2);
-
-  document.getElementById("payableTotal").innerText =
-    grandTotal.toFixed(2);
-
-}
-
-
-function removeFromBill(index){
-
-  cart.splice(index,1);
-
-  renderBill();
+  document.getElementById("commissionTotal").textContent =
+    money(totals.commissionTotal);
 
 }
 
@@ -1305,216 +1333,194 @@ function saveBill(){
 
   if(cart.length === 0){
 
-    alert("Bill-এ কোনো Product নেই।");
-
+    alert("Bill-এ Product নেই।");
     return;
+
   }
 
+  for(const item of cart){
 
-  const customerName =
-    document.getElementById("customerName").value.trim();
+    const product =
+      products.find(p => p.id === item.id);
 
-  const customerPhone =
-    document.getElementById("customerPhone").value.trim();
+    if(!product){
 
+      alert("Product পাওয়া যায়নি।");
+      return;
 
-  let subtotal=0;
-  let gst=0;
-  let commission=0;
+    }
 
+    if(item.qty > product.stock){
 
-  cart.forEach(item=>{
+      alert(
+        item.name +
+        "\nStock available: " +
+        product.stock
+      );
 
-    const base =
-      item.price * item.qty;
+      return;
 
-    subtotal += base;
+    }
 
-    gst +=
-      base * item.gst / 100;
+  }
 
-    commission +=
-      base * item.commission / 100;
-
-  });
-
-
-  const total =
-    subtotal + gst;
-
+  const totals =
+    calculateCart();
 
   const billNo =
-    "PJ-" +
+    "PJB-" +
     new Date().getFullYear() +
     "-" +
-    String(Date.now()).slice(-6);
-
+    String(bills.length + 1).padStart(5,"0");
 
   const bill = {
 
-    billNo:billNo,
+    id:Date.now(),
+
+    billNo,
 
     date:new Date().toLocaleString("en-IN"),
 
-    customerName:customerName,
+    customer:
+      document.getElementById("customerName")
+        .value.trim(),
 
-    customerPhone:customerPhone,
+    phone:
+      document.getElementById("customerPhone")
+        .value.trim(),
 
-    items:JSON.parse(
-      JSON.stringify(cart)
-    ),
+    items:JSON.parse(JSON.stringify(cart)),
 
-    subtotal:subtotal,
+    subtotal:totals.subtotal,
 
-    gst:gst,
+    gstTotal:totals.gstTotal,
 
-    total:total,
+    grandTotal:totals.grandTotal,
 
-    commission:commission
+    commissionTotal:totals.commissionTotal
 
   };
 
+  /* STOCK REDUCE */
 
-  bills.push(bill);
-
-
-  /* Reduce Stock */
-
-  cart.forEach(item=>{
+  cart.forEach(item => {
 
     const product =
-      products.find(
-        p => p.barcode === item.barcode
-      );
+      products.find(p => p.id === item.id);
 
     if(product){
 
       product.stock -= item.qty;
 
-      if(product.stock < 0){
-        product.stock=0;
-      }
+      if(product.stock < 0)
+        product.stock = 0;
 
     }
 
   });
 
+  bills.push(bill);
 
   localStorage.setItem(
     "pj_bills",
     JSON.stringify(bills)
   );
 
-  localStorage.setItem(
-    "pj_products",
-    JSON.stringify(products)
-  );
-
+  saveProducts();
 
   alert(
-    "Bill Saved Successfully!\nBill No: " +
-    billNo
+    "Bill Save হয়েছে।\n\nBill No: " +
+    billNo +
+    "\nTotal: ₹" +
+    money(bill.grandTotal) +
+    "\nCommission: ₹" +
+    money(bill.commissionTotal)
   );
 
+  cart = [];
 
-  renderProducts();
+  document.getElementById("customerName").value = "";
+  document.getElementById("customerPhone").value = "";
+
+  renderCart();
+
+  updateDashboard();
 
   printBill(bill);
 
-  newBill();
-
 }
 
 
 /* =========================
-   NEW BILL
+   BILL PRINT
 ========================= */
 
-function newBill(){
-
-  cart=[];
-
-  document.getElementById("customerName").value="";
-  document.getElementById("customerPhone").value="";
-  document.getElementById("billBarcode").value="";
-  document.getElementById("billQty").value="1";
-
-  renderBill();
-
-}
-
-
-/* =========================
-   PRINT
-========================= */
-
-function printCurrentBill(){
+function previewCurrentBill(){
 
   if(cart.length === 0){
 
-    alert("Print করার মতো Bill নেই.");
-
+    alert("Print করার জন্য Bill-এ Product নেই।");
     return;
+
   }
 
-  let subtotal=0;
-  let gst=0;
-  let commission=0;
+  const totals =
+    calculateCart();
 
-  cart.forEach(item=>{
+  const tempBill = {
 
-    const base =
-      item.price * item.qty;
-
-    subtotal += base;
-
-    gst +=
-      base * item.gst / 100;
-
-    commission +=
-      base * item.commission / 100;
-
-  });
-
-
-  const bill={
-
-    billNo:"PREVIEW",
+    billNo:"DRAFT",
 
     date:new Date().toLocaleString("en-IN"),
 
-    customerName:
-      document.getElementById("customerName").value,
+    customer:
+      document.getElementById("customerName")
+        .value.trim(),
 
-    customerPhone:
-      document.getElementById("customerPhone").value,
+    phone:
+      document.getElementById("customerPhone")
+        .value.trim(),
 
     items:cart,
 
-    subtotal:subtotal,
+    subtotal:totals.subtotal,
 
-    gst:gst,
+    gstTotal:totals.gstTotal,
 
-    total:subtotal+gst,
+    grandTotal:totals.grandTotal,
 
-    commission:commission
+    commissionTotal:totals.commissionTotal
 
   };
 
+  printBill(tempBill);
 
-  printBill(bill);
+}
+
+
+function printSavedBill(id){
+
+  const bill =
+    bills.find(b => b.id == id);
+
+  if(bill)
+    printBill(bill);
 
 }
 
 
 function printBill(bill){
 
-  const printArea =
+  const area =
     document.getElementById("printArea");
 
-  let rows="";
+  const company =
+    settings.name ||
+    "Phulo Jhano Pvt Ltd";
 
-  bill.items.forEach((item,index)=>{
+  let rows = "";
+
+  bill.items.forEach((item,index) => {
 
     const base =
       item.price * item.qty;
@@ -1528,72 +1534,96 @@ function printBill(bill){
     rows += `
 
       <tr>
-        <td>${index+1}</td>
-        <td>${escapeHtml(item.name)}</td>
+
+        <td>${index + 1}</td>
+
+        <td>
+          ${escapeHtml(item.name)}
+          ${item.size ? "<br>"+escapeHtml(item.size) : ""}
+        </td>
+
+        <td>${escapeHtml(item.barcode)}</td>
+
         <td>${item.qty}</td>
-        <td>₹${item.price.toFixed(2)}</td>
+
+        <td>₹${money(item.price)}</td>
+
         <td>${item.gst}%</td>
-        <td>₹${total.toFixed(2)}</td>
+
+        <td>₹${money(total)}</td>
+
       </tr>
 
     `;
 
   });
 
+  area.innerHTML = `
 
-  printArea.innerHTML = `
+    <div class="invoice">
 
-    <div style="padding:20px;font-family:Arial">
+      <div class="invoice-header">
 
-      <h2 style="text-align:center">
-        ${escapeHtml(company.name || "Phulo Jhano Pvt Ltd")}
-      </h2>
+        <h2>${escapeHtml(company)}</h2>
 
-      <p style="text-align:center">
-        ${escapeHtml(company.address || "")}
-      </p>
+        <div>
+          ${escapeHtml(settings.address || "")}
+        </div>
 
-      <p style="text-align:center">
-        Mobile: ${escapeHtml(company.phone || "")}
-      </p>
+        <div>
+          Phone:
+          ${escapeHtml(settings.phone || "")}
+        </div>
 
-      <p style="text-align:center">
-        GSTIN: ${escapeHtml(company.gstin || "N/A")}
-      </p>
+        ${
+          settings.gstin
+          ?
+          `<div>GSTIN: ${escapeHtml(settings.gstin)}</div>`
+          :
+          ""
+        }
 
-      <hr>
+      </div>
 
-      <p>
-        <strong>Bill No:</strong>
+      <br>
+
+      <div>
+        <b>Bill No:</b>
         ${escapeHtml(bill.billNo)}
-      </p>
+        <br>
 
-      <p>
-        <strong>Date:</strong>
+        <b>Date:</b>
         ${escapeHtml(bill.date)}
-      </p>
+        <br>
 
-      <p>
-        <strong>Customer:</strong>
-        ${escapeHtml(bill.customerName || "Walk-in Customer")}
-      </p>
+        <b>Customer:</b>
+        ${escapeHtml(bill.customer || "Walk-in Customer")}
+        <br>
 
-      <p>
-        <strong>Mobile:</strong>
-        ${escapeHtml(bill.customerPhone || "")}
-      </p>
+        ${
+          bill.phone
+          ?
+          `<b>Phone:</b> ${escapeHtml(bill.phone)}`
+          :
+          ""
+        }
 
-      <table style="width:100%;border-collapse:collapse">
+      </div>
+
+      <table>
 
         <thead>
+
           <tr>
-            <th style="border:1px solid #000">#</th>
-            <th style="border:1px solid #000">Product</th>
-            <th style="border:1px solid #000">Qty</th>
-            <th style="border:1px solid #000">Price</th>
-            <th style="border:1px solid #000">GST</th>
-            <th style="border:1px solid #000">Total</th>
+            <th>#</th>
+            <th>Product</th>
+            <th>Barcode</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>GST</th>
+            <th>Total</th>
           </tr>
+
         </thead>
 
         <tbody>
@@ -1602,36 +1632,57 @@ function printBill(bill){
 
       </table>
 
-      <hr>
+      <br>
 
-      <h3>Subtotal: ₹${bill.subtotal.toFixed(2)}</h3>
+      <div style="text-align:right">
 
-      <h3>GST: ₹${bill.gst.toFixed(2)}</h3>
+        <b>Subtotal:</b>
+        ₹${money(bill.subtotal)}
+        <br>
 
-      <h2>Total: ₹${bill.total.toFixed(2)}</h2>
+        <b>GST:</b>
+        ₹${money(bill.gstTotal)}
+        <br>
 
-      <p>
-        Commission Generated:
-        ₹${bill.commission.toFixed(2)}
-      </p>
+        <h3>
+          Grand Total:
+          ₹${money(bill.grandTotal)}
+        </h3>
+
+        <b>
+          Commission:
+          ₹${money(bill.commissionTotal)}
+        </b>
+
+      </div>
 
       <br>
 
-      <p style="text-align:center">
-        Thank You!
-      </p>
+      <div style="text-align:center">
+
+        Thank you for shopping with us.
+
+        <br>
+
+        <span class="small">
+          Phulo Jhano Billing System
+        </span>
+
+      </div>
 
     </div>
+
   `;
 
+  area.classList.remove("hidden");
 
-  printArea.classList.remove("hidden");
+  setTimeout(() => {
 
-  window.print();
+    window.print();
 
-  setTimeout(()=>{
-    printArea.classList.add("hidden");
-  },1000);
+    area.classList.add("hidden");
+
+  },300);
 
 }
 
@@ -1640,48 +1691,21 @@ function printBill(bill){
    SAVED BILLS
 ========================= */
 
-function showBills(){
+function renderBills(){
 
-  const box =
-    document.getElementById("savedBills");
+  const tbody =
+    document.getElementById("billsTable");
 
-  if(bills.length === 0){
+  tbody.innerHTML = "";
 
-    box.innerHTML =
-      "<p>কোনো Saved Bill নেই।</p>";
+  [...bills]
+    .reverse()
+    .forEach(bill => {
 
-    return;
-  }
+      const tr =
+        document.createElement("tr");
 
-
-  let html = `
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>Bill No</th>
-          <th>Date</th>
-          <th>Customer</th>
-          <th>Total</th>
-          <th>Commission</th>
-          <th>Print</th>
-        </tr>
-      </thead>
-
-      <tbody>
-
-  `;
-
-
-  bills.slice().reverse().forEach((bill,index)=>{
-
-    const realIndex =
-      bills.length - 1 - index;
-
-    html += `
-
-      <tr>
+      tr.innerHTML = `
 
         <td>${escapeHtml(bill.billNo)}</td>
 
@@ -1689,42 +1713,29 @@ function showBills(){
 
         <td>
           ${escapeHtml(
-            bill.customerName ||
-            "Walk-in Customer"
+            bill.customer || "Walk-in Customer"
           )}
         </td>
 
-        <td>
-          ₹${Number(bill.total).toFixed(2)}
-        </td>
+        <td>₹${money(bill.grandTotal)}</td>
+
+        <td>₹${money(bill.commissionTotal)}</td>
 
         <td>
-          ₹${Number(bill.commission).toFixed(2)}
-        </td>
 
-        <td>
           <button
-            onclick="printBill(bills[${realIndex}])"
             class="btn-blue"
-          >
-          Print
+            onclick="printSavedBill(${bill.id})">
+            Print
           </button>
+
         </td>
 
-      </tr>
+      `;
 
-    `;
+      tbody.appendChild(tr);
 
-  });
-
-
-  html += `
-      </tbody>
-    </table>
-  `;
-
-
-  box.innerHTML=html;
+    });
 
 }
 
@@ -1733,238 +1744,263 @@ function showBills(){
    REPORT
 ========================= */
 
-function generateReport(){
+function renderReports(){
 
-  let sales=0;
-  let commission=0;
-  let billsCount=bills.length;
+  let sales = 0;
+  let gst = 0;
+  let commission = 0;
 
+  bills.forEach(b => {
 
-  bills.forEach(bill=>{
+    sales += Number(b.grandTotal) || 0;
 
-    sales +=
-      Number(bill.total) || 0;
+    gst += Number(b.gstTotal) || 0;
 
     commission +=
-      Number(bill.commission) || 0;
+      Number(b.commissionTotal) || 0;
 
   });
 
+  document.getElementById("reportSales")
+    .textContent = money(sales);
 
-  document.getElementById("report").innerHTML = `
+  document.getElementById("reportGST")
+    .textContent = money(gst);
 
-    <div class="total-box">
+  document.getElementById("reportCommission")
+    .textContent = money(commission);
 
-      <p>
-        Total Bills:
-        <strong>${billsCount}</strong>
-      </p>
+  document.getElementById("reportBills")
+    .textContent = bills.length;
 
-      <p>
-        Total Sales:
-        <strong>₹${sales.toFixed(2)}</strong>
-      </p>
+  const tbody =
+    document.getElementById("reportTable");
 
-      <p>
-        Total Commission:
-        <strong>₹${commission.toFixed(2)}</strong>
-      </p>
+  tbody.innerHTML = "";
 
-    </div>
+  [...bills]
+    .reverse()
+    .forEach(b => {
 
-  `;
+      const tr =
+        document.createElement("tr");
+
+      tr.innerHTML = `
+
+        <td>${escapeHtml(b.billNo)}</td>
+
+        <td>${escapeHtml(b.date)}</td>
+
+        <td>
+          ${escapeHtml(
+            b.customer || "Walk-in Customer"
+          )}
+        </td>
+
+        <td>₹${money(b.grandTotal)}</td>
+
+        <td>₹${money(b.commissionTotal)}</td>
+
+      `;
+
+      tbody.appendChild(tr);
+
+    });
 
 }
 
 
 /* =========================
-   BACKUP
+   DASHBOARD
 ========================= */
 
-function exportData(){
+function updateDashboard(){
 
-  const data={
-
-    company:company,
-
-    products:products,
-
-    bills:bills
-
-  };
-
-
-  const blob =
-    new Blob(
-      [JSON.stringify(data,null,2)],
-      {type:"application/json"}
+  const stock =
+    products.reduce(
+      (sum,p) =>
+        sum + (Number(p.stock) || 0),
+      0
     );
 
+  const sales =
+    bills.reduce(
+      (sum,b) =>
+        sum + (Number(b.grandTotal) || 0),
+      0
+    );
 
-  const url =
-    URL.createObjectURL(blob);
+  const commission =
+    bills.reduce(
+      (sum,b) =>
+        sum + (Number(b.commissionTotal) || 0),
+      0
+    );
 
-  const a =
-    document.createElement("a");
+  const dp =
+    document.getElementById("dashProducts");
 
-  a.href=url;
+  if(!dp) return;
 
-  a.download =
-    "phulo-jhano-backup.json";
+  dp.textContent =
+    products.length;
 
-  a.click();
+  document.getElementById("dashStock")
+    .textContent = stock;
 
-  URL.revokeObjectURL(url);
+  document.getElementById("dashBills")
+    .textContent = bills.length;
+
+  document.getElementById("dashSales")
+    .textContent = money(sales);
+
+  document.getElementById("dashCommission")
+    .textContent = money(commission);
 
 }
 
 
-function importData(event){
+/* =========================
+   CAMERA BARCODE SCANNER
+========================= */
 
-  const file =
-    event.target.files[0];
+async function startScanner(){
 
-  if(!file){
+  const video =
+    document.getElementById("scanner");
+
+  const status =
+    document.getElementById("scanStatus");
+
+  if(!("BarcodeDetector" in window)){
+
+    alert(
+      "আপনার browser-এ Camera BarcodeDetector support নেই।\n\n" +
+      "USB/Bluetooth barcode scanner ব্যবহার করুন। " +
+      "Scanner-এর barcode scan করলে Billing-এর Barcode box-এ automatically code আসবে।"
+    );
+
     return;
+
   }
 
+  try{
 
-  const reader =
-    new FileReader();
+    scannerStream =
+      await navigator.mediaDevices.getUserMedia({
+        video:{
+          facingMode:"environment"
+        }
+      });
 
+    video.srcObject =
+      scannerStream;
 
-  reader.onload=function(e){
+    video.classList.remove("hidden");
 
-    try{
+    document.getElementById("stopScannerBtn")
+      .classList.remove("hidden");
 
-      const data =
-        JSON.parse(e.target.result);
+    status.textContent =
+      "Barcode camera-র সামনে ধরুন...";
 
-      if(data.products){
-        products=data.products;
-      }
+    await video.play();
 
-      if(data.bills){
-        bills=data.bills;
-      }
+    const detector =
+      new BarcodeDetector();
 
-      if(data.company){
-        company=data.company;
-      }
+    scanCamera(detector);
 
+  }catch(error){
 
-      localStorage.setItem(
-        "pj_products",
-        JSON.stringify(products)
-      );
+    alert(
+      "Camera চালু করা যায়নি। Browser Camera Permission দিন।"
+    );
 
-      localStorage.setItem(
-        "pj_bills",
-        JSON.stringify(bills)
-      );
+  }
 
-      localStorage.setItem(
-        "pj_company",
-        JSON.stringify(company)
-      );
+}
 
 
-      loadCompany();
+async function scanCamera(detector){
 
-      renderProducts();
+  const video =
+    document.getElementById("scanner");
 
-      alert("Backup successfully restored.");
+  if(!scannerStream)
+    return;
 
-    }catch(error){
+  try{
 
-      alert("Backup file সঠিক নয়।");
+    const codes =
+      await detector.detect(video);
+
+    if(codes.length > 0){
+
+      const code =
+        codes[0].rawValue;
+
+      document.getElementById("billBarcode")
+        .value = code;
+
+      stopScanner();
+
+      findBarcode();
+
+      return;
 
     }
 
-  };
+  }catch(error){
 
-
-  reader.readAsText(file);
-
-}
-
-
-/* =========================
-   DELETE ALL
-========================= */
-
-function deleteAllData(){
-
-  const ok =
-    confirm(
-      "সতর্কতা!\n\nসব Product, Bill এবং Company Data delete হবে।\n\nContinue?"
-    );
-
-  if(!ok){
-    return;
   }
 
+  requestAnimationFrame(() =>
+    scanCamera(detector)
+  );
 
-  localStorage.removeItem("pj_products");
-  localStorage.removeItem("pj_bills");
-  localStorage.removeItem("pj_company");
-
-
-  products=[];
-  bills=[];
-  cart=[];
+}
 
 
-  company={
-    name:"Phulo Jhano Pvt Ltd",
-    gstin:"",
-    phone:"",
-    address:""
-  };
+function stopScanner(){
 
+  if(scannerStream){
 
-  renderProducts();
-  renderBill();
-  loadCompany();
+    scannerStream
+      .getTracks()
+      .forEach(track => track.stop());
 
+    scannerStream = null;
 
-  alert("All data deleted.");
+  }
+
+  const video =
+    document.getElementById("scanner");
+
+  video.classList.add("hidden");
+
+  video.srcObject = null;
+
+  document.getElementById("stopScannerBtn")
+    .classList.add("hidden");
+
+  document.getElementById("scanStatus")
+    .textContent = "";
 
 }
 
 
 /* =========================
-   STATUS
+   UTILITIES
 ========================= */
 
-function showStatus(id,message,type){
+function money(value){
 
-  const box =
-    document.getElementById(id);
-
-  box.innerText=message;
-
-  box.className =
-    "status " +
-    (type === "success"
-      ? "success"
-      : "error");
-
-  box.style.display="block";
-
-
-  setTimeout(()=>{
-
-    box.style.display="none";
-
-  },4000);
+  return Number(value || 0)
+    .toFixed(2);
 
 }
 
-
-/* =========================
-   SECURITY / HTML
-========================= */
 
 function escapeHtml(value){
 
@@ -1979,10 +2015,42 @@ function escapeHtml(value){
 
 
 /* =========================
+   SAMPLE PRODUCT
+   ONLY IF DATABASE EMPTY
+========================= */
+
+if(products.length === 0){
+
+  products.push({
+
+    id:Date.now(),
+
+    barcode:"1234567890",
+
+    name:"গায়ে মাখা Dettol সাবান",
+
+    size:"",
+
+    price:10,
+
+    gst:5,
+
+    commission:10,
+
+    stock:5
+
+  });
+
+  saveProducts();
+
+}
+
+
+/* =========================
    INITIAL
 ========================= */
 
-renderBill();
+updateDashboard();
 
 </script>
 
