@@ -1511,3 +1511,467 @@ window.addEventListener(
 
 </body>
 </html>
+<!-- =========================================
+     PHULO JHANO AUTO BARCODE BILLING
+     Barcode → Product → GST → Commission
+     → Stock → Bill
+========================================= -->
+
+<script>
+(function () {
+
+    /* ===============================
+       PRODUCT DATABASE
+    =============================== */
+
+    let products = JSON.parse(
+        localStorage.getItem("phuloJhanoProducts") || "{}"
+    );
+
+    /* আপনার Test Product */
+    if (!products["1234567890"]) {
+        products["1234567890"] = {
+            barcode: "1234567890",
+            name: "গায়ে মাখা Dettol সাবান",
+            price: 10,
+            gst: 5,
+            commission: 10,
+            stock: 5
+        };
+
+        localStorage.setItem(
+            "phuloJhanoProducts",
+            JSON.stringify(products)
+        );
+    }
+
+    /* ===============================
+       BILL DATA
+    =============================== */
+
+    let billItems = [];
+
+    /* ===============================
+       SCANNER INPUT
+    =============================== */
+
+    let barcodeBuffer = "";
+    let barcodeTimer = null;
+
+    document.addEventListener("keydown", function (e) {
+
+        /* Enter = Scan Complete */
+        if (e.key === "Enter") {
+
+            if (barcodeBuffer.length > 0) {
+
+                let code = barcodeBuffer.trim();
+
+                barcodeBuffer = "";
+
+                clearTimeout(barcodeTimer);
+
+                processBarcode(code);
+            }
+
+            return;
+        }
+
+        /* শুধুমাত্র সংখ্যা/অক্ষর */
+        if (
+            e.key.length === 1 &&
+            /^[a-zA-Z0-9]+$/.test(e.key)
+        ) {
+
+            barcodeBuffer += e.key;
+
+            clearTimeout(barcodeTimer);
+
+            barcodeTimer = setTimeout(function () {
+                barcodeBuffer = "";
+            }, 1000);
+        }
+
+    });
+
+    /* ===============================
+       BARCODE PROCESS
+    =============================== */
+
+    function processBarcode(barcode) {
+
+        let product = products[barcode];
+
+        if (!product) {
+
+            alert(
+                "❌ Product পাওয়া যায়নি\n\nBarcode: " +
+                barcode
+            );
+
+            return;
+        }
+
+        /* Stock Check */
+
+        if (Number(product.stock) <= 0) {
+
+            alert(
+                "❌ Stock শেষ!\n\n" +
+                product.name
+            );
+
+            return;
+        }
+
+        /* Existing item check */
+
+        let existing = billItems.find(
+            item => item.barcode === barcode
+        );
+
+        if (existing) {
+
+            existing.qty++;
+
+        } else {
+
+            billItems.push({
+                barcode: product.barcode,
+                name: product.name,
+                price: Number(product.price),
+                gst: Number(product.gst),
+                commission: Number(product.commission),
+                qty: 1
+            });
+
+        }
+
+        /* Stock কমানো */
+
+        product.stock = Number(product.stock) - 1;
+
+        products[barcode] = product;
+
+        localStorage.setItem(
+            "phuloJhanoProducts",
+            JSON.stringify(products)
+        );
+
+        renderBill();
+
+        showScanMessage(product);
+    }
+
+    /* ===============================
+       BILL DISPLAY
+    =============================== */
+
+    function renderBill() {
+
+        let box = document.getElementById(
+            "phuloJhanoAutoBill"
+        );
+
+        if (!box) return;
+
+        let html = "";
+
+        let subtotal = 0;
+        let totalGST = 0;
+        let totalCommission = 0;
+
+        billItems.forEach(function (item, index) {
+
+            let amount =
+                item.price * item.qty;
+
+            let gstAmount =
+                amount * item.gst / 100;
+
+            let commissionAmount =
+                amount * item.commission / 100;
+
+            subtotal += amount;
+            totalGST += gstAmount;
+            totalCommission += commissionAmount;
+
+            html += `
+                <div style="
+                    background:white;
+                    padding:10px;
+                    margin:8px 0;
+                    border-radius:8px;
+                    border:1px solid #ddd;
+                ">
+
+                    <b>${item.name}</b><br>
+
+                    Barcode:
+                    ${item.barcode}<br>
+
+                    Qty:
+                    ${item.qty}<br>
+
+                    Price:
+                    ₹${item.price.toFixed(2)}<br>
+
+                    GST:
+                    ${item.gst}%
+                    = ₹${gstAmount.toFixed(2)}<br>
+
+                    Commission:
+                    ${item.commission}%
+                    = ₹${commissionAmount.toFixed(2)}<br>
+
+                    Amount:
+                    <b>₹${amount.toFixed(2)}</b>
+
+                </div>
+            `;
+        });
+
+        let grandTotal =
+            subtotal + totalGST;
+
+        box.innerHTML = `
+            <h3 style="margin-top:0;">
+                🧾 Phulo Jhano Bill
+            </h3>
+
+            ${html}
+
+            <hr>
+
+            <b>Subtotal:</b>
+            ₹${subtotal.toFixed(2)}
+            <br>
+
+            <b>Total GST:</b>
+            ₹${totalGST.toFixed(2)}
+            <br>
+
+            <b>Total Commission:</b>
+            ₹${totalCommission.toFixed(2)}
+            <br>
+
+            <h2>
+                Grand Total:
+                ₹${grandTotal.toFixed(2)}
+            </h2>
+
+            <button
+                onclick="window.print()"
+                style="
+                    width:100%;
+                    padding:12px;
+                    background:#166534;
+                    color:white;
+                    border:0;
+                    border-radius:8px;
+                    font-size:16px;
+                ">
+                🖨️ Print Bill
+            </button>
+
+            <button
+                onclick="clearPhuloJhanoBill()"
+                style="
+                    width:100%;
+                    padding:12px;
+                    margin-top:8px;
+                    background:#dc2626;
+                    color:white;
+                    border:0;
+                    border-radius:8px;
+                    font-size:16px;
+                ">
+                🗑️ New Bill
+            </button>
+        `;
+    }
+
+    /* ===============================
+       SCAN MESSAGE
+    =============================== */
+
+    function showScanMessage(product) {
+
+        let msg = document.getElementById(
+            "phuloJhanoScanMessage"
+        );
+
+        if (!msg) return;
+
+        msg.innerHTML = `
+            ✅ <b>Product পাওয়া গেছে</b><br>
+            ${product.name}<br>
+            Price: ₹${product.price}<br>
+            GST: ${product.gst}%<br>
+            Commission: ${product.commission}%<br>
+            Stock Remaining: ${product.stock}
+        `;
+
+        msg.style.display = "block";
+
+        setTimeout(function () {
+            msg.style.display = "none";
+        }, 4000);
+    }
+
+    /* ===============================
+       NEW BILL
+    =============================== */
+
+    window.clearPhuloJhanoBill = function () {
+
+        billItems = [];
+
+        renderBill();
+
+        alert("নতুন Bill শুরু হয়েছে।");
+    };
+
+    /* ===============================
+       BILL PANEL
+    =============================== */
+
+    function createBillingPanel() {
+
+        if (
+            document.getElementById(
+                "phuloJhanoAutoBill"
+            )
+        ) return;
+
+        let panel = document.createElement("div");
+
+        panel.id = "phuloJhanoAutoPanel";
+
+        panel.style.cssText = `
+            margin:15px;
+            padding:15px;
+            background:#f3f4f6;
+            border-radius:12px;
+            border:2px solid #166534;
+        `;
+
+        panel.innerHTML = `
+
+            <h2 style="
+                color:#166534;
+                margin-top:0;
+            ">
+                📦 Barcode Auto Billing
+            </h2>
+
+            <p>
+                📷 Barcode Scanner দিয়ে scan করুন।
+                Scanner-এর Enter চাপলেই
+                Product Auto Bill হবে।
+            </p>
+
+            <input
+                id="phuloJhanoBarcodeInput"
+                type="text"
+                placeholder="Barcode এখানে লিখে Test করুন"
+                style="
+                    width:100%;
+                    padding:12px;
+                    font-size:18px;
+                    border:2px solid #166534;
+                    border-radius:8px;
+                "
+            >
+
+            <button
+                onclick="
+                    processBarcode(
+                        document.getElementById(
+                            'phuloJhanoBarcodeInput'
+                        ).value.trim()
+                    );
+                    document.getElementById(
+                        'phuloJhanoBarcodeInput'
+                    ).value='';
+                "
+                style="
+                    width:100%;
+                    margin-top:8px;
+                    padding:12px;
+                    background:#166534;
+                    color:white;
+                    border:0;
+                    border-radius:8px;
+                    font-size:17px;
+                ">
+                🔍 Scan / Add Product
+            </button>
+
+            <div
+                id="phuloJhanoScanMessage"
+                style="
+                    display:none;
+                    margin-top:10px;
+                    padding:12px;
+                    background:#dcfce7;
+                    color:#166534;
+                    border-radius:8px;
+                ">
+            </div>
+
+            <div
+                id="phuloJhanoAutoBill"
+                style="
+                    margin-top:15px;
+                ">
+                <h3>🧾 Bill</h3>
+                Barcode Scan করলে Bill এখানে আসবে।
+            </div>
+        `;
+
+        /* Existing page-এর শুরুতে বসাবে */
+
+        document.body.insertBefore(
+            panel,
+            document.body.firstChild
+        );
+
+        /* Test button input */
+
+        let input =
+            document.getElementById(
+                "phuloJhanoBarcodeInput"
+            );
+
+        input.addEventListener(
+            "keydown",
+            function (e) {
+
+                if (e.key === "Enter") {
+
+                    let code =
+                        input.value.trim();
+
+                    if (code) {
+
+                        processBarcode(code);
+
+                        input.value = "";
+                    }
+                }
+            }
+        );
+    }
+
+    /* ===============================
+       START
+    =============================== */
+
+    window.addEventListener(
+        "load",
+        createBillingPanel
+    );
+
+})();
+</script>
