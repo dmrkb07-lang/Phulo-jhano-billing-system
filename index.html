@@ -1866,6 +1866,89 @@ window.addEventListener(
 );
 
 </script>
+<!-- MOBILE CAMERA BARCODE SCANNER -->
+<script src="https://unpkg.com/html5-qrcode"></script>
 
+<div style="margin:15px 0;">
+    <button onclick="startMobileScanner()"
+        style="width:100%;padding:15px;background:#198754;color:white;
+        border:0;border-radius:8px;font-size:18px;">
+        📷 Scan Barcode with Camera
+    </button>
+</div>
+
+<div id="mobileScanner"
+     style="width:100%;max-width:500px;margin:auto;display:none;">
+</div>
+
+<script>
+let mobileScanner;
+
+function startMobileScanner() {
+
+    document.getElementById("mobileScanner").style.display = "block";
+
+    mobileScanner = new Html5Qrcode("mobileScanner");
+
+    mobileScanner.start(
+        { facingMode: "environment" },
+
+        {
+            fps: 10,
+            qrbox: { width: 280, height: 120 }
+        },
+
+        function(decodedText) {
+
+            // Barcode পাওয়া গেছে
+            console.log("Barcode:", decodedText);
+
+            // আপনার Billing-এর barcode input খুঁজবে
+            const barcodeInput =
+                document.querySelector(
+                    'input[placeholder*="Barcode"], input[id*="barcode" i]'
+                );
+
+            if (barcodeInput) {
+
+                barcodeInput.value = decodedText;
+
+                barcodeInput.dispatchEvent(
+                    new Event("input", { bubbles:true })
+                );
+
+                barcodeInput.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        key:"Enter",
+                        code:"Enter",
+                        bubbles:true
+                    })
+                );
+
+                barcodeInput.dispatchEvent(
+                    new KeyboardEvent("keyup", {
+                        key:"Enter",
+                        code:"Enter",
+                        bubbles:true
+                    })
+                );
+            }
+
+            // Camera বন্ধ
+            mobileScanner.stop().then(() => {
+                document.getElementById("mobileScanner").style.display = "none";
+            });
+
+        },
+
+        function(errorMessage) {
+            // স্ক্যান না হলে কিছু দেখাবে না
+        }
+    ).catch(function(err) {
+        alert("Camera চালু করা যাচ্ছে না। Camera permission Allow করুন।");
+        console.error(err);
+    });
+}
+</script>
 </body>
 </html>
