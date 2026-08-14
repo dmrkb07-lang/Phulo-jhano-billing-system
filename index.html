@@ -6,9 +6,7 @@
 <title>Phulo Jhano Billing System</title>
 
 <style>
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
     margin:0;
@@ -54,7 +52,7 @@ h2{
     font-size:19px;
 }
 
-input,button,select{
+input,button{
     width:100%;
     padding:11px;
     margin:5px 0;
@@ -68,24 +66,11 @@ button{
     color:white;
     border:none;
     font-weight:bold;
-    cursor:pointer;
 }
 
-button:hover{
-    opacity:.9;
-}
-
-.btn-red{
-    background:#dc2626;
-}
-
-.btn-blue{
-    background:#2563eb;
-}
-
-.btn-orange{
-    background:#ea580c;
-}
+.btn-red{background:#dc2626}
+.btn-blue{background:#2563eb}
+.btn-orange{background:#ea580c}
 
 .grid{
     display:grid;
@@ -101,7 +86,7 @@ button:hover{
 }
 
 .barcode-box input{
-    font-size:20px;
+    font-size:21px;
     text-align:center;
     font-weight:bold;
 }
@@ -133,9 +118,9 @@ table{
 
 th,td{
     border:1px solid #ddd;
-    padding:8px;
+    padding:7px;
     text-align:center;
-    font-size:13px;
+    font-size:12px;
 }
 
 th{
@@ -160,7 +145,7 @@ th{
 }
 
 .product-list{
-    max-height:300px;
+    max-height:350px;
     overflow:auto;
 }
 
@@ -169,24 +154,19 @@ th{
         grid-template-columns:1fr;
     }
 
-    table{
-        font-size:11px;
-    }
-
     th,td{
         padding:5px;
+        font-size:10px;
     }
 }
 
 @media print{
-    body{
-        background:white;
-    }
+    body{background:white}
 
     header,
     .no-print,
-    .barcode-box,
-    .product-master{
+    .product-master,
+    .barcode-box{
         display:none !important;
     }
 
@@ -211,7 +191,10 @@ th{
 
 <div class="container">
 
-<!-- BARCODE SCANNER -->
+<!-- =========================
+     BARCODE SCANNER
+========================= -->
+
 <div class="card no-print">
 
     <h2>📷 Barcode Auto Scan</h2>
@@ -221,15 +204,15 @@ th{
         <label><b>Barcode Scan করুন</b></label>
 
         <input
-            type="text"
             id="barcodeInput"
-            placeholder="Scanner দিয়ে Barcode Scan করুন"
+            type="text"
             autocomplete="off"
-            autofocus
+            inputmode="numeric"
+            placeholder="Barcode Scanner দিয়ে Scan করুন"
         >
 
         <button onclick="scanManualBarcode()">
-            🔍 Barcode Search
+            🔎 Barcode Search
         </button>
 
         <div id="statusMessage" class="status"></div>
@@ -237,14 +220,17 @@ th{
     </div>
 
     <p class="small">
-        Barcode scanner-টি USB/Bluetooth keyboard scanner হিসেবে কাজ করলে
-        Scan করার সঙ্গে সঙ্গে Product Bill-এ automatically যোগ হবে।
+        USB/Bluetooth Barcode Scanner দিয়ে Scan করলে
+        Enter-এর সঙ্গে সঙ্গে Product Bill-এ Auto যোগ হবে।
     </p>
 
 </div>
 
 
-<!-- CURRENT PRODUCT -->
+<!-- =========================
+     SCANNED PRODUCT
+========================= -->
+
 <div class="card no-print">
 
     <h2>🛒 Scanned Product</h2>
@@ -263,27 +249,32 @@ th{
 
         <div>
             <label>Price ₹</label>
-            <input id="productPrice" type="number" readonly>
+            <input id="productPrice" readonly>
         </div>
 
         <div>
             <label>GST %</label>
-            <input id="productGST" type="number" readonly>
+            <input id="productGST" readonly>
         </div>
 
         <div>
             <label>Commission %</label>
-            <input id="productCommission" type="number" readonly>
+            <input id="productCommission" readonly>
         </div>
 
         <div>
             <label>Stock</label>
-            <input id="productStock" type="number" readonly>
+            <input id="productStock" readonly>
         </div>
 
         <div>
             <label>Quantity</label>
-            <input id="productQty" type="number" min="1" value="1">
+            <input
+                id="productQty"
+                type="number"
+                min="1"
+                value="1"
+            >
         </div>
 
     </div>
@@ -291,20 +282,34 @@ th{
 </div>
 
 
-<!-- BILL -->
+<!-- =========================
+     BILL
+========================= -->
+
 <div class="card" id="billSection">
 
     <h2>🧾 Current Bill</h2>
 
     <div class="no-print">
+
         <label>Customer Name</label>
-        <input id="customerName" placeholder="Customer Name">
+
+        <input
+            id="customerName"
+            placeholder="Customer Name"
+        >
 
         <label>Mobile</label>
-        <input id="customerMobile" placeholder="Mobile Number">
+
+        <input
+            id="customerMobile"
+            placeholder="Mobile Number"
+        >
+
     </div>
 
     <table>
+
         <thead>
             <tr>
                 <th>#</th>
@@ -320,6 +325,7 @@ th{
         </thead>
 
         <tbody id="billBody"></tbody>
+
     </table>
 
     <div class="total-box">
@@ -352,15 +358,24 @@ th{
 
     <div class="grid no-print">
 
-        <button class="btn-blue" onclick="saveBill()">
+        <button
+            class="btn-blue"
+            onclick="saveBill()"
+        >
             💾 Save Bill
         </button>
 
-        <button class="btn-orange" onclick="printBill()">
+        <button
+            class="btn-orange"
+            onclick="printBill()"
+        >
             🖨️ Print Bill
         </button>
 
-        <button class="btn-red" onclick="clearBill()">
+        <button
+            class="btn-red"
+            onclick="clearBill()"
+        >
             🗑️ Clear Bill
         </button>
 
@@ -369,7 +384,10 @@ th{
 </div>
 
 
-<!-- PRODUCT MASTER -->
+<!-- =========================
+     PRODUCT MASTER
+========================= -->
+
 <div class="card product-master no-print">
 
     <h2>📦 Product Master</h2>
@@ -378,32 +396,54 @@ th{
 
         <div>
             <label>Barcode</label>
-            <input id="masterBarcode" placeholder="যেমন 1234567890">
+            <input
+                id="masterBarcode"
+                placeholder="যেমন 1234567"
+            >
         </div>
 
         <div>
             <label>Product Name</label>
-            <input id="masterName" placeholder="Product Name">
+            <input
+                id="masterName"
+                placeholder="Product Name"
+            >
         </div>
 
         <div>
             <label>Price ₹</label>
-            <input id="masterPrice" type="number" placeholder="10">
+            <input
+                id="masterPrice"
+                type="number"
+                placeholder="10"
+            >
         </div>
 
         <div>
             <label>GST %</label>
-            <input id="masterGST" type="number" value="5">
+            <input
+                id="masterGST"
+                type="number"
+                value="5"
+            >
         </div>
 
         <div>
             <label>Commission %</label>
-            <input id="masterCommission" type="number" value="10">
+            <input
+                id="masterCommission"
+                type="number"
+                value="10"
+            >
         </div>
 
         <div>
             <label>Stock</label>
-            <input id="masterStock" type="number" value="5">
+            <input
+                id="masterStock"
+                type="number"
+                value="5"
+            >
         </div>
 
     </div>
@@ -412,12 +452,17 @@ th{
         ➕ Save Product
     </button>
 
-    <button class="btn-blue" onclick="loadDemoProduct()">
+    <button
+        class="btn-blue"
+        onclick="loadDemoProduct()"
+    >
         🧪 Load Test Product
     </button>
 
     <div class="product-list">
+
         <table>
+
             <thead>
                 <tr>
                     <th>Barcode</th>
@@ -431,7 +476,9 @@ th{
             </thead>
 
             <tbody id="productBody"></tbody>
+
         </table>
+
     </div>
 
 </div>
@@ -442,20 +489,50 @@ th{
 <script>
 
 /* =========================================
-   DATABASE
+   PHULO JHANO
+   FINAL SINGLE BARCODE ENGINE
 ========================================= */
-
-let products =
-    JSON.parse(localStorage.getItem("phuloProducts")) || {};
-
-let billItems = [];
-
-let barcodeBuffer = "";
-let barcodeTimer = null;
 
 
 /* =========================================
-   SAVE DATABASE
+   PRODUCT DATABASE
+========================================= */
+
+let products =
+    JSON.parse(
+        localStorage.getItem("phuloProducts") || "{}"
+    );
+
+
+/*
+   আগের Version-এর Product থাকলে
+   সেটাও Preserve করবে।
+*/
+
+let oldProducts =
+    JSON.parse(
+        localStorage.getItem("phuloJhanoProducts") || "{}"
+    );
+
+
+Object.keys(oldProducts).forEach(function(code){
+
+    if(!products[code]){
+        products[code] = oldProducts[code];
+    }
+
+});
+
+
+/* =========================================
+   BILL DATABASE
+========================================= */
+
+let billItems = [];
+
+
+/* =========================================
+   SAVE PRODUCTS
 ========================================= */
 
 function saveProducts(){
@@ -472,50 +549,111 @@ function saveProducts(){
    MESSAGE
 ========================================= */
 
-function showMessage(message,type="success"){
+function showMessage(
+    message,
+    type="success"
+){
 
     const box =
-        document.getElementById("statusMessage");
+        document.getElementById(
+            "statusMessage"
+        );
 
     box.innerText = message;
 
     box.className =
         "status " + type;
 
-    setTimeout(function(){
+    clearTimeout(
+        window.phuloMessageTimer
+    );
 
-        box.className = "status";
+    window.phuloMessageTimer =
+        setTimeout(function(){
 
-    },4000);
+            box.className = "status";
+
+        },5000);
 
 }
 
 
 /* =========================================
-   BARCODE SCANNER
+   BARCODE INPUT
 ========================================= */
+
+const barcodeInput =
+    document.getElementById(
+        "barcodeInput"
+    );
+
+
+/*
+   Scanner সাধারণত Barcode লিখে
+   শেষে Enter পাঠায়।
+*/
+
+barcodeInput.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter"){
+
+            e.preventDefault();
+
+            scanManualBarcode();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   GLOBAL SCANNER
+   Scanner যদি Input Focus-এ না থাকে,
+   তবুও Enter দিয়ে Scan হবে।
+   
+   গুরুত্বপূর্ণ:
+   কোনো 150ms Timer নেই।
+   তাই 1234567 কখনো 1234 হবে না।
+========================================= */
+
+let scannerBuffer = "";
+
 
 document.addEventListener(
     "keydown",
     function(e){
 
         /*
-        Scanner সাধারণত দ্রুত Barcode
-        পাঠিয়ে শেষে Enter পাঠায়।
+           Barcode Input-এ টাইপ করলে
+           Global Scanner duplicate করবে না।
+        */
+
+        if(
+            document.activeElement ===
+            barcodeInput
+        ){
+
+            return;
+        }
+
+
+        /*
+           Enter = Scan Complete
         */
 
         if(e.key === "Enter"){
 
-            e.preventDefault();
+            if(scannerBuffer.length > 0){
 
-            let barcode =
-                barcodeBuffer.trim();
+                const code =
+                    scannerBuffer.trim();
 
-            if(barcode.length > 0){
+                scannerBuffer = "";
 
-                barcodeBuffer = "";
-
-                autoBarcodeScan(barcode);
+                autoBarcodeScan(code);
 
             }
 
@@ -524,37 +662,15 @@ document.addEventListener(
 
 
         /*
-        Scanner input capture
+           Character Capture
         */
 
         if(
             e.key.length === 1 &&
-            /[0-9A-Za-z\-]/.test(e.key)
+            /^[A-Za-z0-9\-_]+$/.test(e.key)
         ){
 
-            barcodeBuffer += e.key;
-
-            clearTimeout(barcodeTimer);
-
-            barcodeTimer =
-                setTimeout(function(){
-
-                    if(
-                        barcodeBuffer.length >= 4
-                    ){
-
-                        let barcode =
-                            barcodeBuffer.trim();
-
-                        barcodeBuffer = "";
-
-                        autoBarcodeScan(
-                            barcode
-                        );
-
-                    }
-
-                },150);
+            scannerBuffer += e.key;
 
         }
 
@@ -568,62 +684,14 @@ document.addEventListener(
 
 function scanManualBarcode(){
 
-    const input =
-        document.getElementById(
-            "barcodeInput"
-        );
+    const code =
+        barcodeInput.value.trim();
 
-    const barcode =
-        input.value.trim();
 
-    if(!barcode){
+    if(!code){
 
         showMessage(
-            "Barcode দিন।",
-            "error"
-        );
-
-        return;
-    }
-
-    autoBarcodeScan(barcode);
-
-}
-
-
-/* =========================================
-   AUTO BARCODE SCAN
-========================================= */
-
-function autoBarcodeScan(barcode){
-
-    console.log(
-        "SCANNED BARCODE:",
-        barcode
-    );
-
-
-    const barcodeInput =
-        document.getElementById(
-            "barcodeInput"
-        );
-
-    barcodeInput.value = barcode;
-
-
-    /*
-    Product Master থেকে Product খুঁজবে
-    */
-
-    const product =
-        products[barcode];
-
-
-    if(!product){
-
-        showMessage(
-            "❌ Barcode পাওয়া গেছে, কিন্তু Product Master-এ Product নেই: " +
-            barcode,
+            "❌ Barcode দিন।",
             "error"
         );
 
@@ -633,50 +701,84 @@ function autoBarcodeScan(barcode){
     }
 
 
+    autoBarcodeScan(code);
+
+}
+
+
+/* =========================================
+   AUTO BARCODE
+========================================= */
+
+function autoBarcodeScan(barcode){
+
     /*
-    Product fields fill
+       EXACT Barcode
+       কোনো substring নয়।
     */
 
-    document.getElementById(
-        "productBarcode"
-    ).value = product.barcode;
-
-    document.getElementById(
-        "productName"
-    ).value = product.name;
-
-    document.getElementById(
-        "productPrice"
-    ).value = product.price;
-
-    document.getElementById(
-        "productGST"
-    ).value = product.gst;
-
-    document.getElementById(
-        "productCommission"
-    ).value = product.commission;
-
-    document.getElementById(
-        "productStock"
-    ).value = product.stock;
-
-    document.getElementById(
-        "productQty"
-    ).value = 1;
+    barcode =
+        String(barcode).trim();
 
 
     /*
-    Stock check
+       Input-এ Barcode দেখানো
     */
 
-    if(Number(product.stock) <= 0){
+    barcodeInput.value =
+        barcode;
+
+
+    console.log(
+        "EXACT BARCODE:",
+        barcode
+    );
+
+
+    /*
+       Product Master Search
+    */
+
+    const product =
+        products[barcode];
+
+
+    /*
+       Product পাওয়া যায়নি
+    */
+
+    if(!product){
 
         showMessage(
-            "❌ " +
-            product.name +
-            " - Stock শেষ।",
+
+            "❌ Product Master-এ Barcode পাওয়া যায়নি: " +
+            barcode,
+
             "error"
+
+        );
+
+        barcodeInput.select();
+
+        return;
+    }
+
+
+    /*
+       Stock Check
+    */
+
+    if(
+        Number(product.stock) <= 0
+    ){
+
+        showMessage(
+
+            "❌ Stock শেষ: " +
+            product.name,
+
+            "error"
+
         );
 
         return;
@@ -684,14 +786,69 @@ function autoBarcodeScan(barcode){
 
 
     /*
-    Automatically Bill-এ Add
+       Product Details Auto Fill
     */
 
-    addToBill(product,1);
+    document.getElementById(
+        "productBarcode"
+    ).value =
+        product.barcode;
+
+
+    document.getElementById(
+        "productName"
+    ).value =
+        product.name;
+
+
+    document.getElementById(
+        "productPrice"
+    ).value =
+        product.price;
+
+
+    document.getElementById(
+        "productGST"
+    ).value =
+        product.gst;
+
+
+    document.getElementById(
+        "productCommission"
+    ).value =
+        product.commission;
+
+
+    document.getElementById(
+        "productStock"
+    ).value =
+        product.stock;
+
+
+    document.getElementById(
+        "productQty"
+    ).value = 1;
 
 
     /*
-    Success
+       Bill-এ Auto Add
+    */
+
+    const added =
+        addToBill(
+            product,
+            1
+        );
+
+
+    if(!added){
+
+        return;
+    }
+
+
+    /*
+       Commission
     */
 
     const commissionAmount =
@@ -700,20 +857,45 @@ function autoBarcodeScan(barcode){
         100;
 
 
+    /*
+       Remaining Stock
+    */
+
+    const remainingStock =
+        Number(product.stock);
+
+
+    /*
+       Success
+    */
+
     showMessage(
+
         "✅ " +
         product.name +
-        " Bill-এ যোগ হয়েছে | Price ₹" +
+
+        " Bill-এ যোগ হয়েছে | " +
+
+        "Price ₹" +
         Number(product.price).toFixed(2) +
+
         " | GST " +
         product.gst +
+
         "% | Commission ₹" +
         commissionAmount.toFixed(2) +
+
         " | Stock " +
-        (Number(product.stock)-1),
+        remainingStock,
+
         "success"
+
     );
 
+
+    /*
+       Next Scan Ready
+    */
 
     barcodeInput.value = "";
 
@@ -726,53 +908,56 @@ function autoBarcodeScan(barcode){
    ADD TO BILL
 ========================================= */
 
-function addToBill(product,qty){
+function addToBill(
+    product,
+    qty
+){
 
-    qty = Number(qty) || 1;
+    qty =
+        Number(qty) || 1;
 
 
     /*
-    Stock check
+       Stock Check
     */
 
-    if(qty > Number(product.stock)){
+    if(
+        qty >
+        Number(product.stock)
+    ){
 
         showMessage(
+
             "❌ Stock যথেষ্ট নেই। Available Stock: " +
             product.stock,
+
             "error"
+
         );
 
-        return;
+        return false;
     }
 
 
     /*
-    একই Product আবার Scan করলে
-    একই row-তে Quantity বাড়বে
+       Same Product
+       Qty বাড়বে
     */
 
     const existing =
         billItems.find(
-            item =>
-            item.barcode === product.barcode
+            function(item){
+
+                return (
+                    item.barcode ===
+                    product.barcode
+                );
+
+            }
         );
 
 
     if(existing){
-
-        if(
-            existing.qty + qty >
-            Number(product.stock)
-        ){
-
-            showMessage(
-                "❌ Stock সীমা অতিক্রম করছে।",
-                "error"
-            );
-
-            return;
-        }
 
         existing.qty += qty;
 
@@ -780,18 +965,23 @@ function addToBill(product,qty){
 
         billItems.push({
 
-            barcode: product.barcode,
+            barcode:
+                product.barcode,
 
-            name: product.name,
+            name:
+                product.name,
 
-            price: Number(product.price),
+            price:
+                Number(product.price),
 
-            gst: Number(product.gst),
+            gst:
+                Number(product.gst),
 
             commission:
                 Number(product.commission),
 
-            qty: qty
+            qty:
+                qty
 
         });
 
@@ -799,11 +989,17 @@ function addToBill(product,qty){
 
 
     /*
-    Stock কমানো
+       Stock কমবে
     */
 
     product.stock =
-        Number(product.stock) - qty;
+        Number(product.stock) -
+        qty;
+
+
+    products[
+        product.barcode
+    ] = product;
 
 
     saveProducts();
@@ -811,6 +1007,9 @@ function addToBill(product,qty){
     renderBill();
 
     renderProducts();
+
+
+    return true;
 
 }
 
@@ -826,13 +1025,12 @@ function renderBill(){
             "billBody"
         );
 
+
     body.innerHTML = "";
 
 
     let subtotal = 0;
-
     let gstTotal = 0;
-
     let commissionTotal = 0;
 
 
@@ -840,43 +1038,66 @@ function renderBill(){
         function(item,index){
 
             const base =
-                item.price * item.qty;
+                Number(item.price) *
+                Number(item.qty);
+
 
             const gstAmount =
-                base * item.gst / 100;
+                base *
+                Number(item.gst) /
+                100;
+
 
             const commissionAmount =
                 base *
-                item.commission /
+                Number(item.commission) /
                 100;
 
+
             const total =
-                base + gstAmount;
+                base +
+                gstAmount;
 
 
-            subtotal += base;
+            subtotal +=
+                base;
 
-            gstTotal += gstAmount;
+
+            gstTotal +=
+                gstAmount;
+
 
             commissionTotal +=
                 commissionAmount;
 
 
             const row =
-                document.createElement("tr");
+                document.createElement(
+                    "tr"
+                );
 
 
             row.innerHTML = `
 
-                <td>${index+1}</td>
+                <td>
+                    ${index + 1}
+                </td>
 
-                <td>${escapeHtml(item.name)}</td>
+                <td>
+                    ${escapeHtml(item.name)}
+                </td>
 
-                <td>${escapeHtml(item.barcode)}</td>
+                <td>
+                    ${escapeHtml(item.barcode)}
+                </td>
 
-                <td>${item.qty}</td>
+                <td>
+                    ${item.qty}
+                </td>
 
-                <td>₹${item.price.toFixed(2)}</td>
+                <td>
+                    ₹${item.price.toFixed(2)}
+                </td>
 
                 <td>
                     ${item.gst}%
@@ -898,7 +1119,9 @@ function renderBill(){
 
                     <button
                         class="btn-red"
-                        onclick="removeBillItem(${index})"
+                        onclick="
+                            removeBillItem(${index})
+                        "
                     >
                         ✕
                     </button>
@@ -935,13 +1158,16 @@ function renderBill(){
     document.getElementById(
         "grandTotal"
     ).innerText =
-        (subtotal + gstTotal).toFixed(2);
+        (
+            subtotal +
+            gstTotal
+        ).toFixed(2);
 
 }
 
 
 /* =========================================
-   REMOVE BILL ITEM
+   DELETE BILL ITEM
 ========================================= */
 
 function removeBillItem(index){
@@ -950,25 +1176,46 @@ function removeBillItem(index){
         billItems[index];
 
 
+    if(!item){
+        return;
+    }
+
+
     /*
-    Removed quantity আবার Stock-এ ফেরত
+       Stock ফেরত
     */
 
-    if(products[item.barcode]){
+    if(
+        products[item.barcode]
+    ){
 
-        products[item.barcode].stock +=
+        products[
+            item.barcode
+        ].stock +=
             Number(item.qty);
 
     }
 
 
-    billItems.splice(index,1);
+    billItems.splice(
+        index,
+        1
+    );
+
 
     saveProducts();
 
     renderBill();
 
     renderProducts();
+
+
+    showMessage(
+        "✅ Product Delete হয়েছে। Stock ফেরত গেছে।"
+    );
+
+
+    barcodeInput.focus();
 
 }
 
@@ -979,29 +1226,52 @@ function removeBillItem(index){
 
 function clearBill(){
 
-    if(billItems.length === 0){
+    if(
+        billItems.length === 0
+    ){
+
+        showMessage(
+            "Bill খালি আছে।"
+        );
+
+        return;
+    }
+
+
+    if(
+        !confirm(
+            "Bill Clear করবেন? Stock ফেরত যাবে।"
+        )
+    ){
 
         return;
     }
 
 
     /*
-    সব Stock ফেরত যাবে
+       সব Stock ফেরত
     */
 
-    billItems.forEach(function(item){
+    billItems.forEach(
+        function(item){
 
-        if(products[item.barcode]){
+            if(
+                products[item.barcode]
+            ){
 
-            products[item.barcode].stock +=
-                Number(item.qty);
+                products[
+                    item.barcode
+                ].stock +=
+                    Number(item.qty);
+
+            }
 
         }
-
-    });
+    );
 
 
     billItems = [];
+
 
     saveProducts();
 
@@ -1009,16 +1279,62 @@ function clearBill(){
 
     renderProducts();
 
+
+    /*
+       Customer Clear
+    */
+
     document.getElementById(
         "customerName"
     ).value = "";
+
 
     document.getElementById(
         "customerMobile"
     ).value = "";
 
+
+    /*
+       Scanned Product Clear
+    */
+
+    document.getElementById(
+        "productBarcode"
+    ).value = "";
+
+
+    document.getElementById(
+        "productName"
+    ).value = "";
+
+
+    document.getElementById(
+        "productPrice"
+    ).value = "";
+
+
+    document.getElementById(
+        "productGST"
+    ).value = "";
+
+
+    document.getElementById(
+        "productCommission"
+    ).value = "";
+
+
+    document.getElementById(
+        "productStock"
+    ).value = "";
+
+
+    barcodeInput.value = "";
+
+    barcodeInput.focus();
+
+
     showMessage(
-        "Bill Clear হয়েছে। Stock ফেরত দেওয়া হয়েছে।"
+        "✅ Bill Clear হয়েছে। Stock ফেরত দেওয়া হয়েছে।"
     );
 
 }
@@ -1035,10 +1351,12 @@ function saveProduct(){
             "masterBarcode"
         ).value.trim();
 
+
     const name =
         document.getElementById(
             "masterName"
         ).value.trim();
+
 
     const price =
         Number(
@@ -1047,6 +1365,7 @@ function saveProduct(){
             ).value
         );
 
+
     const gst =
         Number(
             document.getElementById(
@@ -1054,12 +1373,14 @@ function saveProduct(){
             ).value
         );
 
+
     const commission =
         Number(
             document.getElementById(
                 "masterCommission"
             ).value
         );
+
 
     const stock =
         Number(
@@ -1072,9 +1393,13 @@ function saveProduct(){
     if(
         !barcode ||
         !name ||
+        !Number.isFinite(price) ||
         price < 0 ||
+        !Number.isFinite(gst) ||
         gst < 0 ||
+        !Number.isFinite(commission) ||
         commission < 0 ||
+        !Number.isFinite(stock) ||
         stock < 0
     ){
 
@@ -1089,59 +1414,23 @@ function saveProduct(){
 
     products[barcode] = {
 
-        barcode: barcode,
+        barcode:
+            barcode,
 
-        name: name,
+        name:
+            name,
 
-        price: price,
+        price:
+            price,
 
-        gst: gst,
+        gst:
+            gst,
 
-        commission: commission,
+        commission:
+            commission,
 
-        stock: stock
-
-    };
-
-
-    saveProducts();
-
-    renderProducts();
-
-    clearMasterForm();
-
-
-    showMessage(
-        "✅ Product Master-এ Save হয়েছে: " +
-        name
-    );
-
-}
-
-
-/* =========================================
-   LOAD TEST PRODUCT
-========================================= */
-
-function loadDemoProduct(){
-
-    const barcode =
-        "1234567890";
-
-
-    products[barcode] = {
-
-        barcode: barcode,
-
-        name: "গায়ে মাখা Dettol সাবান",
-
-        price: 10,
-
-        gst: 5,
-
-        commission: 10,
-
-        stock: 5
+        stock:
+            stock
 
     };
 
@@ -1152,141 +1441,149 @@ function loadDemoProduct(){
 
 
     /*
-    Master form-এও দেখাবে
+       Form Clear
     */
 
     document.getElementById(
         "masterBarcode"
-    ).value = barcode;
+    ).value = "";
+
+
+    document.getElementById(
+        "masterName"
+    ).value = "";
+
+
+    document.getElementById(
+        "masterPrice"
+    ).value = "";
+
+
+    document.getElementById(
+        "masterGST"
+    ).value = 5;
+
+
+    document.getElementById(
+        "masterCommission"
+    ).value = 10;
+
+
+    document.getElementById(
+        "masterStock"
+    ).value = 0;
+
+
+    showMessage(
+        "✅ Product Master-এ Save হয়েছে: " +
+        name
+    );
+
+
+    barcodeInput.focus();
+
+}
+
+
+/* =========================================
+   TEST PRODUCT
+========================================= */
+
+function loadDemoProduct(){
+
+    /*
+       TEST BARCODE
+       EXACTLY 1234567
+    */
+
+    products["1234567"] = {
+
+        barcode:
+            "1234567",
+
+        name:
+            "গায়ে মাখা Dettol সাবান",
+
+        price:
+            10,
+
+        gst:
+            5,
+
+        commission:
+            10,
+
+        stock:
+            5
+
+    };
+
+
+    saveProducts();
+
+    renderProducts();
+
+
+    /*
+       Master Form
+    */
+
+    document.getElementById(
+        "masterBarcode"
+    ).value =
+        "1234567";
+
 
     document.getElementById(
         "masterName"
     ).value =
         "গায়ে মাখা Dettol সাবান";
 
+
     document.getElementById(
         "masterPrice"
-    ).value = 10;
+    ).value =
+        10;
+
 
     document.getElementById(
         "masterGST"
-    ).value = 5;
+    ).value =
+        5;
+
 
     document.getElementById(
         "masterCommission"
-    ).value = 10;
+    ).value =
+        10;
+
 
     document.getElementById(
         "masterStock"
-    ).value = 5;
+    ).value =
+        5;
 
 
     showMessage(
-        "🧪 Test Product তৈরি হয়েছে। এখন Barcode 1234567890 Scan করুন।"
+
+        "🧪 Test Product তৈরি হয়েছে। " +
+        "Barcode 1234567 Scan করুন।"
+
     );
 
-}
 
-
-/* =========================================
-   CLEAR MASTER FORM
-========================================= */
-
-function clearMasterForm(){
-
-    document.getElementById(
-        "masterBarcode"
-    ).value = "";
-
-    document.getElementById(
-        "masterName"
-    ).value = "";
-
-    document.getElementById(
-        "masterPrice"
-    ).value = "";
-
-    document.getElementById(
-        "masterGST"
-    ).value = 5;
-
-    document.getElementById(
-        "masterCommission"
-    ).value = 10;
-
-    document.getElementById(
-        "masterStock"
-    ).value = 0;
+    barcodeInput.focus();
 
 }
 
 
 /* =========================================
-   RENDER PRODUCTS
+   DELETE PRODUCT MASTER
 ========================================= */
 
-function renderProducts(){
-
-    const body =
-        document.getElementById(
-            "productBody"
-        );
-
-    body.innerHTML = "";
-
-
-    Object.keys(products).forEach(
-        function(barcode){
-
-            const product =
-                products[barcode];
-
-
-            const row =
-                document.createElement("tr");
-
-
-            row.innerHTML = `
-
-                <td>${escapeHtml(product.barcode)}</td>
-
-                <td>${escapeHtml(product.name)}</td>
-
-                <td>₹${Number(product.price).toFixed(2)}</td>
-
-                <td>${product.gst}%</td>
-
-                <td>${product.commission}%</td>
-
-                <td>${product.stock}</td>
-
-                <td>
-
-                    <button
-                        class="btn-red"
-                        onclick="deleteProduct('${encodeURIComponent(product.barcode)}')"
-                    >
-                        Delete
-                    </button>
-
-                </td>
-
-            `;
-
-
-            body.appendChild(row);
-
-        }
-    );
-
-}
-
-
-/* =========================================
-   DELETE PRODUCT
-========================================= */
-
-function deleteProduct(encodedBarcode){
+function deleteProduct(
+    encodedBarcode
+){
 
     const barcode =
         decodeURIComponent(
@@ -1306,13 +1603,102 @@ function deleteProduct(encodedBarcode){
 
     delete products[barcode];
 
+
     saveProducts();
 
     renderProducts();
 
 
     showMessage(
-        "Product Delete হয়েছে।"
+        "✅ Product Master থেকে Delete হয়েছে।"
+    );
+
+}
+
+
+/* =========================================
+   RENDER PRODUCT MASTER
+========================================= */
+
+function renderProducts(){
+
+    const body =
+        document.getElementById(
+            "productBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    Object.keys(products).forEach(
+        function(barcode){
+
+            const product =
+                products[barcode];
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${escapeHtml(
+                        product.barcode
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        product.name
+                    )}
+                </td>
+
+                <td>
+                    ₹${Number(
+                        product.price
+                    ).toFixed(2)}
+                </td>
+
+                <td>
+                    ${product.gst}%
+                </td>
+
+                <td>
+                    ${product.commission}%
+                </td>
+
+                <td>
+                    ${product.stock}
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn-red"
+                        onclick="
+                            deleteProduct(
+                                '${encodeURIComponent(
+                                    product.barcode
+                                )}'
+                            )
+                        "
+                    >
+                        Delete
+                    </button>
+
+                </td>
+
+            `;
+
+
+            body.appendChild(row);
+
+        }
     );
 
 }
@@ -1324,7 +1710,9 @@ function deleteProduct(encodedBarcode){
 
 function saveBill(){
 
-    if(billItems.length === 0){
+    if(
+        billItems.length === 0
+    ){
 
         showMessage(
             "❌ Bill-এ কোনো Product নেই।",
@@ -1340,77 +1728,54 @@ function saveBill(){
         Date.now();
 
 
-    const customerName =
-        document.getElementById(
-            "customerName"
-        ).value.trim();
-
-
-    const customerMobile =
-        document.getElementById(
-            "customerMobile"
-        ).value.trim();
-
-
-    const subtotal =
-        Number(
-            document.getElementById(
-                "subtotal"
-            ).innerText
-        );
-
-
-    const gst =
-        Number(
-            document.getElementById(
-                "gstTotal"
-            ).innerText
-        );
-
-
-    const commission =
-        Number(
-            document.getElementById(
-                "commissionTotal"
-            ).innerText
-        );
-
-
-    const grandTotal =
-        Number(
-            document.getElementById(
-                "grandTotal"
-            ).innerText
-        );
-
-
     const bill = {
 
-        billNumber: billNumber,
+        billNumber:
+            billNumber,
 
         date:
             new Date().toLocaleString(),
 
         customerName:
-            customerName,
+            document.getElementById(
+                "customerName"
+            ).value.trim(),
 
         customerMobile:
-            customerMobile,
+            document.getElementById(
+                "customerMobile"
+            ).value.trim(),
 
         items:
             billItems,
 
         subtotal:
-            subtotal,
+            Number(
+                document.getElementById(
+                    "subtotal"
+                ).innerText
+            ),
 
         gst:
-            gst,
+            Number(
+                document.getElementById(
+                    "gstTotal"
+                ).innerText
+            ),
 
         commission:
-            commission,
+            Number(
+                document.getElementById(
+                    "commissionTotal"
+                ).innerText
+            ),
 
         grandTotal:
-            grandTotal
+            Number(
+                document.getElementById(
+                    "grandTotal"
+                ).innerText
+            )
 
     };
 
@@ -1419,8 +1784,8 @@ function saveBill(){
         JSON.parse(
             localStorage.getItem(
                 "phuloBills"
-            )
-        ) || [];
+            ) || "[]"
+        );
 
 
     savedBills.push(bill);
@@ -1446,7 +1811,9 @@ function saveBill(){
 
 function printBill(){
 
-    if(billItems.length === 0){
+    if(
+        billItems.length === 0
+    ){
 
         showMessage(
             "❌ Print করার জন্য Bill নেই।",
@@ -1463,46 +1830,37 @@ function printBill(){
 
 
 /* =========================================
-   ESCAPE HTML
+   SECURITY
 ========================================= */
 
 function escapeHtml(value){
 
     return String(value)
-
         .replaceAll("&","&amp;")
-
         .replaceAll("<","&lt;")
-
         .replaceAll(">","&gt;")
-
         .replaceAll('"',"&quot;")
-
         .replaceAll("'","&#039;");
 
 }
 
 
 /* =========================================
-   STARTUP
+   START SYSTEM
 ========================================= */
+
+saveProducts();
 
 renderProducts();
 
 renderBill();
 
 
-/*
-Barcode box সবসময় ready থাকবে
-*/
-
 window.addEventListener(
     "load",
     function(){
 
-        document.getElementById(
-            "barcodeInput"
-        ).focus();
+        barcodeInput.focus();
 
     }
 );
@@ -1511,467 +1869,3 @@ window.addEventListener(
 
 </body>
 </html>
-<!-- =========================================
-     PHULO JHANO AUTO BARCODE BILLING
-     Barcode → Product → GST → Commission
-     → Stock → Bill
-========================================= -->
-
-<script>
-(function () {
-
-    /* ===============================
-       PRODUCT DATABASE
-    =============================== */
-
-    let products = JSON.parse(
-        localStorage.getItem("phuloJhanoProducts") || "{}"
-    );
-
-    /* আপনার Test Product */
-    if (!products["1234567890"]) {
-        products["1234567890"] = {
-            barcode: "1234567890",
-            name: "গায়ে মাখা Dettol সাবান",
-            price: 10,
-            gst: 5,
-            commission: 10,
-            stock: 5
-        };
-
-        localStorage.setItem(
-            "phuloJhanoProducts",
-            JSON.stringify(products)
-        );
-    }
-
-    /* ===============================
-       BILL DATA
-    =============================== */
-
-    let billItems = [];
-
-    /* ===============================
-       SCANNER INPUT
-    =============================== */
-
-    let barcodeBuffer = "";
-    let barcodeTimer = null;
-
-    document.addEventListener("keydown", function (e) {
-
-        /* Enter = Scan Complete */
-        if (e.key === "Enter") {
-
-            if (barcodeBuffer.length > 0) {
-
-                let code = barcodeBuffer.trim();
-
-                barcodeBuffer = "";
-
-                clearTimeout(barcodeTimer);
-
-                processBarcode(code);
-            }
-
-            return;
-        }
-
-        /* শুধুমাত্র সংখ্যা/অক্ষর */
-        if (
-            e.key.length === 1 &&
-            /^[a-zA-Z0-9]+$/.test(e.key)
-        ) {
-
-            barcodeBuffer += e.key;
-
-            clearTimeout(barcodeTimer);
-
-            barcodeTimer = setTimeout(function () {
-                barcodeBuffer = "";
-            }, 1000);
-        }
-
-    });
-
-    /* ===============================
-       BARCODE PROCESS
-    =============================== */
-
-    function processBarcode(barcode) {
-
-        let product = products[barcode];
-
-        if (!product) {
-
-            alert(
-                "❌ Product পাওয়া যায়নি\n\nBarcode: " +
-                barcode
-            );
-
-            return;
-        }
-
-        /* Stock Check */
-
-        if (Number(product.stock) <= 0) {
-
-            alert(
-                "❌ Stock শেষ!\n\n" +
-                product.name
-            );
-
-            return;
-        }
-
-        /* Existing item check */
-
-        let existing = billItems.find(
-            item => item.barcode === barcode
-        );
-
-        if (existing) {
-
-            existing.qty++;
-
-        } else {
-
-            billItems.push({
-                barcode: product.barcode,
-                name: product.name,
-                price: Number(product.price),
-                gst: Number(product.gst),
-                commission: Number(product.commission),
-                qty: 1
-            });
-
-        }
-
-        /* Stock কমানো */
-
-        product.stock = Number(product.stock) - 1;
-
-        products[barcode] = product;
-
-        localStorage.setItem(
-            "phuloJhanoProducts",
-            JSON.stringify(products)
-        );
-
-        renderBill();
-
-        showScanMessage(product);
-    }
-
-    /* ===============================
-       BILL DISPLAY
-    =============================== */
-
-    function renderBill() {
-
-        let box = document.getElementById(
-            "phuloJhanoAutoBill"
-        );
-
-        if (!box) return;
-
-        let html = "";
-
-        let subtotal = 0;
-        let totalGST = 0;
-        let totalCommission = 0;
-
-        billItems.forEach(function (item, index) {
-
-            let amount =
-                item.price * item.qty;
-
-            let gstAmount =
-                amount * item.gst / 100;
-
-            let commissionAmount =
-                amount * item.commission / 100;
-
-            subtotal += amount;
-            totalGST += gstAmount;
-            totalCommission += commissionAmount;
-
-            html += `
-                <div style="
-                    background:white;
-                    padding:10px;
-                    margin:8px 0;
-                    border-radius:8px;
-                    border:1px solid #ddd;
-                ">
-
-                    <b>${item.name}</b><br>
-
-                    Barcode:
-                    ${item.barcode}<br>
-
-                    Qty:
-                    ${item.qty}<br>
-
-                    Price:
-                    ₹${item.price.toFixed(2)}<br>
-
-                    GST:
-                    ${item.gst}%
-                    = ₹${gstAmount.toFixed(2)}<br>
-
-                    Commission:
-                    ${item.commission}%
-                    = ₹${commissionAmount.toFixed(2)}<br>
-
-                    Amount:
-                    <b>₹${amount.toFixed(2)}</b>
-
-                </div>
-            `;
-        });
-
-        let grandTotal =
-            subtotal + totalGST;
-
-        box.innerHTML = `
-            <h3 style="margin-top:0;">
-                🧾 Phulo Jhano Bill
-            </h3>
-
-            ${html}
-
-            <hr>
-
-            <b>Subtotal:</b>
-            ₹${subtotal.toFixed(2)}
-            <br>
-
-            <b>Total GST:</b>
-            ₹${totalGST.toFixed(2)}
-            <br>
-
-            <b>Total Commission:</b>
-            ₹${totalCommission.toFixed(2)}
-            <br>
-
-            <h2>
-                Grand Total:
-                ₹${grandTotal.toFixed(2)}
-            </h2>
-
-            <button
-                onclick="window.print()"
-                style="
-                    width:100%;
-                    padding:12px;
-                    background:#166534;
-                    color:white;
-                    border:0;
-                    border-radius:8px;
-                    font-size:16px;
-                ">
-                🖨️ Print Bill
-            </button>
-
-            <button
-                onclick="clearPhuloJhanoBill()"
-                style="
-                    width:100%;
-                    padding:12px;
-                    margin-top:8px;
-                    background:#dc2626;
-                    color:white;
-                    border:0;
-                    border-radius:8px;
-                    font-size:16px;
-                ">
-                🗑️ New Bill
-            </button>
-        `;
-    }
-
-    /* ===============================
-       SCAN MESSAGE
-    =============================== */
-
-    function showScanMessage(product) {
-
-        let msg = document.getElementById(
-            "phuloJhanoScanMessage"
-        );
-
-        if (!msg) return;
-
-        msg.innerHTML = `
-            ✅ <b>Product পাওয়া গেছে</b><br>
-            ${product.name}<br>
-            Price: ₹${product.price}<br>
-            GST: ${product.gst}%<br>
-            Commission: ${product.commission}%<br>
-            Stock Remaining: ${product.stock}
-        `;
-
-        msg.style.display = "block";
-
-        setTimeout(function () {
-            msg.style.display = "none";
-        }, 4000);
-    }
-
-    /* ===============================
-       NEW BILL
-    =============================== */
-
-    window.clearPhuloJhanoBill = function () {
-
-        billItems = [];
-
-        renderBill();
-
-        alert("নতুন Bill শুরু হয়েছে।");
-    };
-
-    /* ===============================
-       BILL PANEL
-    =============================== */
-
-    function createBillingPanel() {
-
-        if (
-            document.getElementById(
-                "phuloJhanoAutoBill"
-            )
-        ) return;
-
-        let panel = document.createElement("div");
-
-        panel.id = "phuloJhanoAutoPanel";
-
-        panel.style.cssText = `
-            margin:15px;
-            padding:15px;
-            background:#f3f4f6;
-            border-radius:12px;
-            border:2px solid #166534;
-        `;
-
-        panel.innerHTML = `
-
-            <h2 style="
-                color:#166534;
-                margin-top:0;
-            ">
-                📦 Barcode Auto Billing
-            </h2>
-
-            <p>
-                📷 Barcode Scanner দিয়ে scan করুন।
-                Scanner-এর Enter চাপলেই
-                Product Auto Bill হবে।
-            </p>
-
-            <input
-                id="phuloJhanoBarcodeInput"
-                type="text"
-                placeholder="Barcode এখানে লিখে Test করুন"
-                style="
-                    width:100%;
-                    padding:12px;
-                    font-size:18px;
-                    border:2px solid #166534;
-                    border-radius:8px;
-                "
-            >
-
-            <button
-                onclick="
-                    processBarcode(
-                        document.getElementById(
-                            'phuloJhanoBarcodeInput'
-                        ).value.trim()
-                    );
-                    document.getElementById(
-                        'phuloJhanoBarcodeInput'
-                    ).value='';
-                "
-                style="
-                    width:100%;
-                    margin-top:8px;
-                    padding:12px;
-                    background:#166534;
-                    color:white;
-                    border:0;
-                    border-radius:8px;
-                    font-size:17px;
-                ">
-                🔍 Scan / Add Product
-            </button>
-
-            <div
-                id="phuloJhanoScanMessage"
-                style="
-                    display:none;
-                    margin-top:10px;
-                    padding:12px;
-                    background:#dcfce7;
-                    color:#166534;
-                    border-radius:8px;
-                ">
-            </div>
-
-            <div
-                id="phuloJhanoAutoBill"
-                style="
-                    margin-top:15px;
-                ">
-                <h3>🧾 Bill</h3>
-                Barcode Scan করলে Bill এখানে আসবে।
-            </div>
-        `;
-
-        /* Existing page-এর শুরুতে বসাবে */
-
-        document.body.insertBefore(
-            panel,
-            document.body.firstChild
-        );
-
-        /* Test button input */
-
-        let input =
-            document.getElementById(
-                "phuloJhanoBarcodeInput"
-            );
-
-        input.addEventListener(
-            "keydown",
-            function (e) {
-
-                if (e.key === "Enter") {
-
-                    let code =
-                        input.value.trim();
-
-                    if (code) {
-
-                        processBarcode(code);
-
-                        input.value = "";
-                    }
-                }
-            }
-        );
-    }
-
-    /* ===============================
-       START
-    =============================== */
-
-    window.addEventListener(
-        "load",
-        createBillingPanel
-    );
-
-})();
-</script>
