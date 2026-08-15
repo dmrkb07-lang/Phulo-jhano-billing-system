@@ -1950,5 +1950,218 @@ function startMobileScanner() {
     });
 }
 </script>
-</body>
+<!-- =========================================
+     PHULO JHANO HOME DASHBOARD
+========================================= -->
+
+<div id="fjDashboard" style="
+display:none;
+padding:20px;
+background:#f3f4f6;
+font-family:Arial,sans-serif;
+">
+
+  <div style="
+    background:#166534;
+    color:white;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+    margin-bottom:20px;
+  ">
+    <h1 style="margin:0;">🏠 Phulo Jhano</h1>
+    <p style="margin:8px 0 0;">Billing Dashboard</p>
+  </div>
+
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  ">
+
+    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
+      <div style="font-size:30px;">💰</div>
+      <b>Total Business</b>
+      <h2 id="fjTotalSales">₹0.00</h2>
+    </div>
+
+    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
+      <div style="font-size:30px;">🧾</div>
+      <b>Total Bills</b>
+      <h2 id="fjTotalBills">0</h2>
+    </div>
+
+    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
+      <div style="font-size:30px;">📦</div>
+      <b>Products Sold</b>
+      <h2 id="fjProductsSold">0</h2>
+    </div>
+
+    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
+      <div style="font-size:30px;">📅</div>
+      <b>Today's Sales</b>
+      <h2 id="fjTodaySales">₹0.00</h2>
+    </div>
+
+  </div>
+
+  <button onclick="fjGoBilling()" style="
+    width:100%;
+    margin-top:20px;
+    padding:16px;
+    border:0;
+    border-radius:12px;
+    background:#166534;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+  ">
+    🧾 New Billing
+  </button>
+
+  <button onclick="fjRefreshDashboard()" style="
+    width:100%;
+    margin-top:10px;
+    padding:14px;
+    border:0;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+  ">
+    🔄 Refresh Dashboard
+  </button>
+
+</div>
+
+
+<script>
+
+function fjLoadDashboard(){
+
+  let bills = [];
+
+  try {
+    bills = JSON.parse(
+      localStorage.getItem("phuloBills") || "[]"
+    );
+  } catch(e) {
+    bills = [];
+  }
+
+  let totalSales = 0;
+  let totalProducts = 0;
+  let todaySales = 0;
+
+  const today =
+    new Date().toLocaleDateString();
+
+  bills.forEach(function(bill){
+
+    const amount =
+      Number(bill.grandTotal) || 0;
+
+    totalSales += amount;
+
+    if(Array.isArray(bill.items)){
+
+      bill.items.forEach(function(item){
+
+        totalProducts +=
+          Number(item.qty) || 0;
+
+      });
+
+    }
+
+    if(bill.date){
+
+      try {
+
+        const billDate =
+          new Date(bill.date).toLocaleDateString();
+
+        if(billDate === today){
+          todaySales += amount;
+        }
+
+      } catch(e){}
+
+    }
+
+  });
+
+  document.getElementById("fjTotalSales")
+    .innerText =
+    "₹" + totalSales.toFixed(2);
+
+  document.getElementById("fjTotalBills")
+    .innerText =
+    bills.length;
+
+  document.getElementById("fjProductsSold")
+    .innerText =
+    totalProducts;
+
+  document.getElementById("fjTodaySales")
+    .innerText =
+    "₹" + todaySales.toFixed(2);
+}
+
+
+function fjGoBilling(){
+
+  const billSection =
+    document.getElementById("billsSection");
+
+  if(billSection){
+
+    billSection.scrollIntoView({
+      behavior:"smooth"
+    });
+
+  } else {
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+  }
+
+}
+
+
+function fjRefreshDashboard(){
+
+  fjLoadDashboard();
+
+  alert("✅ Dashboard Update হয়েছে");
+
+}
+
+
+/* Dashboard শুরুতে দেখাবে */
+(function(){
+
+  const dashboard =
+    document.getElementById("fjDashboard");
+
+  if(dashboard){
+
+    dashboard.style.display = "block";
+
+    document.body.insertBefore(
+      dashboard,
+      document.body.firstChild
+    );
+
+    fjLoadDashboard();
+
+  }
+
+})();
+
+</script>/body>
 </html>
