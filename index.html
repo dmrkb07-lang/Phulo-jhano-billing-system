@@ -66,11 +66,17 @@ button{
     color:white;
     border:none;
     font-weight:bold;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.98);
 }
 
 .btn-red{background:#dc2626}
 .btn-blue{background:#2563eb}
 .btn-orange{background:#ea580c}
+.btn-purple{background:#7c3aed}
 
 .grid{
     display:grid;
@@ -107,6 +113,12 @@ button{
 .error{
     background:#fee2e2;
     color:#991b1b;
+    display:block;
+}
+
+.warning{
+    background:#fef3c7;
+    color:#92400e;
     display:block;
 }
 
@@ -149,24 +161,128 @@ th{
     overflow:auto;
 }
 
+.dashboard{
+    padding:12px;
+    background:#f3f4f6;
+}
+
+.dashboard-header{
+    background:#166534;
+    color:white;
+    padding:25px 15px;
+    border-radius:18px;
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.dashboard-header h1{
+    margin:0;
+    font-size:30px;
+}
+
+.dashboard-header p{
+    margin:8px 0 0;
+    font-size:17px;
+}
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.dashboard-card{
+    background:white;
+    padding:18px;
+    border-radius:15px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+
+.dashboard-icon{
+    font-size:32px;
+}
+
+.dashboard-card b{
+    display:block;
+    font-size:16px;
+    margin-top:5px;
+}
+
+.dashboard-card h2{
+    margin:7px 0 0;
+    font-size:25px;
+}
+
+.dashboard-date{
+    background:white;
+    padding:10px;
+    margin-top:12px;
+    border-radius:10px;
+    text-align:center;
+    color:#166534;
+    font-weight:bold;
+}
+
+.camera-box{
+    margin-top:12px;
+    padding:12px;
+    background:#f0fdf4;
+    border:2px solid #16a34a;
+    border-radius:10px;
+}
+
+#mobileScanner{
+    width:100%;
+    max-width:500px;
+    margin:10px auto;
+    display:none;
+}
+
 @media(max-width:600px){
+
     .grid{
         grid-template-columns:1fr;
+    }
+
+    .dashboard-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .dashboard-card{
+        padding:14px 8px;
+    }
+
+    .dashboard-card h2{
+        font-size:21px;
+    }
+
+    .dashboard-icon{
+        font-size:27px;
     }
 
     th,td{
         padding:5px;
         font-size:10px;
     }
+
+    .container{
+        padding:8px;
+    }
 }
 
 @media print{
-    body{background:white}
+
+    body{
+        background:white;
+    }
 
     header,
     .no-print,
     .product-master,
-    .barcode-box{
+    .dashboard,
+    .barcode-box,
+    .camera-box{
         display:none !important;
     }
 
@@ -184,10 +300,99 @@ th{
 
 <body>
 
+<!-- =========================
+     DASHBOARD
+========================= -->
+
+<div id="fjDashboard" class="dashboard">
+
+    <div class="dashboard-header">
+        <h1>🏠 Phulo Jhano</h1>
+        <p>Billing Dashboard</p>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">💰</div>
+            <b>Total Business</b>
+            <h2 id="fjTotalSales">₹0.00</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">🧾</div>
+            <b>Total Bills</b>
+            <h2 id="fjTotalBills">0</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">📦</div>
+            <b>Products Sold</b>
+            <h2 id="fjProductsSold">0</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">📅</div>
+            <b>Today's Sales</b>
+            <h2 id="fjTodaySales">₹0.00</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">💸</div>
+            <b>Total Commission</b>
+            <h2 id="fjTotalCommission">₹0.00</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">📊</div>
+            <b>Current Stock</b>
+            <h2 id="fjCurrentStock">0</h2>
+        </div>
+
+    </div>
+
+    <div class="dashboard-date">
+        📆 Today: <span id="fjTodayDate"></span>
+    </div>
+
+    <button
+        onclick="fjGoBilling()"
+        style="
+        width:100%;
+        margin-top:15px;
+        padding:16px;
+        border:0;
+        border-radius:12px;
+        background:#166534;
+        color:white;
+        font-size:18px;
+        font-weight:bold;">
+        🧾 New Billing
+    </button>
+
+    <button
+        onclick="fjRefreshDashboard()"
+        style="
+        width:100%;
+        margin-top:10px;
+        padding:14px;
+        border:0;
+        border-radius:12px;
+        background:#2563eb;
+        color:white;
+        font-size:17px;
+        font-weight:bold;">
+        🔄 Refresh Dashboard
+    </button>
+
+</div>
+
+
 <header>
     <h1>🌿 Phulo Jhano Billing System</h1>
     <p>Barcode • GST • Commission • Stock • Billing</p>
 </header>
+
 
 <div class="container">
 
@@ -208,8 +413,7 @@ th{
             type="text"
             autocomplete="off"
             inputmode="numeric"
-            placeholder="Barcode Scanner দিয়ে Scan করুন"
-        >
+            placeholder="Barcode Scanner দিয়ে Scan করুন">
 
         <button onclick="scanManualBarcode()">
             🔎 Barcode Search
@@ -223,6 +427,28 @@ th{
         USB/Bluetooth Barcode Scanner দিয়ে Scan করলে
         Enter-এর সঙ্গে সঙ্গে Product Bill-এ Auto যোগ হবে।
     </p>
+
+    <div class="camera-box">
+
+        <b>📱 Mobile Camera Scanner</b>
+
+        <button
+            class="btn-blue"
+            onclick="startMobileScanner()">
+            📷 Camera দিয়ে Barcode Scan
+        </button>
+
+        <div id="mobileScanner"></div>
+
+        <button
+            id="stopCameraBtn"
+            class="btn-red"
+            style="display:none;"
+            onclick="stopMobileScanner()">
+            ❌ Camera বন্ধ করুন
+        </button>
+
+    </div>
 
 </div>
 
@@ -273,11 +499,16 @@ th{
                 id="productQty"
                 type="number"
                 min="1"
-                value="1"
-            >
+                value="1">
         </div>
 
     </div>
+
+    <button
+        class="btn-orange no-print"
+        onclick="addCurrentProductManually()">
+        ➕ এই Product Bill-এ যোগ করুন
+    </button>
 
 </div>
 
@@ -296,21 +527,21 @@ th{
 
         <input
             id="customerName"
-            placeholder="Customer Name"
-        >
+            placeholder="Customer Name">
 
         <label>Mobile</label>
 
         <input
             id="customerMobile"
             placeholder="Mobile Number"
-        >
+            inputmode="numeric">
 
     </div>
 
     <table>
 
         <thead>
+
             <tr>
                 <th>#</th>
                 <th>Product</th>
@@ -322,6 +553,7 @@ th{
                 <th>Total</th>
                 <th class="no-print">Delete</th>
             </tr>
+
         </thead>
 
         <tbody id="billBody"></tbody>
@@ -360,22 +592,19 @@ th{
 
         <button
             class="btn-blue"
-            onclick="saveBill()"
-        >
+            onclick="saveBill()">
             💾 Save Bill
         </button>
 
         <button
             class="btn-orange"
-            onclick="printBill()"
-        >
+            onclick="printBill()">
             🖨️ Print Bill
         </button>
 
         <button
             class="btn-red"
-            onclick="clearBill()"
-        >
+            onclick="clearBill()">
             🗑️ Clear Bill
         </button>
 
@@ -398,16 +627,14 @@ th{
             <label>Barcode</label>
             <input
                 id="masterBarcode"
-                placeholder="যেমন 1234567"
-            >
+                placeholder="যেমন 1234567890">
         </div>
 
         <div>
             <label>Product Name</label>
             <input
                 id="masterName"
-                placeholder="Product Name"
-            >
+                placeholder="Product Name">
         </div>
 
         <div>
@@ -415,8 +642,8 @@ th{
             <input
                 id="masterPrice"
                 type="number"
-                placeholder="10"
-            >
+                step="0.01"
+                placeholder="10">
         </div>
 
         <div>
@@ -424,8 +651,8 @@ th{
             <input
                 id="masterGST"
                 type="number"
-                value="5"
-            >
+                step="0.01"
+                value="5">
         </div>
 
         <div>
@@ -433,8 +660,8 @@ th{
             <input
                 id="masterCommission"
                 type="number"
-                value="10"
-            >
+                step="0.01"
+                value="10">
         </div>
 
         <div>
@@ -442,8 +669,7 @@ th{
             <input
                 id="masterStock"
                 type="number"
-                value="5"
-            >
+                value="5">
         </div>
 
     </div>
@@ -454,8 +680,7 @@ th{
 
     <button
         class="btn-blue"
-        onclick="loadDemoProduct()"
-    >
+        onclick="loadDemoProduct()">
         🧪 Load Test Product
     </button>
 
@@ -464,6 +689,7 @@ th{
         <table>
 
             <thead>
+
                 <tr>
                     <th>Barcode</th>
                     <th>Product</th>
@@ -473,6 +699,7 @@ th{
                     <th>Stock</th>
                     <th>Delete</th>
                 </tr>
+
             </thead>
 
             <tbody id="productBody"></tbody>
@@ -486,17 +713,21 @@ th{
 </div>
 
 
+<!-- html5-qrcode camera library -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+
 <script>
 
-/* =========================================
-   PHULO JHANO
-   FINAL SINGLE BARCODE ENGINE
-========================================= */
+/* =====================================================
+   PHULO JHANO BILLING SYSTEM
+   FINAL VERSION
+===================================================== */
 
 
-/* =========================================
+/* =====================================================
    PRODUCT DATABASE
-========================================= */
+===================================================== */
 
 let products =
     JSON.parse(
@@ -504,10 +735,7 @@ let products =
     );
 
 
-/*
-   আগের Version-এর Product থাকলে
-   সেটাও Preserve করবে।
-*/
+/* পুরনো Product Database Preserve */
 
 let oldProducts =
     JSON.parse(
@@ -524,16 +752,24 @@ Object.keys(oldProducts).forEach(function(code){
 });
 
 
-/* =========================================
-   BILL DATABASE
-========================================= */
+/* =====================================================
+   CURRENT BILL
+===================================================== */
 
 let billItems = [];
 
 
-/* =========================================
+/*
+   Bill Save হয়েছে কি না
+   Save হওয়ার পরে Clear করলে Stock ফেরত যাবে না।
+*/
+
+let billFinalized = false;
+
+
+/* =====================================================
    SAVE PRODUCTS
-========================================= */
+===================================================== */
 
 function saveProducts(){
 
@@ -545,9 +781,9 @@ function saveProducts(){
 }
 
 
-/* =========================================
+/* =====================================================
    MESSAGE
-========================================= */
+===================================================== */
 
 function showMessage(
     message,
@@ -555,9 +791,9 @@ function showMessage(
 ){
 
     const box =
-        document.getElementById(
-            "statusMessage"
-        );
+        document.getElementById("statusMessage");
+
+    if(!box) return;
 
     box.innerText = message;
 
@@ -578,20 +814,13 @@ function showMessage(
 }
 
 
-/* =========================================
+/* =====================================================
    BARCODE INPUT
-========================================= */
+===================================================== */
 
 const barcodeInput =
-    document.getElementById(
-        "barcodeInput"
-    );
+    document.getElementById("barcodeInput");
 
-
-/*
-   Scanner সাধারণত Barcode লিখে
-   শেষে Enter পাঠায়।
-*/
 
 barcodeInput.addEventListener(
     "keydown",
@@ -609,15 +838,9 @@ barcodeInput.addEventListener(
 );
 
 
-/* =========================================
-   GLOBAL SCANNER
-   Scanner যদি Input Focus-এ না থাকে,
-   তবুও Enter দিয়ে Scan হবে।
-   
-   গুরুত্বপূর্ণ:
-   কোনো 150ms Timer নেই।
-   তাই 1234567 কখনো 1234 হবে না।
-========================================= */
+/* =====================================================
+   GLOBAL BARCODE SCANNER
+===================================================== */
 
 let scannerBuffer = "";
 
@@ -625,11 +848,6 @@ let scannerBuffer = "";
 document.addEventListener(
     "keydown",
     function(e){
-
-        /*
-           Barcode Input-এ টাইপ করলে
-           Global Scanner duplicate করবে না।
-        */
 
         if(
             document.activeElement ===
@@ -639,10 +857,6 @@ document.addEventListener(
             return;
         }
 
-
-        /*
-           Enter = Scan Complete
-        */
 
         if(e.key === "Enter"){
 
@@ -661,10 +875,6 @@ document.addEventListener(
         }
 
 
-        /*
-           Character Capture
-        */
-
         if(
             e.key.length === 1 &&
             /^[A-Za-z0-9\-_]+$/.test(e.key)
@@ -678,9 +888,9 @@ document.addEventListener(
 );
 
 
-/* =========================================
-   MANUAL SEARCH
-========================================= */
+/* =====================================================
+   MANUAL BARCODE SEARCH
+===================================================== */
 
 function scanManualBarcode(){
 
@@ -706,56 +916,30 @@ function scanManualBarcode(){
 }
 
 
-/* =========================================
-   AUTO BARCODE
-========================================= */
+/* =====================================================
+   AUTO BARCODE SCAN
+===================================================== */
 
 function autoBarcodeScan(barcode){
-
-    /*
-       EXACT Barcode
-       কোনো substring নয়।
-    */
 
     barcode =
         String(barcode).trim();
 
 
-    /*
-       Input-এ Barcode দেখানো
-    */
-
     barcodeInput.value =
         barcode;
 
-
-    console.log(
-        "EXACT BARCODE:",
-        barcode
-    );
-
-
-    /*
-       Product Master Search
-    */
 
     const product =
         products[barcode];
 
 
-    /*
-       Product পাওয়া যায়নি
-    */
-
     if(!product){
 
         showMessage(
-
             "❌ Product Master-এ Barcode পাওয়া যায়নি: " +
             barcode,
-
             "error"
-
         );
 
         barcodeInput.select();
@@ -764,30 +948,76 @@ function autoBarcodeScan(barcode){
     }
 
 
-    /*
-       Stock Check
-    */
-
     if(
         Number(product.stock) <= 0
     ){
 
         showMessage(
-
             "❌ Stock শেষ: " +
             product.name,
-
             "error"
-
         );
 
         return;
     }
 
 
-    /*
-       Product Details Auto Fill
-    */
+    fillScannedProduct(product);
+
+
+    const added =
+        addToBill(
+            product,
+            1
+        );
+
+
+    if(!added){
+        return;
+    }
+
+
+    const commissionAmount =
+        Number(product.price) *
+        Number(product.commission) /
+        100;
+
+
+    const remainingStock =
+        Number(product.stock);
+
+
+    showMessage(
+
+        "✅ " +
+        product.name +
+        " Bill-এ যোগ হয়েছে | " +
+        "Price ₹" +
+        Number(product.price).toFixed(2) +
+        " | GST " +
+        product.gst +
+        "% | Commission ₹" +
+        commissionAmount.toFixed(2) +
+        " | Remaining Stock " +
+        remainingStock,
+
+        "success"
+
+    );
+
+
+    barcodeInput.value = "";
+
+    barcodeInput.focus();
+
+}
+
+
+/* =====================================================
+   FILL SCANNED PRODUCT
+===================================================== */
+
+function fillScannedProduct(product){
 
     document.getElementById(
         "productBarcode"
@@ -829,84 +1059,108 @@ function autoBarcodeScan(barcode){
         "productQty"
     ).value = 1;
 
+}
 
-    /*
-       Bill-এ Auto Add
-    */
 
-    const added =
-        addToBill(
-            product,
-            1
+/* =====================================================
+   MANUAL ADD CURRENT PRODUCT
+===================================================== */
+
+function addCurrentProductManually(){
+
+    const barcode =
+        document.getElementById(
+            "productBarcode"
+        ).value.trim();
+
+
+    const qty =
+        Number(
+            document.getElementById(
+                "productQty"
+            ).value
         );
 
 
-    if(!added){
+    if(!barcode){
+
+        showMessage(
+            "❌ আগে Barcode Scan করুন।",
+            "error"
+        );
 
         return;
     }
 
 
-    /*
-       Commission
-    */
-
-    const commissionAmount =
-        Number(product.price) *
-        Number(product.commission) /
-        100;
+    const product =
+        products[barcode];
 
 
-    /*
-       Remaining Stock
-    */
+    if(!product){
 
-    const remainingStock =
-        Number(product.stock);
+        showMessage(
+            "❌ Product পাওয়া যায়নি।",
+            "error"
+        );
 
-
-    /*
-       Success
-    */
-
-    showMessage(
-
-        "✅ " +
-        product.name +
-
-        " Bill-এ যোগ হয়েছে | " +
-
-        "Price ₹" +
-        Number(product.price).toFixed(2) +
-
-        " | GST " +
-        product.gst +
-
-        "% | Commission ₹" +
-        commissionAmount.toFixed(2) +
-
-        " | Stock " +
-        remainingStock,
-
-        "success"
-
-    );
+        return;
+    }
 
 
-    /*
-       Next Scan Ready
-    */
+    if(!Number.isFinite(qty) || qty < 1){
 
-    barcodeInput.value = "";
+        showMessage(
+            "❌ Quantity সঠিক দিন।",
+            "error"
+        );
 
-    barcodeInput.focus();
+        return;
+    }
+
+
+    if(
+        qty >
+        Number(product.stock)
+    ){
+
+        showMessage(
+            "❌ Stock যথেষ্ট নেই। Available: " +
+            product.stock,
+            "error"
+        );
+
+        return;
+    }
+
+
+    const added =
+        addToBill(
+            product,
+            qty
+        );
+
+
+    if(added){
+
+        showMessage(
+            "✅ " +
+            product.name +
+            " × " +
+            qty +
+            " Bill-এ যোগ হয়েছে।"
+        );
+
+        barcodeInput.focus();
+
+    }
 
 }
 
 
-/* =========================================
+/* =====================================================
    ADD TO BILL
-========================================= */
+===================================================== */
 
 function addToBill(
     product,
@@ -917,32 +1171,20 @@ function addToBill(
         Number(qty) || 1;
 
 
-    /*
-       Stock Check
-    */
-
     if(
         qty >
         Number(product.stock)
     ){
 
         showMessage(
-
             "❌ Stock যথেষ্ট নেই। Available Stock: " +
             product.stock,
-
             "error"
-
         );
 
         return false;
     }
 
-
-    /*
-       Same Product
-       Qty বাড়বে
-    */
 
     const existing =
         billItems.find(
@@ -958,6 +1200,10 @@ function addToBill(
 
 
     if(existing){
+
+        /*
+           Existing item-এর অতিরিক্ত Qty
+        */
 
         existing.qty += qty;
 
@@ -989,7 +1235,7 @@ function addToBill(
 
 
     /*
-       Stock কমবে
+       Stock কমানো
     */
 
     product.stock =
@@ -1008,15 +1254,17 @@ function addToBill(
 
     renderProducts();
 
+    updateDashboard();
+
 
     return true;
 
 }
 
 
-/* =========================================
+/* =====================================================
    RENDER BILL
-========================================= */
+===================================================== */
 
 function renderBill(){
 
@@ -1059,29 +1307,21 @@ function renderBill(){
                 gstAmount;
 
 
-            subtotal +=
-                base;
+            subtotal += base;
 
-
-            gstTotal +=
-                gstAmount;
-
+            gstTotal += gstAmount;
 
             commissionTotal +=
                 commissionAmount;
 
 
             const row =
-                document.createElement(
-                    "tr"
-                );
+                document.createElement("tr");
 
 
             row.innerHTML = `
 
-                <td>
-                    ${index + 1}
-                </td>
+                <td>${index + 1}</td>
 
                 <td>
                     ${escapeHtml(item.name)}
@@ -1119,10 +1359,7 @@ function renderBill(){
 
                     <button
                         class="btn-red"
-                        onclick="
-                            removeBillItem(${index})
-                        "
-                    >
+                        onclick="removeBillItem(${index})">
                         ✕
                     </button>
 
@@ -1166,11 +1403,27 @@ function renderBill(){
 }
 
 
-/* =========================================
+/* =====================================================
    DELETE BILL ITEM
-========================================= */
+===================================================== */
 
 function removeBillItem(index){
+
+    /*
+       Saved Bill-এর পরে delete করা যাবে না
+       কারণ Stock already finalized.
+    */
+
+    if(billFinalized){
+
+        showMessage(
+            "❌ Bill Save হয়ে গেছে। নতুন Billing শুরু করুন।",
+            "error"
+        );
+
+        return;
+    }
+
 
     const item =
         billItems[index];
@@ -1180,10 +1433,6 @@ function removeBillItem(index){
         return;
     }
 
-
-    /*
-       Stock ফেরত
-    */
 
     if(
         products[item.barcode]
@@ -1209,6 +1458,8 @@ function removeBillItem(index){
 
     renderProducts();
 
+    updateDashboard();
+
 
     showMessage(
         "✅ Product Delete হয়েছে। Stock ফেরত গেছে।"
@@ -1220,9 +1471,9 @@ function removeBillItem(index){
 }
 
 
-/* =========================================
+/* =====================================================
    CLEAR BILL
-========================================= */
+===================================================== */
 
 function clearBill(){
 
@@ -1238,19 +1489,32 @@ function clearBill(){
     }
 
 
+    if(billFinalized){
+
+        /*
+           Save হয়ে যাওয়া Bill-এর Stock
+           কখনো ফেরত যাবে না।
+        */
+
+        resetBillForm();
+
+        showMessage(
+            "✅ নতুন Billing-এর জন্য প্রস্তুত।"
+        );
+
+        return;
+    }
+
+
     if(
         !confirm(
-            "Bill Clear করবেন? Stock ফেরত যাবে।"
+            "Bill Clear করবেন? এই Bill Save হয়নি, তাই Stock ফেরত যাবে।"
         )
     ){
 
         return;
     }
 
-
-    /*
-       সব Stock ফেরত
-    */
 
     billItems.forEach(
         function(item){
@@ -1279,10 +1543,29 @@ function clearBill(){
 
     renderProducts();
 
+    updateDashboard();
 
-    /*
-       Customer Clear
-    */
+
+    resetBillForm();
+
+
+    showMessage(
+        "✅ Bill Clear হয়েছে। Stock ফেরত দেওয়া হয়েছে।"
+    );
+
+}
+
+
+/* =====================================================
+   RESET BILL FORM
+===================================================== */
+
+function resetBillForm(){
+
+    billItems = [];
+
+    billFinalized = false;
+
 
     document.getElementById(
         "customerName"
@@ -1293,10 +1576,6 @@ function clearBill(){
         "customerMobile"
     ).value = "";
 
-
-    /*
-       Scanned Product Clear
-    */
 
     document.getElementById(
         "productBarcode"
@@ -1328,21 +1607,25 @@ function clearBill(){
     ).value = "";
 
 
+    document.getElementById(
+        "productQty"
+    ).value = 1;
+
+
     barcodeInput.value = "";
 
+
+    renderBill();
+
+
     barcodeInput.focus();
-
-
-    showMessage(
-        "✅ Bill Clear হয়েছে। Stock ফেরত দেওয়া হয়েছে।"
-    );
 
 }
 
 
-/* =========================================
+/* =====================================================
    SAVE PRODUCT
-========================================= */
+===================================================== */
 
 function saveProduct(){
 
@@ -1439,10 +1722,8 @@ function saveProduct(){
 
     renderProducts();
 
+    updateDashboard();
 
-    /*
-       Form Clear
-    */
 
     document.getElementById(
         "masterBarcode"
@@ -1485,21 +1766,16 @@ function saveProduct(){
 }
 
 
-/* =========================================
+/* =====================================================
    TEST PRODUCT
-========================================= */
+===================================================== */
 
 function loadDemoProduct(){
 
-    /*
-       TEST BARCODE
-       EXACTLY 1234567
-    */
-
-    products["1234567"] = {
+    products["1234567890"] = {
 
         barcode:
-            "1234567",
+            "1234567890",
 
         name:
             "গায়ে মাখা Dettol সাবান",
@@ -1523,15 +1799,13 @@ function loadDemoProduct(){
 
     renderProducts();
 
+    updateDashboard();
 
-    /*
-       Master Form
-    */
 
     document.getElementById(
         "masterBarcode"
     ).value =
-        "1234567";
+        "1234567890";
 
 
     document.getElementById(
@@ -1567,7 +1841,7 @@ function loadDemoProduct(){
     showMessage(
 
         "🧪 Test Product তৈরি হয়েছে। " +
-        "Barcode 1234567 Scan করুন।"
+        "Barcode 1234567890 Scan করুন।"
 
     );
 
@@ -1577,9 +1851,9 @@ function loadDemoProduct(){
 }
 
 
-/* =========================================
-   DELETE PRODUCT MASTER
-========================================= */
+/* =====================================================
+   DELETE PRODUCT
+===================================================== */
 
 function deleteProduct(
     encodedBarcode
@@ -1608,6 +1882,8 @@ function deleteProduct(
 
     renderProducts();
 
+    updateDashboard();
+
 
     showMessage(
         "✅ Product Master থেকে Delete হয়েছে।"
@@ -1616,9 +1892,9 @@ function deleteProduct(
 }
 
 
-/* =========================================
+/* =====================================================
    RENDER PRODUCT MASTER
-========================================= */
+===================================================== */
 
 function renderProducts(){
 
@@ -1639,9 +1915,7 @@ function renderProducts(){
 
 
             const row =
-                document.createElement(
-                    "tr"
-                );
+                document.createElement("tr");
 
 
             row.innerHTML = `
@@ -1686,8 +1960,7 @@ function renderProducts(){
                                     product.barcode
                                 )}'
                             )
-                        "
-                    >
+                        ">
                         Delete
                     </button>
 
@@ -1704,9 +1977,9 @@ function renderProducts(){
 }
 
 
-/* =========================================
+/* =====================================================
    SAVE BILL
-========================================= */
+===================================================== */
 
 function saveBill(){
 
@@ -1723,9 +1996,24 @@ function saveBill(){
     }
 
 
+    if(billFinalized){
+
+        showMessage(
+            "❌ এই Bill ইতিমধ্যে Save হয়েছে।",
+            "error"
+        );
+
+        return;
+    }
+
+
     const billNumber =
         "FJ-" +
         Date.now();
+
+
+    const now =
+        new Date();
 
 
     const bill = {
@@ -1734,7 +2022,12 @@ function saveBill(){
             billNumber,
 
         date:
-            new Date().toLocaleString(),
+            now.toISOString(),
+
+        displayDate:
+            now.toLocaleString(
+                "en-IN"
+            ),
 
         customerName:
             document.getElementById(
@@ -1747,7 +2040,11 @@ function saveBill(){
             ).value.trim(),
 
         items:
-            billItems,
+            JSON.parse(
+                JSON.stringify(
+                    billItems
+                )
+            ),
 
         subtotal:
             Number(
@@ -1780,12 +2077,27 @@ function saveBill(){
     };
 
 
-    const savedBills =
-        JSON.parse(
-            localStorage.getItem(
-                "phuloBills"
-            ) || "[]"
-        );
+    let savedBills = [];
+
+
+    try{
+
+        savedBills =
+            JSON.parse(
+                localStorage.getItem(
+                    "phuloBills"
+                ) || "[]"
+            );
+
+        if(!Array.isArray(savedBills)){
+            savedBills = [];
+        }
+
+    }catch(e){
+
+        savedBills = [];
+
+    }
 
 
     savedBills.push(bill);
@@ -1797,17 +2109,43 @@ function saveBill(){
     );
 
 
+    /*
+       খুব গুরুত্বপূর্ণ:
+       Bill Save হয়ে গেছে।
+       Stock ইতিমধ্যেই কমেছে।
+       তাই আর Stock ফেরত যাবে না।
+    */
+
+    billFinalized = true;
+
+
+    updateDashboard();
+
+
     showMessage(
         "✅ Bill Save হয়েছে। Bill No: " +
-        billNumber
+        billNumber +
+        " | Total ₹" +
+        bill.grandTotal.toFixed(2)
     );
+
+
+    /*
+       Save হওয়ার পরে নতুন Bill শুরু করা যাবে।
+    */
+
+    setTimeout(function(){
+
+        resetBillForm();
+
+    },1200);
 
 }
 
 
-/* =========================================
+/* =====================================================
    PRINT BILL
-========================================= */
+===================================================== */
 
 function printBill(){
 
@@ -1829,9 +2167,9 @@ function printBill(){
 }
 
 
-/* =========================================
+/* =====================================================
    SECURITY
-========================================= */
+===================================================== */
 
 function escapeHtml(value){
 
@@ -1845,9 +2183,477 @@ function escapeHtml(value){
 }
 
 
-/* =========================================
+/* =====================================================
+   MOBILE CAMERA SCANNER
+===================================================== */
+
+let mobileScanner = null;
+let cameraRunning = false;
+let lastCameraBarcode = "";
+
+
+function startMobileScanner(){
+
+    if(
+        typeof Html5Qrcode ===
+        "undefined"
+    ){
+
+        alert(
+            "Camera Scanner Library Load হয়নি। Internet চালু করুন।"
+        );
+
+        return;
+    }
+
+
+    if(cameraRunning){
+
+        return;
+    }
+
+
+    document.getElementById(
+        "mobileScanner"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "stopCameraBtn"
+    ).style.display = "block";
+
+
+    mobileScanner =
+        new Html5Qrcode(
+            "mobileScanner"
+        );
+
+
+    lastCameraBarcode = "";
+
+
+    mobileScanner.start(
+
+        {
+            facingMode:"environment"
+        },
+
+        {
+            fps:10,
+            qrbox:{
+                width:280,
+                height:120
+            },
+
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_93,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E
+            ]
+
+        },
+
+        function(decodedText){
+
+            if(
+                decodedText ===
+                lastCameraBarcode
+            ){
+
+                return;
+            }
+
+
+            lastCameraBarcode =
+                decodedText;
+
+
+            console.log(
+                "Camera Barcode:",
+                decodedText
+            );
+
+
+            stopMobileScanner();
+
+
+            autoBarcodeScan(
+                decodedText
+            );
+
+        },
+
+        function(errorMessage){
+
+            /*
+               Scan না হলে কিছু দেখাবে না।
+            */
+
+        }
+
+    )
+    .then(function(){
+
+        cameraRunning = true;
+
+    })
+    .catch(function(err){
+
+        cameraRunning = false;
+
+        document.getElementById(
+            "mobileScanner"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "stopCameraBtn"
+        ).style.display = "none";
+
+
+        alert(
+            "Camera চালু করা যাচ্ছে না। Camera Permission Allow করুন।"
+        );
+
+        console.error(err);
+
+    });
+
+}
+
+
+/* =====================================================
+   STOP CAMERA
+===================================================== */
+
+function stopMobileScanner(){
+
+    if(
+        mobileScanner &&
+        cameraRunning
+    ){
+
+        mobileScanner.stop()
+        .then(function(){
+
+            mobileScanner.clear();
+
+            cameraRunning = false;
+
+            document.getElementById(
+                "mobileScanner"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "stopCameraBtn"
+            ).style.display = "none";
+
+        })
+        .catch(function(){
+
+            cameraRunning = false;
+
+            document.getElementById(
+                "mobileScanner"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "stopCameraBtn"
+            ).style.display = "none";
+
+        });
+
+    }else{
+
+        document.getElementById(
+            "mobileScanner"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "stopCameraBtn"
+        ).style.display = "none";
+
+    }
+
+}
+
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+function getSavedBills(){
+
+    try{
+
+        const bills =
+            JSON.parse(
+                localStorage.getItem(
+                    "phuloBills"
+                ) || "[]"
+            );
+
+        return Array.isArray(bills)
+            ? bills
+            : [];
+
+    }catch(e){
+
+        return [];
+
+    }
+
+}
+
+
+/* =====================================================
+   CHECK BILL DATE
+===================================================== */
+
+function isBillToday(bill){
+
+    if(!bill || !bill.date){
+        return false;
+    }
+
+
+    const billDate =
+        new Date(
+            bill.date
+        );
+
+
+    if(
+        !isNaN(
+            billDate.getTime()
+        )
+    ){
+
+        const now =
+            new Date();
+
+
+        return (
+            billDate.getFullYear() ===
+            now.getFullYear() &&
+
+            billDate.getMonth() ===
+            now.getMonth() &&
+
+            billDate.getDate() ===
+            now.getDate()
+        );
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =====================================================
+   UPDATE DASHBOARD
+===================================================== */
+
+function updateDashboard(){
+
+    const bills =
+        getSavedBills();
+
+
+    let totalSales = 0;
+    let totalProducts = 0;
+    let totalCommission = 0;
+    let todaySales = 0;
+
+
+    bills.forEach(function(bill){
+
+        const amount =
+            Number(
+                bill.grandTotal
+            ) || 0;
+
+
+        const commission =
+            Number(
+                bill.commission
+            ) || 0;
+
+
+        totalSales += amount;
+
+        totalCommission +=
+            commission;
+
+
+        if(
+            isBillToday(bill)
+        ){
+
+            todaySales +=
+                amount;
+
+        }
+
+
+        if(
+            Array.isArray(
+                bill.items
+            )
+        ){
+
+            bill.items.forEach(
+                function(item){
+
+                    totalProducts +=
+                        Number(
+                            item.qty
+                        ) || 0;
+
+                }
+            );
+
+        }
+
+    });
+
+
+    /*
+       Current Stock
+    */
+
+    let currentStock = 0;
+
+
+    Object.keys(products).forEach(
+        function(code){
+
+            currentStock +=
+                Number(
+                    products[code].stock
+                ) || 0;
+
+        }
+    );
+
+
+    document.getElementById(
+        "fjTotalSales"
+    ).innerText =
+        "₹" +
+        totalSales.toFixed(2);
+
+
+    document.getElementById(
+        "fjTotalBills"
+    ).innerText =
+        bills.length;
+
+
+    document.getElementById(
+        "fjProductsSold"
+    ).innerText =
+        totalProducts;
+
+
+    document.getElementById(
+        "fjTodaySales"
+    ).innerText =
+        "₹" +
+        todaySales.toFixed(2);
+
+
+    document.getElementById(
+        "fjTotalCommission"
+    ).innerText =
+        "₹" +
+        totalCommission.toFixed(2);
+
+
+    document.getElementById(
+        "fjCurrentStock"
+    ).innerText =
+        currentStock;
+
+
+    document.getElementById(
+        "fjTodayDate"
+    ).innerText =
+        new Date().toLocaleDateString(
+            "en-IN",
+            {
+                day:"2-digit",
+                month:"long",
+                year:"numeric"
+            }
+        );
+
+}
+
+
+/* =====================================================
+   NEW BILLING
+===================================================== */
+
+function fjGoBilling(){
+
+    const billSection =
+        document.getElementById(
+            "billSection"
+        );
+
+
+    if(billSection){
+
+        billSection.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+        });
+
+
+        setTimeout(function(){
+
+            barcodeInput.focus();
+
+        },600);
+
+    }
+
+}
+
+
+/* =====================================================
+   REFRESH DASHBOARD
+===================================================== */
+
+function fjRefreshDashboard(){
+
+    updateDashboard();
+
+    renderProducts();
+
+    renderBill();
+
+
+    showMessage(
+        "✅ Dashboard Update হয়েছে।"
+    );
+
+}
+
+
+/* =====================================================
    START SYSTEM
-========================================= */
+===================================================== */
 
 saveProducts();
 
@@ -1855,10 +2661,14 @@ renderProducts();
 
 renderBill();
 
+updateDashboard();
+
 
 window.addEventListener(
     "load",
     function(){
+
+        updateDashboard();
 
         barcodeInput.focus();
 
@@ -1866,302 +2676,6 @@ window.addEventListener(
 );
 
 </script>
-<!-- MOBILE CAMERA BARCODE SCANNER -->
-<script src="https://unpkg.com/html5-qrcode"></script>
 
-<div style="margin:15px 0;">
-    <button onclick="startMobileScanner()"
-        style="width:100%;padding:15px;background:#198754;color:white;
-        border:0;border-radius:8px;font-size:18px;">
-        📷 Scan Barcode with Camera
-    </button>
-</div>
-
-<div id="mobileScanner"
-     style="width:100%;max-width:500px;margin:auto;display:none;">
-</div>
-
-<script>
-let mobileScanner;
-
-function startMobileScanner() {
-
-    document.getElementById("mobileScanner").style.display = "block";
-
-    mobileScanner = new Html5Qrcode("mobileScanner");
-
-    mobileScanner.start(
-        { facingMode: "environment" },
-
-        {
-            fps: 10,
-            qrbox: { width: 280, height: 120 }
-        },
-
-        function(decodedText) {
-
-            // Barcode পাওয়া গেছে
-            console.log("Barcode:", decodedText);
-
-            // আপনার Billing-এর barcode input খুঁজবে
-            const barcodeInput =
-                document.querySelector(
-                    'input[placeholder*="Barcode"], input[id*="barcode" i]'
-                );
-
-            if (barcodeInput) {
-
-                barcodeInput.value = decodedText;
-
-                barcodeInput.dispatchEvent(
-                    new Event("input", { bubbles:true })
-                );
-
-                barcodeInput.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key:"Enter",
-                        code:"Enter",
-                        bubbles:true
-                    })
-                );
-
-                barcodeInput.dispatchEvent(
-                    new KeyboardEvent("keyup", {
-                        key:"Enter",
-                        code:"Enter",
-                        bubbles:true
-                    })
-                );
-            }
-
-            // Camera বন্ধ
-            mobileScanner.stop().then(() => {
-                document.getElementById("mobileScanner").style.display = "none";
-            });
-
-        },
-
-        function(errorMessage) {
-            // স্ক্যান না হলে কিছু দেখাবে না
-        }
-    ).catch(function(err) {
-        alert("Camera চালু করা যাচ্ছে না। Camera permission Allow করুন।");
-        console.error(err);
-    });
-}
-</script>
-<!-- =========================================
-     PHULO JHANO HOME DASHBOARD
-========================================= -->
-
-<div id="fjDashboard" style="
-display:none;
-padding:20px;
-background:#f3f4f6;
-font-family:Arial,sans-serif;
-">
-
-  <div style="
-    background:#166534;
-    color:white;
-    padding:20px;
-    border-radius:15px;
-    text-align:center;
-    margin-bottom:20px;
-  ">
-    <h1 style="margin:0;">🏠 Phulo Jhano</h1>
-    <p style="margin:8px 0 0;">Billing Dashboard</p>
-  </div>
-
-  <div style="
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-  ">
-
-    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
-      <div style="font-size:30px;">💰</div>
-      <b>Total Business</b>
-      <h2 id="fjTotalSales">₹0.00</h2>
-    </div>
-
-    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
-      <div style="font-size:30px;">🧾</div>
-      <b>Total Bills</b>
-      <h2 id="fjTotalBills">0</h2>
-    </div>
-
-    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
-      <div style="font-size:30px;">📦</div>
-      <b>Products Sold</b>
-      <h2 id="fjProductsSold">0</h2>
-    </div>
-
-    <div style="background:white;padding:18px;border-radius:14px;text-align:center;">
-      <div style="font-size:30px;">📅</div>
-      <b>Today's Sales</b>
-      <h2 id="fjTodaySales">₹0.00</h2>
-    </div>
-
-  </div>
-
-  <button onclick="fjGoBilling()" style="
-    width:100%;
-    margin-top:20px;
-    padding:16px;
-    border:0;
-    border-radius:12px;
-    background:#166534;
-    color:white;
-    font-size:18px;
-    font-weight:bold;
-  ">
-    🧾 New Billing
-  </button>
-
-  <button onclick="fjRefreshDashboard()" style="
-    width:100%;
-    margin-top:10px;
-    padding:14px;
-    border:0;
-    border-radius:12px;
-    background:#2563eb;
-    color:white;
-    font-size:17px;
-    font-weight:bold;
-  ">
-    🔄 Refresh Dashboard
-  </button>
-
-</div>
-
-
-<script>
-
-function fjLoadDashboard(){
-
-  let bills = [];
-
-  try {
-    bills = JSON.parse(
-      localStorage.getItem("phuloBills") || "[]"
-    );
-  } catch(e) {
-    bills = [];
-  }
-
-  let totalSales = 0;
-  let totalProducts = 0;
-  let todaySales = 0;
-
-  const today =
-    new Date().toLocaleDateString();
-
-  bills.forEach(function(bill){
-
-    const amount =
-      Number(bill.grandTotal) || 0;
-
-    totalSales += amount;
-
-    if(Array.isArray(bill.items)){
-
-      bill.items.forEach(function(item){
-
-        totalProducts +=
-          Number(item.qty) || 0;
-
-      });
-
-    }
-
-    if(bill.date){
-
-      try {
-
-        const billDate =
-          new Date(bill.date).toLocaleDateString();
-
-        if(billDate === today){
-          todaySales += amount;
-        }
-
-      } catch(e){}
-
-    }
-
-  });
-
-  document.getElementById("fjTotalSales")
-    .innerText =
-    "₹" + totalSales.toFixed(2);
-
-  document.getElementById("fjTotalBills")
-    .innerText =
-    bills.length;
-
-  document.getElementById("fjProductsSold")
-    .innerText =
-    totalProducts;
-
-  document.getElementById("fjTodaySales")
-    .innerText =
-    "₹" + todaySales.toFixed(2);
-}
-
-
-function fjGoBilling(){
-
-  const billSection =
-    document.getElementById("billsSection");
-
-  if(billSection){
-
-    billSection.scrollIntoView({
-      behavior:"smooth"
-    });
-
-  } else {
-
-    window.scrollTo({
-      top:0,
-      behavior:"smooth"
-    });
-
-  }
-
-}
-
-
-function fjRefreshDashboard(){
-
-  fjLoadDashboard();
-
-  alert("✅ Dashboard Update হয়েছে");
-
-}
-
-
-/* Dashboard শুরুতে দেখাবে */
-(function(){
-
-  const dashboard =
-    document.getElementById("fjDashboard");
-
-  if(dashboard){
-
-    dashboard.style.display = "block";
-
-    document.body.insertBefore(
-      dashboard,
-      document.body.firstChild
-    );
-
-    fjLoadDashboard();
-
-  }
-
-})();
-
-</script>/body>
+</body>
 </html>
