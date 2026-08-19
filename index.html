@@ -296,15 +296,85 @@ th{
     }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 const SUPABASE_URL = "https://urofhcqamcsngoydbfv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_5xRTHgpvUyXggDSJJUvZ_g_yVhC8PHu";
+async function fjLogin() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const message = document.getElementById("loginMessage");
+
+    if (!email || !password) {
+        message.textContent = "Email এবং Password দিন";
+        return;
+    }
+
+    message.textContent = "Login হচ্ছে...";
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        message.textContent = "Login ব্যর্থ: " + error.message;
+        return;
+    }
+
+    const user = data.user;
+
+    const { data: roleData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+    if (roleError) {
+        message.textContent = "User role পাওয়া যায়নি";
+        return;
+    }
+
+    document.getElementById("fjLoginScreen").style.display = "none";
+    document.getElementById("fjDashboard").style.display = "block";
+}
 </script>
  </head>
 
 <body>
+<div id="fjLoginScreen" style="max-width:420px;margin:40px auto;padding:25px;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.15);">
 
+<h2 style="text-align:center;">🌿 Phulo Jhano</h2>
+
+<p style="text-align:center;">Billing System Login</p>
+
+<label>Email</label>
+<input
+id="loginEmail"
+type="email"
+placeholder="আপনার Email লিখুন"
+style="width:100%;padding:14px;margin:8px 0 15px;"
+>
+
+<label>Password</label>
+<input
+id="loginPassword"
+type="password"
+placeholder="Password লিখুন"
+style="width:100%;padding:14px;margin:8px 0 15px;"
+>
+
+<button
+onclick="fjLogin()"
+style="width:100%;padding:14px;background:#166534;color:white;border:0;border-radius:10px;font-size:17px;font-weight:bold;"
+>
+🔐 Login
+</button>
+
+<p id="loginMessage" style="text-align:center;"></p>
+
+</div>
 <!-- =========================
      DASHBOARD
 ========================= -->
