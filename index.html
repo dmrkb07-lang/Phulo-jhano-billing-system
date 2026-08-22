@@ -301,7 +301,7 @@ th{
 <script>
 const SUPABASE_URL = "https://tnoxenhzhhgwchoxjlpz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_PHWJzIZ9UB74pHXv0601uw_crzdanRM";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
 async function fjLogin() {
 
@@ -318,7 +318,7 @@ async function fjLogin() {
 
     try {
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -384,7 +384,7 @@ style="width:100%;padding:14px;background:#166534;color:white;border:0;border-ra
      DASHBOARD
 ========================= -->
 
-<div id="fjDashboard" class="dashboard">
+<div id="fjDashboard" class="dashboard" style="display:none;">
 
     <div class="dashboard-header">
         <h1>🏠 Phulo Jhano</h1>
