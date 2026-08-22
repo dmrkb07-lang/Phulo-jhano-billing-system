@@ -305,11 +305,6 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
 async function fjLogin() {
 
-
-    
-    
-
-    
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
     const message = document.getElementById("loginMessage");
@@ -321,32 +316,33 @@ async function fjLogin() {
 
     message.textContent = "Login হচ্ছে...";
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
+    try {
 
-    if (error) {
-        message.textContent = "Login ব্যর্থ: " + error.message;
-        return;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            message.textContent = "Login ব্যর্থ: " + error.message;
+            return;
+        }
+
+        if (!data || !data.user) {
+            message.textContent = "User পাওয়া যায়নি";
+            return;
+        }
+
+        message.textContent = "Login সফল হয়েছে";
+
+        document.getElementById("fjLoginScreen").style.display = "none";
+        document.getElementById("fjDashboard").style.display = "block";
+
+    } catch (err) {
+
+        message.textContent = "System Error: " + err.message;
+
     }
-
-    const user = data.user;
-
-    const { data: roleData, error: roleError } =
-  await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-    if (roleError) {
-        message.textContent = "User role পাওয়া যায়নি";
-        return;
-    }
-
-    document.getElementById("fjLoginScreen").style.display = "none";
-    document.getElementById("fjDashboard").style.display = "block";
 }
 </script>
  </head>
