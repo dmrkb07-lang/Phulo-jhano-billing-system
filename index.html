@@ -1707,49 +1707,32 @@ function resetBillForm(){
    SAVE PRODUCT
 ===================================================== */
 
-function saveProduct(){
+async function saveProduct(){
 
     const barcode =
-        document.getElementById(
-            "masterBarcode"
-        ).value.trim();
-
+        document.getElementById("masterBarcode").value.trim();
 
     const name =
-        document.getElementById(
-            "masterName"
-        ).value.trim();
-
+        document.getElementById("masterName").value.trim();
 
     const price =
         Number(
-            document.getElementById(
-                "masterPrice"
-            ).value
+            document.getElementById("masterPrice").value
         );
-
 
     const gst =
         Number(
-            document.getElementById(
-                "masterGST"
-            ).value
+            document.getElementById("masterGST").value
         );
-
 
     const commission =
         Number(
-            document.getElementById(
-                "masterCommission"
-            ).value
+            document.getElementById("masterCommission").value
         );
-
 
     const stock =
         Number(
-            document.getElementById(
-                "masterStock"
-            ).value
+            document.getElementById("masterStock").value
         );
 
 
@@ -1775,25 +1758,73 @@ function saveProduct(){
     }
 
 
+    /* Logged-in User */
+    const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
+
+
+    if(userError || !userData || !userData.user){
+
+        showMessage(
+            "❌ Login session পাওয়া যায়নি। আবার Login করুন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const userId =
+        userData.user.id;
+
+
+    /* Supabase Database-এ Product Save */
+    const { data, error } =
+        await supabaseClient
+        .from("products")
+        .insert([
+            {
+                barcode: barcode,
+                product_name: name,
+                price: price,
+                gst: gst,
+                commission: commission,
+                stock: stock,
+                created_by: userId
+            }
+        ])
+        .select()
+        .single();
+
+
+    if(error){
+
+        console.error("Product Save Error:", error);
+
+        showMessage(
+            "❌ Supabase-এ Product Save হয়নি: " +
+            error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* Local copy-ও রাখছি */
     products[barcode] = {
 
-        barcode:
-            barcode,
+        barcode: barcode,
 
-        name:
-            name,
+        name: name,
 
-        price:
-            price,
+        price: price,
 
-        gst:
-            gst,
+        gst: gst,
 
-        commission:
-            commission,
+        commission: commission,
 
-        stock:
-            stock
+        stock: stock
 
     };
 
@@ -1805,30 +1836,27 @@ function saveProduct(){
     updateDashboard();
 
 
+    /* Form Clear */
+
     document.getElementById(
         "masterBarcode"
     ).value = "";
-
 
     document.getElementById(
         "masterName"
     ).value = "";
 
-
     document.getElementById(
         "masterPrice"
     ).value = "";
-
 
     document.getElementById(
         "masterGST"
     ).value = 5;
 
-
     document.getElementById(
         "masterCommission"
     ).value = 10;
-
 
     document.getElementById(
         "masterStock"
@@ -1836,14 +1864,14 @@ function saveProduct(){
 
 
     showMessage(
-        "✅ Product Master-এ Save হয়েছে: " +
+        "✅ Product Supabase Database-এ Save হয়েছে: " +
         name
     );
 
 
     barcodeInput.focus();
 
-}
+        }
 
 
 /* =====================================================
