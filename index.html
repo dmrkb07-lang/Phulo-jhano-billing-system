@@ -2057,11 +2057,13 @@ function renderProducts(){
 }
 
 
+
+
 /* =====================================================
    SAVE BILL
 ===================================================== */
 
-function saveBill(){
+async function saveBill(){
 
     if(
         billItems.length === 0
@@ -2087,6 +2089,32 @@ function saveBill(){
     }
 
 
+    /* ===============================
+       LOGIN USER CHECK
+    =============================== */
+
+    const {
+        data: { user },
+        error: userError
+    } =
+        await supabaseClient.auth.getUser();
+
+
+    if(userError || !user){
+
+        showMessage(
+            "❌ Login পাওয়া যায়নি। আবার Login করুন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* ===============================
+       BILL NUMBER
+    =============================== */
+
     const billNumber =
         "FJ-" +
         Date.now();
@@ -2095,6 +2123,10 @@ function saveBill(){
     const now =
         new Date();
 
+
+    /* ===============================
+       BILL DATA
+    =============================== */
 
     const bill = {
 
@@ -2131,14 +2163,195 @@ function saveBill(){
                 document.getElementById(
                     "subtotal"
                 ).innerText
-            ),
+            ) || 0,
 
         gst:
             Number(
                 document.getElementById(
                     "gstTotal"
                 ).innerText
-            ),
+            ) || 0,
+
+        commission:
+            Number(
+                document.getElementById(
+                    "commissionTotal"
+                ).innerText
+            ) || 0,
+
+        grandTotal:
+            Number(
+                document.getElementById(
+                    "grandTotal"
+                ).innerText
+            ) || 0
+
+    };
+
+
+    /* =====================================
+       SUPABASE-এ BILL SAVE
+    ===================================== */
+
+    const {
+        error: supabaseError
+    } =
+        await supabaseClient
+            .from("bills")
+            .insert({
+
+                bill_number:
+                    bill.billNumber,
+
+                user_id:
+                    user.id,
+
+                user_email:
+                    user.email || "",
+
+                customer_name:
+                    bill.customerName,
+
+                customer_mobile:
+                    bill.customerMobile,
+
+                items:
+                    bill.items,
+
+                subtotal:
+                    bill.subtotal,
+
+                gst:
+                    bill.gst,
+
+                commission:
+                    bill.commission,
+
+                grand_total:
+                    bill.grandTotal,
+
+                created_at:
+                    bill.date
+
+            });
+
+
+    /* ===============================
+       SUPABASE SAVE ERROR
+    =============================== */
+
+    if(supabaseError){
+
+        console.error(
+            "Supabase Bill Error:",
+            supabaseError
+        );
+
+        showMessage(
+            "❌ Bill Save হয়নি: " +
+            supabaseError.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* =====================================
+       LOCAL STORAGE-এও SAVE
+       পুরনো Data নিরাপদ রাখার জন্য
+    ===================================== */
+
+    let savedBills = [];
+
+
+    try{
+
+        savedBills =
+            JSON.parse(
+                localStorage.getItem(
+                    "phuloBills"
+                ) || "[]"
+            );
+
+
+        if(
+            !Array.isArray(
+                savedBills
+            )
+        ){
+
+            savedBills = [];
+
+        }
+
+    }catch(e){
+
+        savedBills = [];
+
+    }
+
+
+    savedBills.push(
+        bill
+    );
+
+
+    localStorage.setItem(
+        "phuloBills",
+        JSON.stringify(
+            savedBills
+        )
+    );
+
+
+    /* =====================================
+       BILL FINALIZED
+       Stock ইতিমধ্যেই কমেছে
+    ===================================== */
+
+    billFinalized =
+        true;
+
+
+    /* =====================================
+       DASHBOARD UPDATE
+    ===================================== */
+
+    updateDashboard();
+
+
+    /* =====================================
+       SUCCESS
+    ===================================== */
+
+    showMessage(
+
+        "✅ Bill Save হয়েছে। Bill No: " +
+        billNumber +
+        " | Total ₹" +
+        bill.grandTotal.toFixed(2)
+
+    );
+
+
+    /* =====================================
+       নতুন Bill
+    ===================================== */
+
+    setTimeout(
+
+        function(){
+
+            resetBillForm();
+
+        },
+
+        1200
+
+    );
+
+}
 
         commission:
             Number(
