@@ -2353,87 +2353,8 @@ async function saveBill(){
 
 }
 
-        commission:
-            Number(
-                document.getElementById(
-                    "commissionTotal"
-                ).innerText
-            ),
 
-        grandTotal:
-            Number(
-                document.getElementById(
-                    "grandTotal"
-                ).innerText
-            )
-
-    };
-
-
-    let savedBills = [];
-
-
-    try{
-
-        savedBills =
-            JSON.parse(
-                localStorage.getItem(
-                    "phuloBills"
-                ) || "[]"
-            );
-
-        if(!Array.isArray(savedBills)){
-            savedBills = [];
-        }
-
-    }catch(e){
-
-        savedBills = [];
-
-    }
-
-
-    savedBills.push(bill);
-
-
-    localStorage.setItem(
-        "phuloBills",
-        JSON.stringify(savedBills)
-    );
-
-
-    /*
-       খুব গুরুত্বপূর্ণ:
-       Bill Save হয়ে গেছে।
-       Stock ইতিমধ্যেই কমেছে।
-       তাই আর Stock ফেরত যাবে না।
-    */
-
-    billFinalized = true;
-
-
-    updateDashboard();
-
-
-    showMessage(
-        "✅ Bill Save হয়েছে। Bill No: " +
-        billNumber +
-        " | Total ₹" +
-        bill.grandTotal.toFixed(2)
-    );
-
-
-    /*
-       Save হওয়ার পরে নতুন Bill শুরু করা যাবে।
-    */
-
-    setTimeout(function(){
-
-        resetBillForm();
-
-    },1200);
-
-}
+        
 
 
 /* =====================================================
