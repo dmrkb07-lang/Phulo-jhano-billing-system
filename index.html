@@ -2682,28 +2682,161 @@ function stopMobileScanner(){
    DASHBOARD
 ===================================================== */
 
-function getSavedBills(){
+async function getSavedBills(){
 
     try{
 
-        const bills =
-            JSON.parse(
-                localStorage.getItem(
-                    "phuloBills"
-                ) || "[]"
+        const {
+            data: { user },
+            error: userError
+        } =
+            await supabaseClient.auth.getUser();
+
+        if(userError || !user){
+            return [];
+        }
+
+
+        /* =================================
+           ADMIN EMAIL
+           এখানে আপনার ADMIN-এর Login Email
+           বসাবেন
+        ================================= */
+
+        const ADMIN_EMAIL =
+    "admin123@gmail.com";
+
+
+        const isAdmin =
+            (user.email || "")
+                .toLowerCase()
+                .trim() ===
+            ADMIN_EMAIL
+                .toLowerCase()
+                .trim();
+
+
+        /* =================================
+           SUPABASE থেকে BILL LOAD
+        ================================= */
+
+        let query =
+            supabaseClient
+                .from("bills")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        /* =================================
+           ADMIN → সব Bill
+           A/B/USER → নিজের Bill
+        ================================= */
+
+        if(!isAdmin){
+
+            query =
+                query.eq(
+                    "user_id",
+                    user.id
+                );
+
+        }
+
+
+        const {
+            data,
+            error
+        } = await query;
+
+
+        if(error){
+
+            console.error(
+                "Load Bills Error:",
+                error
             );
 
-        return Array.isArray(bills)
-            ? bills
-            : [];
+            return [];
 
-    }catch(e){
+        }
+
+
+        /* =================================
+           Supabase Data → পুরনো Bill Format
+        ================================= */
+
+        return (data || []).map(
+            function(row){
+
+                return {
+
+                    billNumber:
+                        row.bill_number,
+
+                    date:
+                        row.created_at,
+
+                    displayDate:
+                        new Date(
+                            row.created_at
+                        ).toLocaleString(
+                            "en-IN"
+                        ),
+
+                    customerName:
+                        row.customer_name || "",
+
+                    customerMobile:
+                        row.customer_mobile || "",
+
+                    items:
+                        Array.isArray(row.items)
+                            ? row.items
+                            : [],
+
+                    subtotal:
+                        Number(
+                            row.subtotal
+                        ) || 0,
+
+                    gst:
+                        Number(
+                            row.gst
+                        ) || 0,
+
+                    commission:
+                        Number(
+                            row.commission
+                        ) || 0,
+
+                    grandTotal:
+                        Number(
+                            row.grand_total
+                        ) || 0
+
+                };
+
+            }
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "getSavedBills Error:",
+            error
+        );
 
         return [];
 
     }
 
-}
+            }
 
 
 /* =====================================================
@@ -2756,10 +2889,10 @@ function isBillToday(bill){
    UPDATE DASHBOARD
 ===================================================== */
 
-function updateDashboard(){
+async function updateDashboard(){
 
     const bills =
-        getSavedBills();
+    await getSavedBills();
 
 
     let totalSales = 0;
