@@ -3488,6 +3488,97 @@ setTimeout(function () {
 setInterval(function () {
     fjSyncAvailablePayout();
 }, 1000);
+/* MEMBER PAYOUT REQUEST - SUPABASE */
+
+async function fjSubmitPayoutRequest() {
+
+    const amountEl =
+        document.getElementById("fjPayoutAmount");
+
+    const methodEl =
+        document.getElementById("fjPayoutMethod");
+
+    const detailsEl =
+        document.getElementById("fjPayoutDetails");
+
+    const amount =
+        parseFloat(amountEl.value) || 0;
+
+    const paymentMethod =
+        methodEl.value.trim();
+
+    const paymentDetails =
+        detailsEl.value.trim();
+
+    /* Login user check */
+    const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+
+    if (authError || !authData.user) {
+        alert("❌ আগে Login করুন।");
+        return;
+    }
+
+    /* Amount check */
+    const availableEl =
+        document.getElementById("fjAvailablePayout");
+
+    const available =
+        parseFloat(
+            availableEl.innerText
+                .replace("₹", "")
+                .replace(/,/g, "")
+                .trim()
+        ) || 0;
+
+    if (amount <= 0) {
+        alert("❌ Payout Amount দিন।");
+        return;
+    }
+
+    if (amount > available) {
+        alert("❌ আপনার Available Commission-এর চেয়ে বেশি payout চাওয়া যাবে না।");
+        return;
+    }
+
+    if (!paymentMethod) {
+        alert("❌ Payment Method নির্বাচন করুন।");
+        return;
+    }
+
+    if (!paymentDetails) {
+        alert("❌ UPI / Bank Details দিন।");
+        return;
+    }
+
+    /* Supabase-এ Request পাঠানো */
+    const { data, error } =
+        await supabaseClient
+        .from("payout_requests")
+        .insert({
+            requester_user_id: authData.user.id,
+            amount: amount,
+            payment_method: paymentMethod,
+            payment_details: paymentDetails,
+            status: "pending"
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error(error);
+        alert("❌ Payout Request ব্যর্থ:\n" + error.message);
+        return;
+    }
+
+    alert("✅ Payout Request সফলভাবে পাঠানো হয়েছে।");
+
+    /* Form পরিষ্কার */
+    amountEl.value = "";
+    methodEl.value = "";
+    detailsEl.value = "";
+
+}
 </script>
 </body>
 </html>
