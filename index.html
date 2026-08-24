@@ -3559,7 +3559,12 @@ if (userError || !user) {
     alert("❌ Login session পাওয়া যাচ্ছে না। আবার Login করুন।");
     return;
 }
+const { data: sessionData } = await supabaseClient.auth.getSession();
 
+if (!sessionData.session) {
+    alert("❌ Login Session পাওয়া যাচ্ছে না। আবার Login করুন।");
+    return;
+}
 const { data, error } =
     await supabaseClient
     .from("payout_requests")
