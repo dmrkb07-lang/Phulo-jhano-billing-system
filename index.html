@@ -3552,18 +3552,26 @@ async function fjSubmitPayoutRequest() {
     }
 
     /* Supabase-এ Request পাঠানো */
-    const { data, error } =
-        await supabaseClient
-        .from("payout_requests")
-        .insert({
-user_id: (await supabaseClient.auth.getUser()).data.user.id,
-            amount: amount,
-            payment_method: paymentMethod,
-            payment_details: paymentDetails,
-            status: "pending"
-        })
-        .select()
-        .single();
+    const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+if (userError || !user) {
+    alert("❌ Login session পাওয়া যাচ্ছে না। আবার Login করুন।");
+    return;
+}
+
+const { data, error } =
+    await supabaseClient
+    .from("payout_requests")
+    .insert({
+        user_id: user.id,
+        amount: amount,
+        payment_method: paymentMethod,
+        payment_details: paymentDetails,
+        status: "pending"
+    })
+    .select()
+    .single();
 
     if (error) {
         console.error(error);
