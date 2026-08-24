@@ -2337,7 +2337,76 @@ async function saveBill(){
        BILL FINALIZED
        Stock ইতিমধ্যেই কমেছে
     ===================================== */
+ /* ================================
+   STOCK UPDATE
+   ================================ */
 
+for (const item of bill.items) {
+
+    const barcode = item.barcode;
+    const qty = Number(item.qty) || 0;
+
+    if (!barcode || qty <= 0) {
+        continue;
+    }
+
+    // বর্তমান stock বের করুন
+    const { data: product, error: stockFetchError } =
+        await supabaseClient
+            .from("products")
+            .select("stock")
+            .eq("barcode", barcode)
+            .single();
+
+    if (stockFetchError || !product) {
+        console.error("Stock Fetch Error:", stockFetchError);
+
+        showMessage(
+            "❌ Stock পাওয়া যায়নি: " + barcode,
+            "error"
+        );
+
+        return;
+    }
+
+    const currentStock = Number(product.stock) || 0;
+    const newStock = currentStock - qty;
+
+    // Stock পর্যাপ্ত না থাকলে Bill finalized হবে না
+    if (newStock < 0) {
+
+        showMessage(
+            "❌ পর্যাপ্ত Stock নেই: " + barcode,
+            "error"
+        );
+
+        return;
+    }
+
+    // নতুন Stock Save করুন
+    const { error: stockUpdateError } =
+        await supabaseClient
+            .from("products")
+            .update({
+                stock: newStock
+            })
+            .eq("barcode", barcode);
+
+    if (stockUpdateError) {
+
+        console.error(
+            "Stock Update Error:",
+            stockUpdateError
+        );
+
+        showMessage(
+            "❌ Stock Update হয়নি: " + barcode,
+            "error"
+        );
+
+        return;
+    }
+                }
     billFinalized =
         true;
 
