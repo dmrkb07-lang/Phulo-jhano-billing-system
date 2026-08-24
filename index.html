@@ -3459,6 +3459,35 @@ window.addEventListener(
 );
 
 </script>
+<script>
+/* MEMBER PAYOUT - AVAILABLE COMMISSION SYNC */
 
+function fjSyncAvailablePayout() {
+
+    const totalEl = document.getElementById("fjTotalCommission");
+    const payoutEl = document.getElementById("fjAvailablePayout");
+
+    if (!totalEl || !payoutEl) return;
+
+    let amount = totalEl.innerText
+        .replace("₹", "")
+        .replace(/,/g, "")
+        .trim();
+
+    amount = parseFloat(amount) || 0;
+
+    payoutEl.innerText = "₹" + amount.toFixed(2);
+}
+
+/* Page load */
+setTimeout(function () {
+    fjSyncAvailablePayout();
+}, 1000);
+
+/* Dashboard data update হওয়ার পরও sync হবে */
+setInterval(function () {
+    fjSyncAvailablePayout();
+}, 1000);
+</script>
 </body>
 </html>
