@@ -3571,6 +3571,7 @@ const { data, error } =
     .from("payout_requests")
     .insert({
         user_id: user.id,
+        requester_user_id: user.id,
         amount: amount,
         payment_method: paymentMethod,
         payment_details: paymentDetails,
