@@ -3594,6 +3594,98 @@ const { data, error } =
     detailsEl.value = "";
 
 }
+async function fjLoadPayoutRequests() {
+    try {
+        const { data: requests, error } = await supabaseClient
+            .from("payout_requests")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Payout Request Load Error:", error);
+            alert("❌ Payout Requests লোড হচ্ছে না:\n" + error.message);
+            return;
+        }
+
+        const listEl = document.getElementById("fjPayoutRequestList");
+
+        if (!listEl) {
+            console.error("fjPayoutRequestList পাওয়া যায়নি");
+            return;
+        }
+
+        if (!requests || requests.length === 0) {
+            listEl.innerHTML = `
+                <div style="
+                    padding:25px 10px;
+                    text-align:center;
+                    color:#9ca3af;
+                    font-size:14px;
+                ">
+                    No payout requests yet
+                </div>
+            `;
+
+            const countEl = document.getElementById("fjPayoutPendingCount");
+            if (countEl) countEl.textContent = "0";
+
+            return;
+        }
+
+        const pendingCount = requests.filter(
+            r => String(r.status || "").toLowerCase() === "pending"
+        ).length;
+
+        const countEl = document.getElementById("fjPayoutPendingCount");
+        if (countEl) countEl.textContent = pendingCount;
+
+        listEl.innerHTML = requests.map(r => `
+            <div style="
+                background:#ffffff;
+                border:1px solid #e5e7eb;
+                border-radius:14px;
+                padding:14px;
+                margin-bottom:12px;
+                box-shadow:0 3px 10px rgba(0,0,0,.06);
+            ">
+                <div style="font-weight:800;color:#166534;">
+                    💰 Payout Request
+                </div>
+
+                <div style="margin-top:8px;">
+                    <b>Amount:</b> ₹${Number(r.amount || 0).toFixed(2)}
+                </div>
+
+                <div>
+                    <b>Payment Method:</b>
+                    ${r.payment_method || "-"}
+                </div>
+
+                <div>
+                    <b>Payment Details:</b>
+                    ${r.payment_details || "-"}
+                </div>
+
+                <div>
+                    <b>Status:</b>
+                    ${r.status || "-"}
+                </div>
+
+                <div style="
+                    margin-top:6px;
+                    font-size:12px;
+                    color:#6b7280;
+                ">
+                    User ID: ${r.user_id || "-"}
+                </div>
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error("Payout Request Error:", err);
+        alert("❌ Payout Requests লোড করতে সমস্যা হয়েছে");
+    }
+        }
 </script>
 </body>
 </html>
