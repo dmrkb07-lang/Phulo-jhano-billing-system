@@ -3599,7 +3599,7 @@ async function fjLoadPayoutRequests() {
         const { data: requests, error } = await supabaseClient
             .from("payout_requests")
             .select("*")
-            .order("created_at", { ascending: false });
+            
 
         if (error) {
             console.error("Payout Request Load Error:", error);
