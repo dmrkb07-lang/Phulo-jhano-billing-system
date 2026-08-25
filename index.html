@@ -3565,6 +3565,7 @@ if (!sessionData.session) {
     alert("❌ Login Session পাওয়া যাচ্ছে না। আবার Login করুন।");
     return;
 }
+ alert("User ID: " + user.id + "\nSession User ID: " + sessionData.session.user.id);   
 const { data, error } =
     await supabaseClient
     .from("payout_requests")
