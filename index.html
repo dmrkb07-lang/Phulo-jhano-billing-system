@@ -3640,6 +3640,12 @@ async function fjLoadPayoutRequests() {
         if (countEl) countEl.textContent = pendingCount;
 const totalRequestsEl = document.getElementById("fjPayoutTotalRequests");
 if (totalRequestsEl) totalRequestsEl.textContent = requests.length;
+       const pendingAmount = requests
+    .filter(r => String(r.status || "").toLowerCase() === "pending")
+    .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+const pendingAmountEl = document.getElementById("fjPayoutPendingAmount");
+if (pendingAmountEl) pendingAmountEl.textContent = "₹" + pendingAmount.toFixed(2);
         listEl.innerHTML = requests.map(r => `
             <div style="
                 background:#ffffff;
