@@ -3638,7 +3638,8 @@ async function fjLoadPayoutRequests() {
 
         const countEl = document.getElementById("fjPayoutPendingCount");
         if (countEl) countEl.textContent = pendingCount;
-
+const totalRequestsEl = document.getElementById("fjPayoutTotalRequests");
+if (totalRequestsEl) totalRequestsEl.textContent = requests.length;
         listEl.innerHTML = requests.map(r => `
             <div style="
                 background:#ffffff;
