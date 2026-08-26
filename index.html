@@ -3685,6 +3685,19 @@ if (pendingAmountEl) pendingAmountEl.textContent = "₹" + pendingAmount.toFixed
                 ">
                     User ID: ${r.user_id || "-"}
                 </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+    <button
+        onclick="fjApprovePayoutRequest('${r.id}')"
+        style="flex:1;background:#198754;color:white;border:none;border-radius:10px;padding:10px;font-weight:700;">
+        ✅ Approve & Pay
+    </button>
+
+    <button
+        onclick="fjRejectPayoutRequest('${r.id}')"
+        style="flex:1;background:#dc3545;color:white;border:none;border-radius:10px;padding:10px;font-weight:700;">
+        ❌ Reject
+    </button>
+</div>
             </div>
         `).join("");
 
@@ -3693,6 +3706,67 @@ if (pendingAmountEl) pendingAmountEl.textContent = "₹" + pendingAmount.toFixed
         alert("❌ Payout Requests লোড করতে সমস্যা হয়েছে");
     }
         }
+async function fjApprovePayoutRequest(requestId) {
+    if (!confirm("এই payout request-টি Approve & Pay করবেন?")) {
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from("payout_requests")
+            .update({
+                status: "paid",
+                approved_at: new Date().toISOString(),
+                paid_at: new Date().toISOString()
+            })
+            .eq("id", requestId);
+
+        if (error) {
+            console.error("Approve Payout Error:", error);
+            alert("❌ Payout Approve করা যায়নি:\n" + error.message);
+            return;
+        }
+
+        alert("✅ Payout Successfully Paid!");
+
+        await fjLoadPayoutRequests();
+
+    } catch (err) {
+        console.error("Approve Payout Error:", err);
+        alert("❌ Error: " + err.message);
+    }
+}
+
+
+async function fjRejectPayoutRequest(requestId) {
+    if (!confirm("এই payout request-টি Reject করবেন?")) {
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from("payout_requests")
+            .update({
+                status: "rejected",
+                rejected_at: new Date().toISOString()
+            })
+            .eq("id", requestId);
+
+        if (error) {
+            console.error("Reject Payout Error:", error);
+            alert("❌ Payout Reject করা যায়নি:\n" + error.message);
+            return;
+        }
+
+        alert("❌ Payout Request Rejected!");
+
+        await fjLoadPayoutRequests();
+
+    } catch (err) {
+        console.error("Reject Payout Error:", err);
+        alert("❌ Error: " + err.message);
+    }
+}
 </script>
 </body>
 </html>
