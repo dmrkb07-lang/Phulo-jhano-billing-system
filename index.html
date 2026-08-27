@@ -3094,15 +3094,7 @@ async function getSavedBills(){
            A/B/USER → নিজের Bill
         ================================= */
 
-        if(!isAdmin){
-
-            query =
-                query.eq(
-                    "user_id",
-                    user.id
-                );
-
-        }
+        
 
 
         const {
