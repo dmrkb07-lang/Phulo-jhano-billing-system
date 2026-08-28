@@ -430,7 +430,63 @@ style="width:100%;padding:14px;background:#166534;color:white;border:0;border-ra
         </div>
 
     </div>
-<!-- ==================== MEMBER PAYOUT REQUEST : PLUS ONLY ==================== -->
+<!-- ================= JOINING DASHBOARD ================= -->
+<section id="fjJoiningDashboard"
+style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.07);">
+
+<h2 style="margin:0 0 15px;color:#166534;">
+👥 Joining Dashboard
+</h2>
+
+<div class="dashboard-grid">
+
+<div class="dashboard-card">
+<b>Total Downline</b>
+<h2 id="fjTotalDownline">0</h2>
+</div>
+
+<div class="dashboard-card">
+<b>Direct Downline</b>
+<h2 id="fjDirectDownline">0</h2>
+</div>
+
+<div class="dashboard-card">
+<b>🟢 Active Members</b>
+<h2 id="fjActiveMembers">0</h2>
+</div>
+
+<div class="dashboard-card">
+<b>🔴 Inactive Members</b>
+<h2 id="fjInactiveMembers">0</h2>
+</div>
+
+</div>
+
+<div style="margin-top:15px;">
+<h3 style="margin-bottom:10px;">Member List</h3>
+
+<div style="overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;">
+<thead>
+<tr>
+<th>Member Name</th>
+<th>Mobile</th>
+<th>Level</th>
+<th>Status</th>
+<th>Sponsor</th>
+</tr>
+</thead>
+
+<tbody id="fjJoiningMemberTable">
+</tbody>
+
+</table>
+</div>
+</div>
+
+</section>
+<!-- ================= END JOINING DASHBOARD ================= -->
+    <!-- ==================== MEMBER PAYOUT REQUEST : PLUS ONLY ==================== -->
 
 <div id="fjMemberPayoutRequest" style="
     margin-top:15px;
@@ -3759,6 +3815,79 @@ async function fjRejectPayoutRequest(requestId) {
         alert("❌ Error: " + err.message);
     }
 }
+async function fjLoadJoiningDashboard() {
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        console.log("Joining Dashboard: user পাওয়া যায়নি");
+        return;
+    }
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .rpc("fj_get_joining_dashboard", {
+                p_user_id: user.id
+            });
+
+        if (error) {
+            console.error("Joining Dashboard Error:", error);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            console.log("Joining Dashboard: কোনো data নেই");
+            return;
+        }
+
+        const result = data[0];
+
+        document.getElementById("fjTotalDownline").textContent =
+            result.total_downline ?? 0;
+
+        document.getElementById("fjDirectDownline").textContent =
+            result.direct_downline ?? 0;
+
+        document.getElementById("fjActiveMembers").textContent =
+            result.active_members ?? 0;
+
+        document.getElementById("fjInactiveMember").textContent =
+            result.inactive_members ?? 0;
+
+        const table = document.getElementById("fjJoiningMemberTable");
+
+        if (!table) return;
+
+        table.innerHTML = "";
+
+        const members = result.members || [];
+
+        members.forEach(member => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${member.full_name || "-"}</td>
+                <td>${member.mobile || "-"}</td>
+                <td>Level ${member.level || "-"}</td>
+                <td>${member.status || "-"}</td>
+                <td>${member.sponsor_name || "-"}</td>
+            `;
+
+            table.appendChild(row);
+        });
+
+    } catch (err) {
+
+        console.error("Joining Dashboard System Error:", err);
+
+    }
+}
+fjLoadJoiningDashboard();
 </script>
 </body>
 </html>
