@@ -481,7 +481,97 @@ cursor:pointer;
 
 </div>
 </div>
+<!-- ================= NEW REGISTRATION FORM ================= -->
 
+<section id="fjRegistrationForm"
+style="
+display:none;
+margin-top:15px;
+background:#fff;
+border:1px solid #e5e7eb;
+border-radius:18px;
+padding:18px;
+box-shadow:0 5px 18px rgba(0,0,0,.07);
+">
+
+<h2 style="margin:0 0 15px;color:#166534;">
+📝 New Member Registration
+</h2>
+
+<label>Full Name</label>
+<input
+id="fjRegFullName"
+type="text"
+placeholder="পূর্ণ নাম লিখুন"
+>
+
+<label>Mobile</label>
+<input
+id="fjRegMobile"
+type="tel"
+placeholder="মোবাইল নম্বর"
+>
+
+<label>Email</label>
+<input
+id="fjRegEmail"
+type="email"
+placeholder="Email"
+>
+
+<label>Password</label>
+<input
+id="fjRegPassword"
+type="password"
+placeholder="Password"
+>
+
+<label>Sponsor ID</label>
+<input
+id="fjRegSponsor"
+type="text"
+placeholder="Sponsor ID"
+>
+
+<button
+type="button"
+onclick="fjSubmitRegistration()"
+style="
+margin-top:10px;
+padding:14px;
+background:#166534;
+color:white;
+border:0;
+border-radius:12px;
+font-size:17px;
+font-weight:bold;
+">
+✅ Submit Registration
+</button>
+
+<button
+type="button"
+onclick="fjCloseRegistration()"
+style="
+padding:12px;
+background:#dc2626;
+color:white;
+border:0;
+border-radius:12px;
+font-size:15px;
+font-weight:bold;
+">
+✖ Close
+</button>
+
+<p
+id="fjRegistrationMessage"
+style="text-align:center;font-weight:bold;">
+</p>
+
+</section>
+
+<!-- ================= END NEW REGISTRATION FORM ================= -->
 <!-- ================= END MEMBER OPTIONS ================= -->
 <!-- ================= JOINING DASHBOARD ================= -->
 <section id="fjJoiningDashboard"
@@ -3941,6 +4031,209 @@ async function fjLoadJoiningDashboard() {
     }
 }
 fjLoadJoiningDashboard();
+// =============================
+// MEMBER REGISTRATION
+// =============================
+
+function fjOpenRegistration() {
+
+    const form = document.getElementById("fjRegistrationForm");
+
+    if (!form) {
+        alert("Registration Form পাওয়া যায়নি");
+        return;
+    }
+
+    form.style.display = "block";
+
+    form.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+
+// =============================
+// CLOSE REGISTRATION FORM
+// =============================
+
+function fjCloseRegistration() {
+
+    const form = document.getElementById("fjRegistrationForm");
+
+    if (form) {
+        form.style.display = "none";
+    }
+}
+
+
+// =============================
+// REGISTER NEW MEMBER
+// =============================
+
+async function fjRegisterMember() {
+
+    const fullName =
+        document.getElementById("fjRegFullName").value.trim();
+
+    const mobile =
+        document.getElementById("fjRegMobile").value.trim();
+
+    const email =
+        document.getElementById("fjRegEmail").value.trim();
+
+    const password =
+        document.getElementById("fjRegPassword").value;
+
+    const sponsorId =
+        document.getElementById("fjRegSponsor").value.trim();
+
+    const message =
+        document.getElementById("fjRegistrationMessage");
+
+
+    // -----------------------------
+    // Basic validation
+    // -----------------------------
+
+    if (!fullName || !mobile || !email || !password) {
+
+        message.textContent =
+            "সব প্রয়োজনীয় তথ্য পূরণ করুন";
+
+        message.style.color = "red";
+
+        return;
+    }
+
+
+    if (password.length < 6) {
+
+        message.textContent =
+            "Password কমপক্ষে 6 অক্ষরের হতে হবে";
+
+        message.style.color = "red";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Registration হচ্ছে...";
+
+    message.style.color = "#166534";
+
+
+    try {
+
+        // -----------------------------
+        // Create Supabase Auth User
+        // -----------------------------
+
+        const { data, error } =
+            await supabaseClient.auth.signUp({
+
+                email: email,
+
+                password: password,
+
+                options: {
+                    data: {
+                        full_name: fullName,
+                        mobile: mobile,
+                        sponsor_id: sponsorId
+                    }
+                }
+
+            });
+
+
+        if (error) {
+
+            message.textContent =
+                "Registration ব্যর্থ: " + error.message;
+
+            message.style.color = "red";
+
+            return;
+        }
+
+
+        if (!data || !data.user) {
+
+            message.textContent =
+                "User তৈরি হয়নি";
+
+            message.style.color = "red";
+
+            return;
+        }
+
+
+        // -----------------------------
+        // Create Profile
+        // -----------------------------
+
+        const { error: profileError } =
+            await supabaseClient
+                .from("profiles")
+                .insert({
+
+                    id: data.user.id,
+
+                    full_name: fullName,
+
+                    mobile: mobile,
+
+                    role: "user",
+
+                    sponsor_id:
+                        sponsorId || null,
+
+                    approval_status: "pending"
+
+                });
+
+
+        if (profileError) {
+
+            message.textContent =
+                "Profile তৈরি হয়নি: " +
+                profileError.message;
+
+            message.style.color = "red";
+
+            return;
+        }
+
+
+        // -----------------------------
+        // Success
+        // -----------------------------
+
+        message.textContent =
+            "✅ Registration সফল হয়েছে। Admin approval-এর জন্য অপেক্ষা করুন।";
+
+        message.style.color = "green";
+
+
+        // Clear form
+
+        document.getElementById("fjRegFullName").value = "";
+        document.getElementById("fjRegMobile").value = "";
+        document.getElementById("fjRegEmail").value = "";
+        document.getElementById("fjRegPassword").value = "";
+        document.getElementById("fjRegSponsor").value = "";
+
+
+    } catch (err) {
+
+        message.textContent =
+            "System Error: " + err.message;
+
+        message.style.color = "red";
+    }
+    }
 </script>
 </body>
 </html>
