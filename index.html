@@ -4170,41 +4170,7 @@ async function fjRegisterMember() {
         }
 
 
-        // -----------------------------
-        // Create Profile
-        // -----------------------------
-
-        const { error: profileError } =
-            await supabaseClient
-                .from("profiles")
-                .insert({
-
-                    id: data.user.id,
-
-                    full_name: fullName,
-
-                    mobile: mobile,
-
-                    role: "user",
-
-                    sponsor_id:
-                        sponsorId || null,
-
-                    approval_status: "pending"
-
-                });
-
-
-        if (profileError) {
-
-            message.textContent =
-                "Profile তৈরি হয়নি: " +
-                profileError.message;
-
-            message.style.color = "red";
-
-            return;
-        }
+        
 
 
         // -----------------------------
