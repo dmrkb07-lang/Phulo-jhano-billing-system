@@ -5337,5 +5337,772 @@ async function fjRegisterMember() {
     }
     }
 </script>
+<!-- ================= BULK MESSAGE CENTER ================= -->
+
+<section id="bulkMessage" class="page">
+
+<div class="card">
+
+<h2>📢 Phulo Jhano Bulk Message</h2>
+
+<p class="small">
+Customer-দের জন্য Thank You, Offer, Festival ও অন্যান্য Message পাঠানোর প্রস্তুতি করুন।
+</p>
+
+<div class="row">
+
+<div class="c6">
+<label>Message Type</label>
+
+<select id="bulkMsgType" onchange="pjLoadMessage()">
+
+<option value="thankyou">
+🛒 Shopping Thank You
+</option>
+
+<option value="festival">
+🎉 Festival Message
+</option>
+
+<option value="offer">
+🎁 Special Offer
+</option>
+
+<option value="rank">
+🏆 Rank Achievement
+</option>
+
+<option value="price">
+💰 Product Rate Change
+</option>
+
+<option value="birthday">
+🎂 Birthday Wishes
+</option>
+
+<option value="custom">
+✍️ Custom Message
+</option>
+
+</select>
+</div>
+
+<div class="c6">
+
+<label>Test Mobile Number</label>
+
+<input
+id="pjTestMobile"
+type="tel"
+placeholder="যেমন: 9876543210"
+>
+
+</div>
+
+<div class="c12">
+
+<label>Message</label>
+
+<textarea
+id="pjBulkMessage"
+rows="5"
+placeholder="আপনার Message লিখুন..."
+></textarea>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn"
+onclick="pjTestWhatsApp()"
+>
+📲 Test WhatsApp
+</button>
+
+<button
+class="btn secondary"
+onclick="pjLoadMessage()"
+>
+🔄 Message Reset
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>👥 Customer List</h3>
+
+<p class="small">
+বর্তমানে Billing System-এ যেসব Customer-এর mobile number আছে।
+</p>
+
+<div class="actions">
+
+<button
+class="btn secondary"
+onclick="pjShowCustomers()"
+>
+👥 Customer দেখুন
+</button>
+
+<button
+class="btn gold"
+onclick="pjSelectAllCustomers()"
+>
+☑️ Select All
+</button>
+
+</div>
+
+<div
+class="tablewrap"
+style="margin-top:15px"
+>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Select</th>
+<th>Name</th>
+<th>Mobile</th>
+
+</tr>
+
+</thead>
+
+<tbody id="pjBulkCustomerList">
+
+<tr>
+<td colspan="3" class="empty">
+Customer list দেখতে "Customer দেখুন" চাপুন
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<script>
+
+/* ================= PHULO JHANO BULK MESSAGE ================= */
+
+function pjLoadMessage(){
+
+    const type =
+        document.getElementById(
+            "bulkMsgType"
+        ).value;
+
+    const messages = {
+
+        thankyou:
+        "Thank you for shopping with Phulo Jhano. We are happy to serve you. Please visit again. 🙏",
+
+        festival:
+        "🎉 শুভ উৎসব! Phulo Jhano পরিবারের পক্ষ থেকে আপনাকে ও আপনার পরিবারকে আন্তরিক শুভেচ্ছা।",
+
+        offer:
+        "🎁 Special Offer from Phulo Jhano! আপনার জন্য বিশেষ অফার চলছে। আজই যোগাযোগ করুন।",
+
+        rank:
+        "🏆 Congratulations! Phulo Jhano-এর পক্ষ থেকে আপনার Rank Achievement-এর জন্য আন্তরিক অভিনন্দন।",
+
+        price:
+        "💰 Important Update from Phulo Jhano: আমাদের একটি Product-এর Rate পরিবর্তন করা হয়েছে। বিস্তারিত জানতে যোগাযোগ করুন।",
+
+        birthday:
+        "🎂 Happy Birthday! Phulo Jhano পরিবারের পক্ষ থেকে আপনার জন্মদিনে অনেক শুভেচ্ছা ও শুভকামনা।",
+
+        custom:
+        ""
+
+    };
+
+    document.getElementById(
+        "pjBulkMessage"
+    ).value =
+        messages[type] || "";
+
+}
+
+
+/* ---------- SHOW CUSTOMERS ---------- */
+
+function pjShowCustomers(){
+
+    const box =
+        document.getElementById(
+            "pjBulkCustomerList"
+        );
+
+    const customers =
+        (db.customers || [])
+        .filter(c =>
+            c.mobile &&
+            String(c.mobile).trim()
+        );
+
+    if(!customers.length){
+
+        box.innerHTML =
+        `<tr>
+            <td colspan="3" class="empty">
+                কোনো mobile number পাওয়া যায়নি
+            </td>
+        </tr>`;
+
+        return;
+    }
+
+    box.innerHTML =
+        customers.map((c,i)=>`
+
+        <tr>
+
+            <td>
+                <input
+                    type="checkbox"
+                    class="pjCustomerCheck"
+                    value="${i}"
+                >
+            </td>
+
+            <td>
+                ${esc(c.name)}
+            </td>
+
+            <td>
+                ${esc(c.mobile)}
+            </td>
+
+        </tr>
+
+        `).join("");
+
+}
+
+
+/* ---------- SELECT ALL ---------- */
+
+function pjSelectAllCustomers(){
+
+    pjShowCustomers();
+
+    setTimeout(()=>{
+
+        document
+        .querySelectorAll(
+            ".pjCustomerCheck"
+        )
+        .forEach(x =>
+            x.checked = true
+        );
+
+    },50);
+
+}
+
+
+/* ---------- TEST WHATSAPP ---------- */
+
+function pjTestWhatsApp(){
+
+    let mobile =
+        document.getElementById(
+            "pjTestMobile"
+        ).value.trim();
+
+    let message =
+        document.getElementById(
+            "pjBulkMessage"
+        ).value.trim();
+
+    if(!mobile){
+
+        alert(
+            "Test Mobile Number দিন।"
+        );
+
+        return;
+    }
+
+    if(!message){
+
+        alert(
+            "Message লিখুন।"
+        );
+
+        return;
+    }
+
+
+    /* Remove spaces and symbols */
+
+    mobile =
+        mobile.replace(/\D/g,"");
+
+
+    /* Indian number */
+
+    if(mobile.length === 10){
+
+        mobile =
+            "91" + mobile;
+
+    }
+
+
+    const url =
+        "https://wa.me/" +
+        mobile +
+        "?text=" +
+        encodeURIComponent(
+            message
+        );
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* ---------- DEFAULT MESSAGE ---------- */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        if(
+            document.getElementById(
+                "bulkMsgType"
+            )
+        ){
+
+            pjLoadMessage();
+
+        }
+
+    }
+);
+/* =====================================================
+   PHULO JHANO - SIMPLE BULK WHATSAPP QUEUE
+   Existing code untouched
+   ===================================================== */
+
+let pjBulkQueue = [];
+let pjBulkIndex = 0;
+
+
+/* ---------- START BULK WHATSAPP ---------- */
+
+function pjStartBulkWhatsApp(){
+
+    const selected =
+        Array.from(
+            document.querySelectorAll(".pjCustomerCheck:checked")
+        );
+
+    if(!selected.length){
+
+        alert("প্রথমে Customer নির্বাচন করুন।");
+
+        return;
+    }
+
+
+    const messageBox =
+        document.getElementById("pjBulkMessage");
+
+    if(!messageBox){
+
+        alert("Message box পাওয়া যায়নি।");
+
+        return;
+    }
+
+
+    const message =
+        messageBox.value.trim();
+
+    if(!message){
+
+        alert("প্রথমে Message নির্বাচন করুন।");
+
+        return;
+    }
+
+
+    pjBulkQueue =
+        selected
+        .map(function(check){
+
+            const index =
+                Number(check.value);
+
+            const customer =
+                (db.customers || [])[index];
+
+            if(!customer || !customer.mobile){
+
+                return null;
+            }
+
+            return {
+
+                name:
+                    customer.name || "Customer",
+
+                mobile:
+                    String(customer.mobile)
+                    .replace(/\D/g,""),
+
+                message:
+                    message
+
+            };
+
+        })
+        .filter(Boolean);
+
+
+    if(!pjBulkQueue.length){
+
+        alert("নির্বাচিত Customer-এর কোনো Mobile Number পাওয়া যায়নি।");
+
+        return;
+    }
+
+
+    pjBulkIndex = 0;
+
+    pjShowBulkQueue();
+
+
+    alert(
+        "Bulk WhatsApp প্রস্তুত হয়েছে।\n\n" +
+        "মোট Customer: " +
+        pjBulkQueue.length +
+        "\n\n" +
+        "এখন 'WhatsApp খুলুন' চাপুন।"
+    );
+
+}
+
+
+/* ---------- SHOW CURRENT CUSTOMER ---------- */
+
+function pjShowBulkQueue(){
+
+    const box =
+        document.getElementById("pjBulkQueueBox");
+
+    if(!box) return;
+
+
+    if(pjBulkIndex >= pjBulkQueue.length){
+
+        box.innerHTML =
+
+            "<div style='padding:15px;" +
+            "background:#e8f5e9;" +
+            "border-radius:10px;" +
+            "text-align:center;" +
+            "font-weight:bold;'>" +
+
+            "✅ সব Customer-এর Bulk Message সম্পন্ন হয়েছে" +
+
+            "</div>";
+
+        return;
+    }
+
+
+    const customer =
+        pjBulkQueue[pjBulkIndex];
+
+
+    box.innerHTML =
+
+        "<div style='padding:15px;" +
+        "background:#f8fafc;" +
+        "border-radius:12px;" +
+        "border:1px solid #ddd;'>" +
+
+        "<div style='font-size:18px;" +
+        "font-weight:bold;" +
+        "margin-bottom:8px;'>" +
+
+        "📲 Bulk WhatsApp" +
+
+        "</div>" +
+
+        "<div>" +
+        "Customer: <b>" +
+        pjEscapeText(customer.name) +
+        "</b>" +
+        "</div>" +
+
+        "<div>" +
+        "Mobile: <b>" +
+        customer.mobile +
+        "</b>" +
+        "</div>" +
+
+        "<div style='margin-top:8px;'>" +
+        "Customer " +
+        (pjBulkIndex + 1) +
+        " / " +
+        pjBulkQueue.length +
+        "</div>" +
+
+        "<button " +
+        "onclick='pjOpenBulkWhatsApp()' " +
+        "style='margin-top:12px;" +
+        "width:100%;" +
+        "padding:12px;" +
+        "border:0;" +
+        "border-radius:8px;" +
+        "background:#25D366;" +
+        "color:white;" +
+        "font-size:16px;" +
+        "font-weight:bold;'>" +
+
+        "📱 WhatsApp খুলুন" +
+
+        "</button>" +
+
+        "<button " +
+        "onclick='pjNextBulkCustomer()' " +
+        "style='margin-top:8px;" +
+        "width:100%;" +
+        "padding:10px;" +
+        "border:1px solid #ccc;" +
+        "border-radius:8px;" +
+        "background:white;" +
+        "font-size:15px;'>" +
+
+        "➡️ Message পাঠানো হয়েছে — পরবর্তী Customer" +
+
+        "</button>" +
+
+        "</div>";
+
+}
+
+
+/* ---------- OPEN WHATSAPP ---------- */
+
+function pjOpenBulkWhatsApp(){
+
+    if(
+        pjBulkIndex >=
+        pjBulkQueue.length
+    ){
+
+        return;
+    }
+
+
+    const customer =
+        pjBulkQueue[pjBulkIndex];
+
+
+    const message =
+        customer.message
+        .replace(
+            /\{name\}/gi,
+            customer.name
+        );
+
+
+    let mobile =
+        customer.mobile;
+
+
+    if(mobile.length === 10){
+
+        mobile =
+            "91" + mobile;
+
+    }
+
+
+    const url =
+        "https://wa.me/" +
+        mobile +
+        "?text=" +
+        encodeURIComponent(message);
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* ---------- NEXT CUSTOMER ---------- */
+
+function pjNextBulkCustomer(){
+
+    if(
+        pjBulkIndex <
+        pjBulkQueue.length
+    ){
+
+        pjBulkIndex++;
+
+    }
+
+
+    pjShowBulkQueue();
+
+}
+
+
+/* ---------- SAFE TEXT ---------- */
+
+function pjEscapeText(text){
+
+    return String(text || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ---------- ADD BULK UI ---------- */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        setTimeout(
+            function(){
+
+                const messageBox =
+                    document.getElementById(
+                        "pjBulkMessage"
+                    );
+
+
+                if(!messageBox) return;
+
+
+                if(
+                    document.getElementById(
+                        "pjBulkQueueBox"
+                    )
+                ){
+
+                    return;
+
+                }
+
+
+                const box =
+                    document.createElement("div");
+
+
+                box.id =
+                    "pjBulkQueueBox";
+
+
+                box.style.marginTop =
+                    "15px";
+
+
+                messageBox.parentElement
+                    .appendChild(box);
+
+
+                const button =
+                    document.createElement("button");
+
+
+                button.type =
+                    "button";
+
+
+                button.innerHTML =
+                    "📲 Bulk WhatsApp শুরু করুন";
+
+
+                button.onclick =
+                    pjStartBulkWhatsApp;
+
+
+                button.style.width =
+                    "100%";
+
+
+                button.style.padding =
+                    "13px";
+
+
+                button.style.marginTop =
+                    "10px";
+
+
+                button.style.border =
+                    "0";
+
+
+                button.style.borderRadius =
+                    "10px";
+
+
+                button.style.background =
+                    "#128C7E";
+
+
+                button.style.color =
+                    "white";
+
+
+                button.style.fontSize =
+                    "16px";
+
+
+                button.style.fontWeight =
+                    "bold";
+
+
+                messageBox.parentElement
+                    .appendChild(button);
+
+
+            },
+            500
+        );
+
+    }
+);
+</script>
+
+<!-- ================= END BULK MESSAGE CENTER ================= -->
 </body>
 </html>
