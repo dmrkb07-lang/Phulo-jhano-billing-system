@@ -3969,7 +3969,7 @@ async function fjLoadJoiningDashboard() {
         console.log("Joining Dashboard: user পাওয়া যায়নি");
         return;
     }
-
+alert("Joining User ID: " + user.id);
     try {
 
         const { data, error } = await supabaseClient
