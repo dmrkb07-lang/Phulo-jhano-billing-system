@@ -381,7 +381,938 @@ fjLoadJoiningDashboard();
     }
 }
 </script>
- </head>
+<!-- ==========================================
+     PHULO JHANO MODERN SLIDE DASHBOARD
+     UI ONLY - EXISTING FUNCTIONS SAFE
+========================================== -->
+
+<style>
+
+/* ---------- DASHBOARD BACKGROUND ---------- */
+
+#fjDashboard{
+    position:relative;
+    overflow:hidden !important;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(34,197,94,.12), transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(59,130,246,.10), transparent 32%),
+        #f6f8fb !important;
+    padding:14px !important;
+}
+
+/* ---------- HEADER ---------- */
+
+#fjDashboard .dashboard-header{
+    position:relative;
+    overflow:hidden;
+    border-radius:24px !important;
+    padding:22px 20px !important;
+    margin-bottom:14px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #14532d 0%,
+            #166534 45%,
+            #15803d 100%
+        ) !important;
+
+    color:white !important;
+
+    box-shadow:
+        0 12px 30px rgba(20,83,45,.22) !important;
+
+    animation: fjHeaderAnimation .6s ease;
+}
+
+#fjDashboard .dashboard-header::before{
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    right:-80px;
+    top:-90px;
+    background:rgba(255,255,255,.09);
+}
+
+#fjDashboard .dashboard-header::after{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    left:-45px;
+    bottom:-55px;
+    background:rgba(255,255,255,.06);
+}
+
+#fjDashboard .dashboard-header h1{
+    position:relative;
+    z-index:2;
+    margin:0 !important;
+    font-size:27px !important;
+    font-weight:900 !important;
+}
+
+#fjDashboard .dashboard-header p{
+    position:relative;
+    z-index:2;
+    margin:5px 0 0 !important;
+    font-size:13px !important;
+    opacity:.88;
+}
+
+/* ---------- SLIDE AREA ---------- */
+
+.fj-slide-area{
+    position:relative;
+    width:100%;
+    overflow:hidden;
+}
+
+.fj-slide-track{
+    display:flex;
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+
+    gap:12px;
+
+    scroll-behavior:smooth;
+    scroll-snap-type:x mandatory;
+
+    scrollbar-width:none;
+
+    -webkit-overflow-scrolling:touch;
+
+    padding-bottom:5px;
+}
+
+.fj-slide-track::-webkit-scrollbar{
+    display:none;
+}
+
+.fj-slide{
+    flex:0 0 100%;
+    width:100%;
+    min-width:100%;
+
+    box-sizing:border-box;
+
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+
+    animation:fjSlideAnimation .45s ease;
+}
+
+/* ---------- SLIDE LABEL ---------- */
+
+.fj-slide-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin:0 0 10px;
+
+    padding:10px 14px;
+
+    border-radius:15px;
+
+    background:white;
+
+    border:1px solid #e5e7eb;
+
+    box-shadow:0 5px 16px rgba(15,23,42,.06);
+}
+
+.fj-slide-title strong{
+    color:#14532d;
+    font-size:14px;
+}
+
+.fj-slide-title span{
+    font-size:11px;
+    color:#64748b;
+}
+
+/* ---------- DASHBOARD CARDS ---------- */
+
+#fjDashboard .dashboard-card{
+    position:relative;
+    overflow:hidden;
+
+    border-radius:20px !important;
+
+    border:1px solid #e5e7eb !important;
+
+    background:rgba(255,255,255,.96) !important;
+
+    box-shadow:
+        0 7px 20px rgba(15,23,42,.07) !important;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease !important;
+}
+
+#fjDashboard .dashboard-card:hover{
+    transform:translateY(-3px);
+    box-shadow:
+        0 13px 28px rgba(15,23,42,.11) !important;
+}
+
+/* ---------- GRID ---------- */
+
+#fjDashboard .dashboard-grid{
+    gap:11px !important;
+}
+
+/* ---------- NAVIGATION ---------- */
+
+.fj-slide-navigation{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:12px;
+
+    margin:10px 0 7px;
+}
+
+.fj-slide-btn{
+    width:42px;
+    height:42px;
+
+    border:0;
+
+    border-radius:50%;
+
+    background:#166534;
+
+    color:white;
+
+    font-size:25px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    box-shadow:
+        0 7px 16px rgba(22,101,52,.22);
+
+    transition:.2s;
+}
+
+.fj-slide-btn:active{
+    transform:scale(.88);
+}
+
+.fj-slide-counter{
+    min-width:75px;
+
+    text-align:center;
+
+    padding:7px 12px;
+
+    border-radius:20px;
+
+    background:white;
+
+    border:1px solid #e5e7eb;
+
+    color:#166534;
+
+    font-size:12px;
+
+    font-weight:800;
+}
+
+/* ---------- DOTS ---------- */
+
+.fj-slide-dots{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    gap:6px;
+
+    margin:5px 0 10px;
+}
+
+.fj-slide-dot{
+    width:7px;
+    height:7px;
+
+    border-radius:50%;
+
+    background:#cbd5e1;
+
+    transition:.25s;
+}
+
+.fj-slide-dot.active{
+    width:24px;
+
+    border-radius:20px;
+
+    background:#166534;
+}
+
+/* ---------- SWIPE MESSAGE ---------- */
+
+.fj-swipe-message{
+    text-align:center;
+
+    color:#64748b;
+
+    font-size:11px;
+
+    margin:2px 0 9px;
+
+    opacity:.9;
+}
+
+/* ---------- BUTTONS ---------- */
+
+#fjDashboard button{
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease !important;
+}
+
+#fjDashboard button:active{
+    transform:scale(.97);
+}
+
+/* ---------- INPUT ---------- */
+
+#fjDashboard input,
+#fjDashboard select{
+    border-radius:12px !important;
+    transition:.2s !important;
+}
+
+#fjDashboard input:focus,
+#fjDashboard select:focus{
+    border-color:#16a34a !important;
+
+    box-shadow:
+        0 0 0 3px rgba(22,163,74,.10) !important;
+
+    outline:none !important;
+}
+
+/* ---------- MOBILE ---------- */
+
+@media(max-width:600px){
+
+    #fjDashboard{
+        padding:10px !important;
+    }
+
+    #fjDashboard .dashboard-header{
+        padding:20px 16px !important;
+        border-radius:21px !important;
+    }
+
+    #fjDashboard .dashboard-header h1{
+        font-size:24px !important;
+    }
+
+    #fjDashboard .dashboard-grid{
+        grid-template-columns:1fr 1fr !important;
+        gap:9px !important;
+    }
+
+    #fjDashboard .dashboard-card{
+        border-radius:17px !important;
+    }
+
+    .fj-slide-btn{
+        width:39px;
+        height:39px;
+        font-size:22px;
+    }
+
+}
+
+/* ---------- SMALL PHONE ---------- */
+
+@media(max-width:380px){
+
+    #fjDashboard .dashboard-grid{
+        grid-template-columns:1fr 1fr !important;
+    }
+
+    #fjDashboard .dashboard-card{
+        padding:10px !important;
+    }
+
+}
+
+/* ---------- ANIMATIONS ---------- */
+
+@keyframes fjHeaderAnimation{
+
+    from{
+        opacity:0;
+        transform:translateY(-15px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+@keyframes fjSlideAnimation{
+
+    from{
+        opacity:.45;
+        transform:translateX(12px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+
+}
+
+</style>
+
+
+<script>
+
+/* ==========================================
+   PHULO JHANO SLIDE ENGINE
+========================================== */
+
+(function(){
+
+    function fjSetupSlideDashboard(){
+
+        const dashboard =
+            document.getElementById("fjDashboard");
+
+        if(!dashboard) return;
+
+        /* Prevent duplicate setup */
+
+        if(dashboard.dataset.slideReady === "yes"){
+            return;
+        }
+
+        dashboard.dataset.slideReady = "yes";
+
+
+        const header =
+            dashboard.querySelector(".dashboard-header");
+
+        if(!header) return;
+
+
+        /*
+         * Existing dashboard elements
+         * remain untouched internally.
+         */
+
+        const elements =
+            Array.from(dashboard.children);
+
+
+        const slideElements =
+            elements.filter(function(el){
+
+                return (
+                    el !== header &&
+                    !el.classList.contains("fj-slide-area") &&
+                    !el.classList.contains("fj-slide-navigation") &&
+                    !el.classList.contains("fj-swipe-message") &&
+                    !el.classList.contains("fj-slide-dots")
+                );
+
+            });
+
+
+        if(slideElements.length === 0) return;
+
+
+        /* ---------- CREATE SLIDE AREA ---------- */
+
+        const area =
+            document.createElement("div");
+
+        area.className =
+            "fj-slide-area";
+
+
+        const track =
+            document.createElement("div");
+
+        track.className =
+            "fj-slide-track";
+
+
+        area.appendChild(track);
+
+
+        /*
+         * Each existing dashboard block
+         * becomes one slide.
+         */
+
+        slideElements.forEach(function(element, index){
+
+            const slide =
+                document.createElement("div");
+
+            slide.className =
+                "fj-slide";
+
+
+            const title =
+                document.createElement("div");
+
+            title.className =
+                "fj-slide-title";
+
+
+            let titleText = "Dashboard";
+
+            if(index === 0){
+                titleText = "📊 Overview";
+            }
+            else if(index === 1){
+                titleText = "👥 Member Management";
+            }
+            else if(index === 2){
+                titleText = "📝 Registration";
+            }
+            else if(index === 3){
+                titleText = "🌐 Joining Dashboard";
+            }
+            else if(index === 4){
+                titleText = "💸 Payout";
+            }
+            else if(index === 5){
+                titleText = "🧾 Billing";
+            }
+            else{
+                titleText = "🌿 Phulo Jhano";
+            }
+
+
+            title.innerHTML =
+                "<strong>" +
+                titleText +
+                "</strong>" +
+                "<span>Phulo Jhano</span>";
+
+
+            slide.appendChild(title);
+
+            /*
+             * IMPORTANT:
+             * Original element and its ID remain.
+             */
+
+            slide.appendChild(element);
+
+            track.appendChild(slide);
+
+        });
+
+
+        /* ---------- NAVIGATION ---------- */
+
+        const navigation =
+            document.createElement("div");
+
+        navigation.className =
+            "fj-slide-navigation";
+
+
+        const previous =
+            document.createElement("button");
+
+        previous.type = "button";
+
+        previous.className =
+            "fj-slide-btn";
+
+        previous.innerHTML = "‹";
+
+        previous.setAttribute(
+            "aria-label",
+            "Previous Slide"
+        );
+
+
+        const counter =
+            document.createElement("div");
+
+        counter.className =
+            "fj-slide-counter";
+
+        counter.textContent =
+            "1 / " + slideElements.length;
+
+
+        const next =
+            document.createElement("button");
+
+        next.type = "button";
+
+        next.className =
+            "fj-slide-btn";
+
+        next.innerHTML = "›";
+
+        next.setAttribute(
+            "aria-label",
+            "Next Slide"
+        );
+
+
+        navigation.appendChild(previous);
+        navigation.appendChild(counter);
+        navigation.appendChild(next);
+
+
+        /* ---------- DOTS ---------- */
+
+        const dots =
+            document.createElement("div");
+
+        dots.className =
+            "fj-slide-dots";
+
+
+        slideElements.forEach(function(_, index){
+
+            const dot =
+                document.createElement("span");
+
+            dot.className =
+                "fj-slide-dot";
+
+
+            if(index === 0){
+                dot.classList.add("active");
+            }
+
+
+            dot.addEventListener(
+                "click",
+                function(){
+
+                    fjGoToSlide(index);
+
+                }
+            );
+
+
+            dots.appendChild(dot);
+
+        });
+
+
+        /* ---------- SWIPE MESSAGE ---------- */
+
+        const hint =
+            document.createElement("div");
+
+        hint.className =
+            "fj-swipe-message";
+
+        hint.textContent =
+            "👆 Swipe করুন অথবা ◀ ▶ চাপুন";
+
+
+        /*
+         * Put everything into dashboard
+         */
+
+        dashboard.appendChild(navigation);
+
+        dashboard.appendChild(hint);
+
+        dashboard.appendChild(dots);
+
+        dashboard.appendChild(area);
+
+
+        let currentSlide = 0;
+
+
+        const dotItems =
+            Array.from(
+                dots.querySelectorAll(".fj-slide-dot")
+            );
+
+
+        function fjUpdateUI(){
+
+            counter.textContent =
+                (currentSlide + 1) +
+                " / " +
+                slideElements.length;
+
+
+            dotItems.forEach(function(dot,index){
+
+                dot.classList.toggle(
+                    "active",
+                    index === currentSlide
+                );
+
+            });
+
+        }
+
+
+        function fjGoToSlide(index){
+
+            if(index < 0){
+                index =
+                    slideElements.length - 1;
+            }
+
+            if(index >= slideElements.length){
+                index = 0;
+            }
+
+
+            currentSlide = index;
+
+
+            track.scrollTo({
+
+                left:
+                    currentSlide *
+                    track.clientWidth,
+
+                behavior:"smooth"
+
+            });
+
+
+            fjUpdateUI();
+
+        }
+
+
+        /*
+         * Make navigation available globally
+         * without changing existing functions.
+         */
+
+        window.fjSlideNext =
+            function(){
+
+                fjGoToSlide(
+                    currentSlide + 1
+                );
+
+            };
+
+
+        window.fjSlidePrevious =
+            function(){
+
+                fjGoToSlide(
+                    currentSlide - 1
+                );
+
+            };
+
+
+        previous.addEventListener(
+            "click",
+            function(){
+
+                window.fjSlidePrevious();
+
+            }
+        );
+
+
+        next.addEventListener(
+            "click",
+            function(){
+
+                window.fjSlideNext();
+
+            }
+        );
+
+
+        /*
+         * Detect manual finger swipe
+         */
+
+        let scrollTimeout;
+
+
+        track.addEventListener(
+            "scroll",
+            function(){
+
+                clearTimeout(
+                    scrollTimeout
+                );
+
+
+                scrollTimeout =
+                    setTimeout(
+                        function(){
+
+                            const width =
+                                track.clientWidth;
+
+
+                            if(!width) return;
+
+
+                            currentSlide =
+                                Math.round(
+                                    track.scrollLeft /
+                                    width
+                                );
+
+
+                            if(
+                                currentSlide < 0
+                            ){
+                                currentSlide = 0;
+                            }
+
+
+                            if(
+                                currentSlide >=
+                                slideElements.length
+                            ){
+                                currentSlide =
+                                    slideElements.length - 1;
+                            }
+
+
+                            fjUpdateUI();
+
+                        },
+                        100
+                    );
+
+            }
+        );
+
+
+        /*
+         * Keyboard support
+         */
+
+        document.addEventListener(
+            "keydown",
+            function(event){
+
+                /*
+                 * Don't interfere with typing
+                 */
+
+                const tag =
+                    document.activeElement
+                    ?.tagName;
+
+
+                if(
+                    tag === "INPUT" ||
+                    tag === "TEXTAREA" ||
+                    tag === "SELECT"
+                ){
+                    return;
+                }
+
+
+                if(
+                    event.key === "ArrowRight"
+                ){
+
+                    window.fjSlideNext();
+
+                }
+
+
+                if(
+                    event.key === "ArrowLeft"
+                ){
+
+                    window.fjSlidePrevious();
+
+                }
+
+            }
+        );
+
+
+        /*
+         * Keep current slide after screen resize
+         */
+
+        window.addEventListener(
+            "resize",
+            function(){
+
+                track.scrollTo({
+
+                    left:
+                        currentSlide *
+                        track.clientWidth,
+
+                    behavior:"auto"
+
+                });
+
+            }
+        );
+
+
+        fjUpdateUI();
+
+    }
+
+
+    /*
+     * DOM ready
+     */
+
+    if(
+        document.readyState === "loading"
+    ){
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            fjSetupSlideDashboard
+        );
+
+    }
+    else{
+
+        fjSetupSlideDashboard();
+
+    }
+
+
+})();
+
+</script> 
+</head>
 
 <body>
 <div id="fjLoginScreen" style="max-width:420px;margin:40px auto;padding:25px;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.15);">
