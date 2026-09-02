@@ -4010,20 +4010,43 @@ async function fjLoadJoiningDashboard() {
 
         const members = result.members || [];
 
-        members.forEach(member => {
+    members.forEach(member => {
 
-            const row = document.createElement("tr");
+    const row = document.createElement("tr");
 
-            row.innerHTML = `
-                <td>${member.full_name || "-"}</td>
-                <td>${member.mobile || "-"}</td>
-                <td>Level ${member.level || "-"}</td>
-                <td>${member.status || "-"}</td>
-                <td>${member.sponsor_name || "-"}</td>
-            `;
+    let actionHtml = "-";
 
-            table.appendChild(row);
-        });
+    if (member.status === "pending") {
+        actionHtml = `
+            <button
+                type="button"
+                onclick="fjApproveMember('${member.id}')"
+                style="
+                    background:#16a34a;
+                    color:white;
+                    border:0;
+                    border-radius:7px;
+                    padding:7px 10px;
+                    font-weight:bold;
+                    cursor:pointer;
+                "
+            >
+                ✅ Approve
+            </button>
+        `;
+    }
+
+    row.innerHTML = `
+        <td>${member.full_name || "-"}</td>
+        <td>${member.mobile || "-"}</td>
+        <td>Level ${member.level || "-"}</td>
+        <td>${member.status || "-"}</td>
+        <td>${member.sponsor_name || "-"}</td>
+        <td>${actionHtml}</td>
+    `;
+
+    table.appendChild(row);
+});
 
     } catch (err) {
 
@@ -4031,7 +4054,50 @@ async function fjLoadJoiningDashboard() {
 
     }
 }
+async function fjApproveMember(memberId) {
 
+    if (!confirm("এই Member-কে Approve করতে চান?")) {
+        return;
+    }
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .rpc("fj_approve_member", {
+                p_member_id: memberId
+            });
+
+        if (error) {
+            console.error("Approve Member Error:", error);
+            alert("❌ Approve করা যায়নি:\n" + error.message);
+            return;
+        }
+
+        if (!data || data.success !== true) {
+            alert(
+                "❌ " +
+                (data?.message || "Approve করা যায়নি")
+            );
+            return;
+        }
+
+        alert("✅ Member সফলভাবে Approved হয়েছে।");
+
+        await fjLoadJoiningDashboard();
+
+    } catch (err) {
+
+        console.error(
+            "Approve Member System Error:",
+            err
+        );
+
+        alert(
+            "❌ System Error: " +
+            err.message
+        );
+    }
+    }
 // =============================
 // MEMBER REGISTRATION
 // =============================
