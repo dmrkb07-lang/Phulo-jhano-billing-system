@@ -5547,53 +5547,136 @@ function pjLoadMessage(){
 function pjShowCustomers(){
 
     const box =
-        document.getElementById(
-            "pjBulkCustomerList"
-        );
+        document.getElementById("pjBulkCustomerList");
 
-    const customers =
-        (db.customers || [])
-        .filter(c =>
-            c.mobile &&
-            String(c.mobile).trim()
-        );
+    if(!box) return;
 
-    if(!customers.length){
-
-        box.innerHTML =
+    box.innerHTML =
         `<tr>
             <td colspan="3" class="empty">
-                কোনো mobile number পাওয়া যায়নি
+                Customer list লোড হচ্ছে...
             </td>
         </tr>`;
 
-        return;
-    }
+    supabaseClient
+        .from("bills")
+        .select("customer_name, customer_mobile, created_at")
+        .not("customer_mobile", "is", null)
+        .order("created_at", { ascending: false })
 
-    box.innerHTML =
-        customers.map((c,i)=>`
+        .then(function(result){
 
-        <tr>
+            const data = result.data;
+            const error = result.error;
 
-            <td>
-                <input
-                    type="checkbox"
-                    class="pjCustomerCheck"
-                    value="${i}"
-                >
-            </td>
+            if(error){
 
-            <td>
-                ${esc(c.name)}
-            </td>
+                console.error(
+                    "Bulk Customer Load Error:",
+                    error
+                );
 
-            <td>
-                ${esc(c.mobile)}
-            </td>
+                box.innerHTML =
+                    `<tr>
+                        <td colspan="3" class="empty">
+                            Customer list লোড করা যায়নি।
+                        </td>
+                    </tr>`;
 
-        </tr>
+                return;
+            }
 
-        `).join("");
+            const seen = new Set();
+
+            const customers = [];
+
+            (data || []).forEach(function(row){
+
+                const mobile =
+                    String(
+                        row.customer_mobile || ""
+                    ).replace(/\D/g, "");
+
+                if(!mobile) return;
+
+                if(seen.has(mobile)) return;
+
+                seen.add(mobile);
+
+                customers.push({
+
+                    name:
+                        row.customer_name ||
+                        "Customer",
+
+                    mobile:
+                        mobile
+
+                });
+
+            });
+
+            /* Bulk Queue-এর জন্য Customer list সংরক্ষণ */
+
+            window.pjBulkCustomers =
+                customers;
+
+            if(!customers.length){
+
+                box.innerHTML =
+                    `<tr>
+                        <td colspan="3" class="empty">
+                            কোনো Customer Mobile Number পাওয়া যায়নি।
+                        </td>
+                    </tr>`;
+
+                return;
+            }
+
+            box.innerHTML =
+                customers.map(function(c, i){
+
+                    return `
+                        <tr>
+
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    class="pjCustomerCheck"
+                                    value="${i}"
+                                >
+                            </td>
+
+                            <td>
+                                ${escapeHtml(c.name)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(c.mobile)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }).join("");
+
+        })
+
+        .catch(function(error){
+
+            console.error(
+                "Customer List Error:",
+                error
+            );
+
+            box.innerHTML =
+                `<tr>
+                    <td colspan="3" class="empty">
+                        Customer list লোড করার সময় সমস্যা হয়েছে।
+                    </td>
+                </tr>`;
+
+        });
 
 }
 
