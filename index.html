@@ -337,7 +337,7 @@ async function fjLogin() {
 
         document.getElementById("fjLoginScreen").style.display = "none";
         document.getElementById("fjDashboard").style.display = "block";
-
+fjLoadJoiningDashboard();
     } catch (err) {
 
         message.textContent = "System Error: " + err.message;
@@ -3998,7 +3998,7 @@ async function fjLoadJoiningDashboard() {
         document.getElementById("fjActiveMembers").textContent =
             result.active_members ?? 0;
 
-        document.getElementById("fjInactiveMember").textContent =
+        document.getElementById("fjInactiveMembers").textContent =
             result.inactive_members ?? 0;
 
         const table = document.getElementById("fjJoiningMemberTable");
