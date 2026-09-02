@@ -503,7 +503,16 @@ fjLoadJoiningDashboard();
     scroll-snap-align:start;
     scroll-snap-stop:always;
 
-    animation:fjSlideAnimation .45s ease;
+    opacity:1;
+    will-change:transform, opacity;
+}
+
+.fj-slide.fj-enter-next{
+    animation:fjSlideNext .45s cubic-bezier(.22,.61,.36,1);
+}
+
+.fj-slide.fj-enter-prev{
+    animation:fjSlidePrev .45s cubic-bezier(.22,.61,.36,1);
 }
 
 /* ---------- SLIDE LABEL ---------- */
@@ -771,16 +780,30 @@ fjLoadJoiningDashboard();
 
 }
 
-@keyframes fjSlideAnimation{
+@keyframes fjSlideNext{
 
     from{
-        opacity:.45;
-        transform:translateX(12px);
+        opacity:.35;
+        transform:translateX(28px) scale(.985);
     }
 
     to{
         opacity:1;
-        transform:translateX(0);
+        transform:translateX(0) scale(1);
+    }
+
+}
+
+@keyframes fjSlidePrev{
+
+    from{
+        opacity:.35;
+        transform:translateX(-28px) scale(.985);
+    }
+
+    to{
+        opacity:1;
+        transform:translateX(0) scale(1);
     }
 
 }
@@ -1078,35 +1101,94 @@ fjLoadJoiningDashboard();
         }
 
 
-        function fjGoToSlide(index){
+    function fjGoToSlide(index){
 
-            if(index < 0){
-                index =
-                    slideElements.length - 1;
-            }
+    const oldSlide = currentSlide;
 
-            if(index >= slideElements.length){
-                index = 0;
-            }
+    if(index < 0){
+        index =
+            slideElements.length - 1;
+    }
 
+    if(index >= slideElements.length){
+        index = 0;
+    }
 
-            currentSlide = index;
+    /* ---------- DETECT DIRECTION ---------- */
 
+    let direction = "next";
 
-            track.scrollTo({
+    if(
+        oldSlide === slideElements.length - 1 &&
+        index === 0
+    ){
+        direction = "next";
+    }
+    else if(
+        oldSlide === 0 &&
+        index === slideElements.length - 1
+    ){
+        direction = "prev";
+    }
+    else if(index < oldSlide){
+        direction = "prev";
+    }
+    else{
+        direction = "next";
+    }
 
-                left:
-                    currentSlide *
-                    track.clientWidth,
+    currentSlide = index;
 
-                behavior:"smooth"
+    /* ---------- TARGET SLIDE ---------- */
 
-            });
+    const targetSlide =
+        slideElements[index]
+            .parentElement;
 
+    if(targetSlide){
 
-            fjUpdateUI();
+        targetSlide.classList.remove(
+            "fj-enter-next",
+            "fj-enter-prev"
+        );
 
-        }
+        /* Restart animation */
+
+        void targetSlide.offsetWidth;
+
+        targetSlide.classList.add(
+            direction === "next"
+                ? "fj-enter-next"
+                : "fj-enter-prev"
+        );
+
+    }
+
+    /* ---------- CORRECT SLIDE POSITION ---------- */
+
+    const slideWidth =
+        slideElements[0]
+            ? slideElements[0].offsetWidth
+            : track.clientWidth;
+
+    const gap =
+        parseFloat(
+            getComputedStyle(track).gap
+        ) || 0;
+
+    track.scrollTo({
+
+        left:
+            currentSlide *
+            (slideWidth + gap),
+
+        behavior:"smooth"
+
+    });
+
+    fjUpdateUI();
+
+    }
 
 
         /*
@@ -1174,8 +1256,18 @@ fjLoadJoiningDashboard();
                     setTimeout(
                         function(){
 
-                            const width =
-                                track.clientWidth;
+                    const slideWidth =
+    slideElements[0]
+        ? slideElements[0].offsetWidth
+        : track.clientWidth;
+
+const gap =
+    parseFloat(
+        getComputedStyle(track).gap
+    ) || 0;
+
+const width =
+    slideWidth + gap;
 
 
                             if(!width) return;
@@ -1269,15 +1361,25 @@ fjLoadJoiningDashboard();
             "resize",
             function(){
 
-                track.scrollTo({
+                const slideWidth =
+    slideElements[0]
+        ? slideElements[0].offsetWidth
+        : track.clientWidth;
 
-                    left:
-                        currentSlide *
-                        track.clientWidth,
+const gap =
+    parseFloat(
+        getComputedStyle(track).gap
+    ) || 0;
 
-                    behavior:"auto"
+track.scrollTo({
 
-                });
+    left:
+        currentSlide *
+        (slideWidth + gap),
+
+    behavior:"auto"
+
+});
 
             }
         );
