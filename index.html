@@ -329,14 +329,50 @@ async function fjLogin() {
         }
 
         if (!data || !data.user) {
-            message.textContent = "User পাওয়া যায়নি";
-            return;
-        }
+    message.textContent = "User পাওয়া যায়নি";
+    return;
+}
 
-        message.textContent = "✅ Login সফল হয়েছে";
+/* ================= APPROVAL CHECK ================= */
 
-        document.getElementById("fjLoginScreen").style.display = "none";
-        document.getElementById("fjDashboard").style.display = "block";
+const { data: profile, error: profileError } =
+    await supabaseClient
+        .from("profiles")
+        .select("role, approval_status")
+        .eq("id", data.user.id)
+        .single();
+
+if (profileError || !profile) {
+
+    await supabaseClient.auth.signOut();
+
+    message.textContent =
+        "❌ Profile পাওয়া যায়নি";
+
+    return;
+}
+
+/* Admin সরাসরি Login করতে পারবে */
+if (
+    profile.role !== "admin" &&
+    profile.approval_status !== "approved"
+) {
+
+    await supabaseClient.auth.signOut();
+
+    message.textContent =
+        "⏳ আপনার Account এখনো Admin approval-এর অপেক্ষায় আছে।";
+
+    return;
+}
+
+/* ================= LOGIN SUCCESS ================= */
+
+message.textContent = "✅ Login সফল হয়েছে";
+
+document.getElementById("fjLoginScreen").style.display = "none";
+document.getElementById("fjDashboard").style.display = "block";
+
 fjLoadJoiningDashboard();
     } catch (err) {
 
