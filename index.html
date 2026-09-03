@@ -372,7 +372,12 @@ message.textContent = "✅ Login সফল হয়েছে";
 
 document.getElementById("fjLoginScreen").style.display = "none";
 document.getElementById("fjDashboard").style.display = "block";
+const bulkMessage = document.getElementById("bulkMessage");
 
+if (bulkMessage) {
+    bulkMessage.style.display =
+        profile.role === "admin" ? "block" : "none";
+}
 fjLoadJoiningDashboard();
     } catch (err) {
 
@@ -5339,7 +5344,7 @@ async function fjRegisterMember() {
 </script>
 <!-- ================= BULK MESSAGE CENTER ================= -->
 
-<section id="bulkMessage" class="page">
+<section id="bulkMessage" class="page" style="display:none;">
 
 <div class="card">
 
