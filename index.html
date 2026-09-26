@@ -6192,5 +6192,21 @@ document.addEventListener(
 </script>
 
 <!-- ================= END BULK MESSAGE CENTER ================= -->
-</body>
+
+<script>
+function fjPrintBill() {
+    const bill = document.getElementById("billSection");
+
+    if (!bill) {
+        alert("Bill পাওয়া যাচ্ছে না। আগে Bill তৈরি করুন।");
+        return;
+    }
+
+    bill.style.display = "block";
+
+    setTimeout(function () {
+        window.print();
+    }, 200);
+}
+</script></body>
 </html>
