@@ -295,6 +295,166 @@ th{
         display:block !important;
     }
 }
+/* =====================================================
+   PHULO JHANO - THERMER 58mm BILL PRINT
+===================================================== */
+
+@media screen {
+
+    body.fj-thermal-print{
+        background:#ffffff !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    body.fj-thermal-print #fjDashboard,
+    body.fj-thermal-print > header{
+        display:none !important;
+    }
+
+    body.fj-thermal-print .container{
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        background:#ffffff !important;
+    }
+
+    body.fj-thermal-print
+    .container > *:not(#billSection){
+        display:none !important;
+    }
+
+    body.fj-thermal-print #billSection{
+        display:block !important;
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:3mm !important;
+        background:#ffffff !important;
+        border:none !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        color:#000000 !important;
+        overflow:visible !important;
+    }
+
+    body.fj-thermal-print
+    #billSection .no-print{
+        display:none !important;
+    }
+
+    body.fj-thermal-print
+    #billSection h2{
+        color:#000000 !important;
+        text-align:center !important;
+        font-size:15px !important;
+        margin:0 0 6px !important;
+    }
+
+    body.fj-thermal-print
+    #billSection table{
+        width:100% !important;
+        border-collapse:collapse !important;
+        margin:5px 0 !important;
+        font-size:8px !important;
+    }
+
+    body.fj-thermal-print
+    #billSection th,
+    body.fj-thermal-print
+    #billSection td{
+        padding:2px 1px !important;
+        font-size:8px !important;
+        color:#000000 !important;
+        background:#ffffff !important;
+        border:1px solid #000000 !important;
+    }
+
+    body.fj-thermal-print
+    #billSection th{
+        font-weight:bold !important;
+    }
+
+    body.fj-thermal-print
+    #billSection .total-box{
+        text-align:right !important;
+        margin-top:6px !important;
+        font-size:10px !important;
+        color:#000000 !important;
+    }
+
+    body.fj-thermal-print
+    #billSection .total-box strong{
+        font-size:13px !important;
+        color:#000000 !important;
+    }
+}
+
+
+/* 58mm THERMAL PRINT */
+
+@media print{
+
+    @page{
+        size:58mm auto;
+        margin:0;
+    }
+
+    html,
+    body{
+        width:58mm !important;
+        min-width:58mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        background:#ffffff !important;
+    }
+
+    body > header,
+    body #fjDashboard{
+        display:none !important;
+    }
+
+    body .container{
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    body .container > *:not(#billSection){
+        display:none !important;
+    }
+
+    body #billSection{
+        display:block !important;
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:3mm !important;
+        border:none !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        background:#ffffff !important;
+    }
+
+    body #billSection .no-print{
+        display:none !important;
+    }
+
+    body #billSection table{
+        width:100% !important;
+        border-collapse:collapse !important;
+        font-size:8px !important;
+    }
+
+    body #billSection th,
+    body #billSection td{
+        padding:2px 1px !important;
+        font-size:8px !important;
+        color:#000000 !important;
+    }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -4076,20 +4236,38 @@ function printBill(){
     if(
         billItems.length === 0
     ){
-
         showMessage(
-            "❌ Print করার জন্য Bill নেই।",
+            "❌ Print করার জন্য Bill নেই",
             "error"
         );
 
         return;
     }
 
+    const bill = document.getElementById("billSection");
 
-    window.print();
+    if(!bill){
+        alert("❌ Bill Section পাওয়া যায়নি।");
+        return;
+    }
 
+    document.body.classList.add("fj-thermal-print");
+
+    bill.style.display = "block";
+
+    setTimeout(function(){
+
+        window.print();
+
+    }, 300);
 }
 
+
+window.addEventListener("afterprint", function(){
+
+    document.body.classList.remove("fj-thermal-print");
+
+});
 
 /* =====================================================
    SECURITY
