@@ -294,6 +294,31 @@ th{
     #billSection{
         display:block !important;
     }
+    /* PRINT CUSTOMER DETAILS */
+
+    #billSection .fj-print-customer{
+        display:block !important;
+        font-size:9px !important;
+        line-height:1.5 !important;
+        margin:5px 0 !important;
+        padding:3px 0 !important;
+        border-top:1px dashed #000 !important;
+        border-bottom:1px dashed #000 !important;
+        color:#000 !important;
+    }
+
+    #billSection .fj-print-customer div{
+        display:flex !important;
+        justify-content:space-between !important;
+        gap:5px !important;
+        margin:1px 0 !important;
+    }
+
+    #billSection .fj-print-customer b,
+    #billSection .fj-print-customer span{
+        color:#000 !important;
+        font-size:9px !important;
+    }
 }
 /* =====================================================
    PHULO JHANO - THERMER 58mm BILL PRINT
@@ -2390,7 +2415,20 @@ style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18
             inputmode="numeric">
 
     </div>
+<!-- PRINT CUSTOMER DETAILS -->
+<div id="fjPrintCustomer" class="fj-print-customer">
 
+    <div>
+        <b>Customer:</b>
+        <span id="fjPrintCustomerName"></span>
+    </div>
+
+    <div>
+        <b>Mobile:</b>
+        <span id="fjPrintCustomerMobile"></span>
+    </div>
+
+</div>
     <table>
 
         <thead>
@@ -4250,7 +4288,29 @@ function printBill(){
         alert("❌ Bill Section পাওয়া যায়নি।");
         return;
     }
+    /* CUSTOMER DETAILS FOR PRINT */
 
+    const customerName =
+        document.getElementById("customerName")?.value.trim() || "";
+
+    const customerMobile =
+        document.getElementById("customerMobile")?.value.trim() || "";
+
+    const printCustomerName =
+        document.getElementById("fjPrintCustomerName");
+
+    const printCustomerMobile =
+        document.getElementById("fjPrintCustomerMobile");
+
+    if(printCustomerName){
+        printCustomerName.textContent =
+            customerName || "N/A";
+    }
+
+    if(printCustomerMobile){
+        printCustomerMobile.textContent =
+            customerMobile || "N/A";
+    }
     document.body.classList.add("fj-thermal-print");
 
     bill.style.display = "block";
