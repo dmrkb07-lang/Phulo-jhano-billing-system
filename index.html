@@ -2811,7 +2811,7 @@ function scanManualBarcode(){
    AUTO BARCODE SCAN
 ===================================================== */
 
-function autoBarcodeScan(barcode){
+async function autoBarcodeScan(barcode){
 
     barcode =
         String(barcode).trim();
@@ -2821,8 +2821,35 @@ function autoBarcodeScan(barcode){
         barcode;
 
 
-    const product =
-        products[barcode];
+    let product = products[barcode];
+
+if (!product) {
+    const { data, error } = await supabaseClient
+        .from("products")
+        .select("barcode, product_name, price, gst, commission, stock")
+        .eq("barcode", barcode)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Barcode lookup error:", error);
+        showMessage("Product Load Error: " + error.message, "error");
+        return;
+    }
+
+    if (data) {
+        product = {
+            barcode: String(data.barcode).trim(),
+            name: data.product_name,
+            price: Number(data.price) || 0,
+            gst: Number(data.gst) || 0,
+            commission: Number(data.commission) || 0,
+            stock: Number(data.stock) || 0
+        };
+
+        products[barcode] = product;
+        saveProducts();
+    }
+}
 
 
     if(!product){
