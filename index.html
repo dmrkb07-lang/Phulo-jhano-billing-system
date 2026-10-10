@@ -4993,22 +4993,47 @@ window.addEventListener(
 <script>
 /* MEMBER PAYOUT - AVAILABLE COMMISSION SYNC */
 
-function fjSyncAvailablePayout() {
-
+async function fjSyncAvailablePayout() {
     const totalEl = document.getElementById("fjTotalCommission");
     const payoutEl = document.getElementById("fjAvailablePayout");
 
     if (!totalEl || !payoutEl) return;
 
-    let amount = totalEl.innerText
-        .replace("₹", "")
-        .replace(/,/g, "")
-        .trim();
+    const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
 
-    amount = parseFloat(amount) || 0;
+    if (authError || !authData.user) return;
 
-    payoutEl.innerText = "₹" + amount.toFixed(2);
+    const userId = authData.user.id;
+
+    const total = parseFloat(
+        totalEl.innerText.replace("₹", "").replace(/,/g, "").trim()
+    ) || 0;
+
+    const { data, error } = await supabaseClient
+        .from("payout_requests")
+        .select("amount")
+        .eq("user_id", userId)
+        .eq("status", "paid");
+
+    if (error) {
+        console.error("Paid payout load error:", error);
+        return;
+    }
+
+    const paidTotal = (data || []).reduce(
+        (sum, row) => sum + (Number(row.amount) || 0),
+        0
+    );
+
+    const available = Math.max(0, total - paidTotal);
+
+    payoutEl.innerText = "₹" + available.toFixed(2);
 }
+
+setTimeout(fjSyncAvailablePayout, 1000);
+
+setInterval(fjSyncAvailablePayout, 3000);
 
 /* Page load */
 setTimeout(function () {
