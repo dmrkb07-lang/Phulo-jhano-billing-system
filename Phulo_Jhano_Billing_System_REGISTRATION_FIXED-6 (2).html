@@ -1,0 +1,6705 @@
+<!DOCTYPE html>
+<!-- UPDATED 2026-10-26: consolidated dashboard/access/count and bill-visibility fixes; preserve existing features. Backend RPC/commission SQL still requires Supabase-side installation and live testing. -->
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phulo Jhano Billing System — Fresh Consolidated 2026-10-26</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f4f6;
+    color:#222;
+}
+
+header{
+    background:#166534;
+    color:white;
+    padding:18px 12px;
+    text-align:center;
+}
+
+header h1{
+    margin:0;
+    font-size:24px;
+}
+
+header p{
+    margin:6px 0 0;
+    font-size:14px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:12px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+h2{
+    margin-top:0;
+    color:#166534;
+    font-size:19px;
+}
+
+input,button{
+    width:100%;
+    padding:11px;
+    margin:5px 0;
+    border:1px solid #ccc;
+    border-radius:7px;
+    font-size:15px;
+}
+
+button{
+    background:#166534;
+    color:white;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+.btn-red{background:#dc2626}
+.btn-blue{background:#2563eb}
+.btn-orange{background:#ea580c}
+.btn-purple{background:#7c3aed}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+.barcode-box{
+    background:#ecfdf5;
+    border:2px solid #16a34a;
+    padding:12px;
+    border-radius:10px;
+}
+
+.barcode-box input{
+    font-size:21px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.status{
+    padding:10px;
+    border-radius:7px;
+    margin-top:8px;
+    display:none;
+}
+
+.success{
+    background:#dcfce7;
+    color:#166534;
+    display:block;
+}
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+    display:block;
+}
+
+.warning{
+    background:#fef3c7;
+    color:#92400e;
+    display:block;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:7px;
+    text-align:center;
+    font-size:12px;
+}
+
+th{
+    background:#166534;
+    color:white;
+}
+
+.total-box{
+    text-align:right;
+    margin-top:15px;
+    font-size:17px;
+}
+
+.total-box strong{
+    font-size:23px;
+    color:#166534;
+}
+
+.small{
+    font-size:12px;
+    color:#666;
+}
+
+.product-list{
+    max-height:350px;
+    overflow:auto;
+}
+
+.dashboard{
+    padding:12px;
+    background:#f3f4f6;
+}
+
+.dashboard-header{
+    background:#166534;
+    color:white;
+    padding:25px 15px;
+    border-radius:18px;
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.dashboard-header h1{
+    margin:0;
+    font-size:30px;
+}
+
+.dashboard-header p{
+    margin:8px 0 0;
+    font-size:17px;
+}
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.dashboard-card{
+    background:white;
+    padding:18px;
+    border-radius:15px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+
+.dashboard-icon{
+    font-size:32px;
+}
+
+.dashboard-card b{
+    display:block;
+    font-size:16px;
+    margin-top:5px;
+}
+
+.dashboard-card h2{
+    margin:7px 0 0;
+    font-size:25px;
+}
+
+.dashboard-date{
+    background:white;
+    padding:10px;
+    margin-top:12px;
+    border-radius:10px;
+    text-align:center;
+    color:#166534;
+    font-weight:bold;
+}
+
+.camera-box{
+    margin-top:12px;
+    padding:12px;
+    background:#f0fdf4;
+    border:2px solid #16a34a;
+    border-radius:10px;
+}
+
+#mobileScanner{
+    width:100%;
+    max-width:500px;
+    margin:10px auto;
+    display:none;
+}
+
+@media(max-width:600px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .dashboard-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .dashboard-card{
+        padding:14px 8px;
+    }
+
+    .dashboard-card h2{
+        font-size:21px;
+    }
+
+    .dashboard-icon{
+        font-size:27px;
+    }
+
+    th,td{
+        padding:5px;
+        font-size:10px;
+    }
+
+    .container{
+        padding:8px;
+    }
+}
+
+@media print{
+
+    body{
+        background:white;
+    }
+
+    header,
+    .no-print,
+    .product-master,
+    .dashboard,
+    .barcode-box,
+    .camera-box{
+        display:none !important;
+    }
+
+    .card{
+        box-shadow:none;
+        border:none;
+    }
+
+    #billSection{
+        display:block !important;
+    }
+    /* PRINT CUSTOMER DETAILS */
+
+    #billSection .fj-print-customer{
+        display:block !important;
+        font-size:9px !important;
+        line-height:1.5 !important;
+        margin:5px 0 !important;
+        padding:3px 0 !important;
+        border-top:1px dashed #000 !important;
+        border-bottom:1px dashed #000 !important;
+        color:#000 !important;
+    }
+
+    #billSection .fj-print-customer div{
+        display:flex !important;
+        justify-content:space-between !important;
+        gap:5px !important;
+        margin:1px 0 !important;
+    }
+
+    #billSection .fj-print-customer b,
+    #billSection .fj-print-customer span{
+        color:#000 !important;
+        font-size:9px !important;
+    }
+}
+/* =====================================================
+   PHULO JHANO - THERMER 58mm BILL PRINT
+===================================================== */
+
+@media screen {
+
+    body.fj-thermal-print{
+        background:#ffffff !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    body.fj-thermal-print #fjDashboard,
+    body.fj-thermal-print > header{
+        display:none !important;
+    }
+
+    body.fj-thermal-print .container{
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        background:#ffffff !important;
+    }
+
+    body.fj-thermal-print
+    .container > *:not(#billSection){
+        display:none !important;
+    }
+
+    body.fj-thermal-print #billSection{
+        display:block !important;
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:3mm !important;
+        background:#ffffff !important;
+        border:none !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        color:#000000 !important;
+        overflow:visible !important;
+    }
+
+    body.fj-thermal-print
+    #billSection .no-print{
+        display:none !important;
+    }
+
+    body.fj-thermal-print
+    #billSection h2{
+        color:#000000 !important;
+        text-align:center !important;
+        font-size:15px !important;
+        margin:0 0 6px !important;
+    }
+
+    body.fj-thermal-print
+    #billSection table{
+        width:100% !important;
+        border-collapse:collapse !important;
+        margin:5px 0 !important;
+        font-size:8px !important;
+    }
+
+    body.fj-thermal-print
+    #billSection th,
+    body.fj-thermal-print
+    #billSection td{
+        padding:2px 1px !important;
+        font-size:8px !important;
+        color:#000000 !important;
+        background:#ffffff !important;
+        border:1px solid #000000 !important;
+    }
+
+    body.fj-thermal-print
+    #billSection th{
+        font-weight:bold !important;
+    }
+
+    body.fj-thermal-print
+    #billSection .total-box{
+        text-align:right !important;
+        margin-top:6px !important;
+        font-size:10px !important;
+        color:#000000 !important;
+    }
+
+    body.fj-thermal-print
+    #billSection .total-box strong{
+        font-size:13px !important;
+        color:#000000 !important;
+    }
+}
+
+
+/* 58mm THERMAL PRINT */
+
+@media print{
+
+    @page{
+        size:58mm auto;
+        margin:0;
+    }
+
+    html,
+    body{
+        width:58mm !important;
+        min-width:58mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        background:#ffffff !important;
+    }
+
+    body > header,
+    body #fjDashboard{
+        display:none !important;
+    }
+
+    body .container{
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    body .container > *:not(#billSection){
+        display:none !important;
+    }
+
+    body #billSection{
+        display:block !important;
+        width:58mm !important;
+        max-width:58mm !important;
+        margin:0 !important;
+        padding:3mm !important;
+        border:none !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        background:#ffffff !important;
+    }
+
+    body #billSection .no-print{
+        display:none !important;
+    }
+
+    body #billSection table{
+        width:100% !important;
+        border-collapse:collapse !important;
+        font-size:8px !important;
+    }
+
+    body #billSection th,
+    body #billSection td{
+        padding:2px 1px !important;
+        font-size:8px !important;
+        color:#000000 !important;
+    }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+const SUPABASE_URL = "https://tnoxenhzhhqwchoxjlpz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_PHWJzIZ9UB74pHXv0601uw_crzdanRM";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+async function fjLogin() {
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const message = document.getElementById("loginMessage");
+
+    if (!email || !password) {
+        message.textContent = "Email এবং Password দিন";
+        return;
+    }
+
+    message.textContent = "Login হচ্ছে...";
+
+    try {
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            message.textContent = "Login ব্যর্থ: " + error.message;
+            return;
+        }
+
+        if (!data || !data.user) {
+    message.textContent = "User পাওয়া যায়নি";
+    return;
+}
+
+/* ================= APPROVAL CHECK ================= */
+
+const { data: profile, error: profileError } =
+    await supabaseClient
+        .from("profiles")
+        .select("role, approval_status")
+        .eq("id", data.user.id)
+        .single();
+
+if (profileError || !profile) {
+
+    await supabaseClient.auth.signOut();
+
+    message.textContent =
+        "❌ Profile পাওয়া যায়নি";
+
+    return;
+}
+
+/* Admin সরাসরি Login করতে পারবে */
+if (
+    profile.role !== "admin" &&
+    profile.approval_status !== "approved"
+) {
+
+    await supabaseClient.auth.signOut();
+
+    message.textContent =
+        "⏳ আপনার Account এখনো Admin approval-এর অপেক্ষায় আছে।";
+
+    return;
+}
+
+/* ================= LOGIN SUCCESS ================= */
+
+window.fjCurrentUserRole = String(profile.role || "user").toLowerCase();
+window.fjIsAdmin = window.fjCurrentUserRole === "admin";
+
+message.textContent = "✅ Login সফল হয়েছে";
+
+document.getElementById("fjLoginScreen").style.display = "none";
+document.getElementById("fjDashboard").style.display = "block";
+const bulkMessage = document.getElementById("bulkMessage");
+
+if (bulkMessage) {
+    bulkMessage.style.display =
+        profile.role === "admin" ? "block" : "none";
+}
+const payoutCenter = document.getElementById("fjPayoutCenter");
+if (payoutCenter) {
+    payoutCenter.style.display =
+        String(profile.role || "").toLowerCase() === "admin" ? "block" : "none";
+}
+fjLoadJoiningDashboard();
+updateDashboard();
+await fjApplyRoleAccess(profile.role);
+if (window.fjIsAdmin && typeof fjLoadPayoutRequests === "function") fjLoadPayoutRequests();
+if (window.fjJoiningRefreshTimer) clearInterval(window.fjJoiningRefreshTimer);
+window.fjJoiningRefreshTimer = setInterval(function () {
+    if (document.visibilityState === "visible" && document.getElementById("fjDashboard")?.style.display !== "none") {
+        fjLoadJoiningDashboard();
+    }
+}, 30000);
+    } catch (err) {
+
+        message.textContent = "System Error: " + err.message;
+
+    }
+}
+</script>
+<!-- ==========================================
+     PHULO JHANO MODERN SLIDE DASHBOARD
+     UI ONLY - EXISTING FUNCTIONS SAFE
+========================================== -->
+
+<style>
+
+/* ---------- DASHBOARD BACKGROUND ---------- */
+
+#fjDashboard{
+    position:relative;
+    overflow:hidden !important;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(34,197,94,.12), transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(59,130,246,.10), transparent 32%),
+        #f6f8fb !important;
+    padding:14px !important;
+}
+
+/* ---------- HEADER ---------- */
+
+#fjDashboard .dashboard-header{
+    position:relative;
+    overflow:hidden;
+    border-radius:24px !important;
+    padding:22px 20px !important;
+    margin-bottom:14px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #14532d 0%,
+            #166534 45%,
+            #15803d 100%
+        ) !important;
+
+    color:white !important;
+
+    box-shadow:
+        0 12px 30px rgba(20,83,45,.22) !important;
+
+    animation: fjHeaderAnimation .6s ease;
+}
+
+#fjDashboard .dashboard-header::before{
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    right:-80px;
+    top:-90px;
+    background:rgba(255,255,255,.09);
+}
+
+#fjDashboard .dashboard-header::after{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    left:-45px;
+    bottom:-55px;
+    background:rgba(255,255,255,.06);
+}
+
+#fjDashboard .dashboard-header h1{
+    position:relative;
+    z-index:2;
+    margin:0 !important;
+    font-size:27px !important;
+    font-weight:900 !important;
+}
+
+#fjDashboard .dashboard-header p{
+    position:relative;
+    z-index:2;
+    margin:5px 0 0 !important;
+    font-size:13px !important;
+    opacity:.88;
+}
+
+/* ---------- SLIDE AREA ---------- */
+
+.fj-slide-area{
+    position:relative;
+    width:100%;
+    overflow:hidden;
+}
+
+.fj-slide-track{
+    display:flex;
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+
+    gap:12px;
+
+    scroll-behavior:smooth;
+    scroll-snap-type:x mandatory;
+
+    scrollbar-width:none;
+
+    -webkit-overflow-scrolling:touch;
+
+    padding-bottom:5px;
+}
+
+.fj-slide-track::-webkit-scrollbar{
+    display:none;
+}
+
+.fj-slide{
+    flex:0 0 100%;
+    width:100%;
+    min-width:100%;
+
+    box-sizing:border-box;
+
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+
+    opacity:1;
+    will-change:transform, opacity;
+}
+
+.fj-slide.fj-enter-next{
+    animation:fjSlideNext .45s cubic-bezier(.22,.61,.36,1);
+}
+
+.fj-slide.fj-enter-prev{
+    animation:fjSlidePrev .45s cubic-bezier(.22,.61,.36,1);
+}
+
+/* ---------- SLIDE LABEL ---------- */
+
+.fj-slide-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin:0 0 10px;
+
+    padding:10px 14px;
+
+    border-radius:15px;
+
+    background:white;
+
+    border:1px solid #e5e7eb;
+
+    box-shadow:0 5px 16px rgba(15,23,42,.06);
+}
+
+.fj-slide-title strong{
+    color:#14532d;
+    font-size:14px;
+}
+
+.fj-slide-title span{
+    font-size:11px;
+    color:#64748b;
+}
+
+/* ---------- DASHBOARD CARDS ---------- */
+
+#fjDashboard .dashboard-card{
+    position:relative;
+    overflow:hidden;
+
+    border-radius:20px !important;
+
+    border:1px solid #e5e7eb !important;
+
+    background:rgba(255,255,255,.96) !important;
+
+    box-shadow:
+        0 7px 20px rgba(15,23,42,.07) !important;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease !important;
+}
+
+#fjDashboard .dashboard-card:hover{
+    transform:translateY(-3px);
+    box-shadow:
+        0 13px 28px rgba(15,23,42,.11) !important;
+}
+
+/* ---------- GRID ---------- */
+
+#fjDashboard .dashboard-grid{
+    gap:11px !important;
+}
+
+/* ---------- NAVIGATION ---------- */
+
+.fj-slide-navigation{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:12px;
+
+    margin:10px 0 7px;
+}
+
+.fj-slide-btn{
+    width:42px;
+    height:42px;
+
+    border:0;
+
+    border-radius:50%;
+
+    background:#166534;
+
+    color:white;
+
+    font-size:25px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    box-shadow:
+        0 7px 16px rgba(22,101,52,.22);
+
+    transition:.2s;
+}
+
+.fj-slide-btn:active{
+    transform:scale(.88);
+}
+
+.fj-slide-counter{
+    min-width:75px;
+
+    text-align:center;
+
+    padding:7px 12px;
+
+    border-radius:20px;
+
+    background:white;
+
+    border:1px solid #e5e7eb;
+
+    color:#166534;
+
+    font-size:12px;
+
+    font-weight:800;
+}
+
+/* ---------- DOTS ---------- */
+
+.fj-slide-dots{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    gap:6px;
+
+    margin:5px 0 10px;
+}
+
+.fj-slide-dot{
+    width:7px;
+    height:7px;
+
+    border-radius:50%;
+
+    background:#cbd5e1;
+
+    transition:.25s;
+}
+
+.fj-slide-dot.active{
+    width:24px;
+
+    border-radius:20px;
+
+    background:#166534;
+}
+
+/* ---------- SWIPE MESSAGE ---------- */
+
+.fj-swipe-message{
+    text-align:center;
+
+    color:#64748b;
+
+    font-size:11px;
+
+    margin:2px 0 9px;
+
+    opacity:.9;
+}
+
+/* ---------- BUTTONS ---------- */
+
+#fjDashboard button{
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease !important;
+}
+
+#fjDashboard button:active{
+    transform:scale(.97);
+}
+
+/* ---------- INPUT ---------- */
+
+#fjDashboard input,
+#fjDashboard select{
+    border-radius:12px !important;
+    transition:.2s !important;
+}
+
+#fjDashboard input:focus,
+#fjDashboard select:focus{
+    border-color:#16a34a !important;
+
+    box-shadow:
+        0 0 0 3px rgba(22,163,74,.10) !important;
+
+    outline:none !important;
+}
+
+/* ---------- MOBILE ---------- */
+
+@media(max-width:600px){
+
+    #fjDashboard{
+        padding:10px !important;
+    }
+
+    #fjDashboard .dashboard-header{
+        padding:20px 16px !important;
+        border-radius:21px !important;
+    }
+
+    #fjDashboard .dashboard-header h1{
+        font-size:24px !important;
+    }
+
+    #fjDashboard .dashboard-grid{
+        grid-template-columns:1fr 1fr !important;
+        gap:9px !important;
+    }
+
+    #fjDashboard .dashboard-card{
+        border-radius:17px !important;
+    }
+
+    .fj-slide-btn{
+        width:39px;
+        height:39px;
+        font-size:22px;
+    }
+
+}
+
+/* ---------- SMALL PHONE ---------- */
+
+@media(max-width:380px){
+
+    #fjDashboard .dashboard-grid{
+        grid-template-columns:1fr 1fr !important;
+    }
+
+    #fjDashboard .dashboard-card{
+        padding:10px !important;
+    }
+
+}
+
+/* ---------- ANIMATIONS ---------- */
+
+@keyframes fjHeaderAnimation{
+
+    from{
+        opacity:0;
+        transform:translateY(-15px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+@keyframes fjSlideNext{
+
+    from{
+        opacity:.35;
+        transform:translateX(28px) scale(.985);
+    }
+
+    to{
+        opacity:1;
+        transform:translateX(0) scale(1);
+    }
+
+}
+
+@keyframes fjSlidePrev{
+
+    from{
+        opacity:.35;
+        transform:translateX(-28px) scale(.985);
+    }
+
+    to{
+        opacity:1;
+        transform:translateX(0) scale(1);
+    }
+
+}
+
+</style>
+
+
+<script>
+
+/* ==========================================
+   PHULO JHANO SLIDE ENGINE
+========================================== */
+
+(function(){
+
+    function fjSetupSlideDashboard(){
+
+        const dashboard =
+            document.getElementById("fjDashboard");
+
+        if(!dashboard) return;
+
+        /* Rebuild slides after role access changes. Restore each original dashboard
+           block first, then create slides from the blocks currently visible to this role. */
+        if(dashboard.dataset.slideReady === "yes"){
+            const oldArea = dashboard.querySelector(":scope > .fj-slide-area");
+            if(oldArea){
+                Array.from(oldArea.querySelectorAll(":scope > .fj-slide-track > .fj-slide")).forEach(function(slide){
+                    const original = Array.from(slide.children).find(function(child){ return !child.classList.contains("fj-slide-title"); });
+                    if(original) dashboard.insertBefore(original, oldArea);
+                });
+                oldArea.remove();
+            }
+            dashboard.querySelectorAll(":scope > .fj-slide-navigation, :scope > .fj-swipe-message, :scope > .fj-slide-dots").forEach(function(el){ el.remove(); });
+            delete dashboard.dataset.slideReady;
+        }
+        dashboard.dataset.slideReady = "yes";
+
+
+        const header =
+            dashboard.querySelector(".dashboard-header");
+
+        if(!header) return;
+
+
+        /*
+         * Existing dashboard elements
+         * remain untouched internally.
+         */
+
+        const elements =
+            Array.from(dashboard.children);
+
+
+        const slideElements =
+            elements.filter(function(el){
+                if (
+                    el === header ||
+                    el.classList.contains("fj-slide-area") ||
+                    el.classList.contains("fj-slide-navigation") ||
+                    el.classList.contains("fj-swipe-message") ||
+                    el.classList.contains("fj-slide-dots")
+                ) return false;
+
+                /* Do not create blank slides for role-specific panels that
+                   are hidden for the currently logged-in account. */
+                const style = window.getComputedStyle(el);
+                if (style.display === "none" || style.visibility === "hidden") return false;
+                if (el.hidden || el.getAttribute("aria-hidden") === "true") return false;
+                return true;
+            });
+
+
+        if(slideElements.length === 0) return;
+
+
+        /* ---------- CREATE SLIDE AREA ---------- */
+
+        const area =
+            document.createElement("div");
+
+        area.className =
+            "fj-slide-area";
+
+
+        const track =
+            document.createElement("div");
+
+        track.className =
+            "fj-slide-track";
+
+
+        area.appendChild(track);
+
+
+        /*
+         * Each existing dashboard block
+         * becomes one slide.
+         */
+
+        slideElements.forEach(function(element, index){
+
+            const slide =
+                document.createElement("div");
+
+            slide.className =
+                "fj-slide";
+
+
+            const title =
+                document.createElement("div");
+
+            title.className =
+                "fj-slide-title";
+
+
+            let titleText = "Dashboard";
+            const elementId = element.id || "";
+            const elementText = (element.innerText || element.textContent || "").toLowerCase();
+
+            /* Assign slide headings from the actual content, never from the
+               slide index. Hidden Admin/Outlet panels previously shifted all
+               headings and made Overview appear under Registration. */
+            if (elementId === "fjDashboardToolsCard") {
+                titleText = "🔄 Dashboard Tools";
+            } else if (elementId === "fjAdminOutletManager") {
+                titleText = "🛠️ Outlet Management";
+            } else if (elementId === "fjOutletDashboard") {
+                titleText = "🏪 Outlet Dashboard";
+            } else if (elementId === "fjRegistrationForm") {
+                titleText = "📝 Registration";
+            } else if (elementId === "fjJoiningDashboard") {
+                titleText = "🌐 Joining Dashboard";
+            } else if (elementId === "fjMemberPayoutRequest" || elementId === "fjPayoutCenter") {
+                titleText = "💸 Payout";
+            } else if (elementId === "fjAdminOutletManager") {
+                titleText = "🛠️ Outlet Management";
+            } else if (element.querySelector && element.querySelector("#fjTotalSales, #fjTotalBills, #fjProductsSold, #fjTodaySales")) {
+                titleText = "📊 Overview";
+            } else if (element.querySelector && element.querySelector("#fjRegFullName, #fjRegSponsor")) {
+                titleText = "📝 Registration";
+            } else if (element.querySelector && element.querySelector("#fjJoiningMemberTable, #fjTotalDownline")) {
+                titleText = "🌐 Joining Dashboard";
+            } else if (element.querySelector && element.querySelector("#fjPayoutPendingCount, #fjPayoutRequestList")) {
+                titleText = "💸 Payout Center";
+            } else if (elementText.includes("member management") || elementText.includes("new registration") || elementText.includes("joining dashboard")) {
+                titleText = "👥 Member Management";
+            } else if (elementText.includes("new billing")) {
+                titleText = "🧾 Billing";
+            } else if (elementText.includes("refresh dashboard")) {
+                titleText = "🔄 Dashboard Tools";
+            } else if (element.classList.contains("dashboard-date")) {
+                titleText = "📅 Today";
+            } else {
+                titleText = "🌿 Phulo Jhano";
+            }
+
+            title.innerHTML =
+                "<strong>" +
+                titleText +
+                "</strong>" +
+                "<span>Phulo Jhano</span>";
+
+
+            slide.appendChild(title);
+
+            /*
+             * IMPORTANT:
+             * Original element and its ID remain.
+             */
+
+            slide.appendChild(element);
+
+            track.appendChild(slide);
+
+        });
+
+
+        /* ---------- NAVIGATION ---------- */
+
+        const navigation =
+            document.createElement("div");
+
+        navigation.className =
+            "fj-slide-navigation";
+
+
+        const previous =
+            document.createElement("button");
+
+        previous.type = "button";
+
+        previous.className =
+            "fj-slide-btn";
+
+        previous.innerHTML = "‹";
+
+        previous.setAttribute(
+            "aria-label",
+            "Previous Slide"
+        );
+
+
+        const counter =
+            document.createElement("div");
+
+        counter.className =
+            "fj-slide-counter";
+
+        counter.textContent =
+            "1 / " + slideElements.length;
+
+
+        const next =
+            document.createElement("button");
+
+        next.type = "button";
+
+        next.className =
+            "fj-slide-btn";
+
+        next.innerHTML = "›";
+
+        next.setAttribute(
+            "aria-label",
+            "Next Slide"
+        );
+
+
+        navigation.appendChild(previous);
+        navigation.appendChild(counter);
+        navigation.appendChild(next);
+
+
+        /* ---------- DOTS ---------- */
+
+        const dots =
+            document.createElement("div");
+
+        dots.className =
+            "fj-slide-dots";
+
+
+        slideElements.forEach(function(_, index){
+
+            const dot =
+                document.createElement("span");
+
+            dot.className =
+                "fj-slide-dot";
+
+
+            if(index === 0){
+                dot.classList.add("active");
+            }
+
+
+            dot.addEventListener(
+                "click",
+                function(){
+
+                    fjGoToSlide(index);
+
+                }
+            );
+
+
+            dots.appendChild(dot);
+
+        });
+
+
+        /* ---------- SWIPE MESSAGE ---------- */
+
+        const hint =
+            document.createElement("div");
+
+        hint.className =
+            "fj-swipe-message";
+
+        hint.textContent =
+            "👆 Swipe করুন অথবা ◀ ▶ চাপুন";
+
+
+        /*
+         * Put everything into dashboard
+         */
+
+        dashboard.appendChild(navigation);
+
+        dashboard.appendChild(hint);
+
+        dashboard.appendChild(dots);
+
+        dashboard.appendChild(area);
+
+
+        let currentSlide = 0;
+
+
+        const dotItems =
+            Array.from(
+                dots.querySelectorAll(".fj-slide-dot")
+            );
+
+
+        function fjUpdateUI(){
+
+            counter.textContent =
+                (currentSlide + 1) +
+                " / " +
+                slideElements.length;
+
+
+            dotItems.forEach(function(dot,index){
+
+                dot.classList.toggle(
+                    "active",
+                    index === currentSlide
+                );
+
+            });
+
+        }
+
+
+    function fjGoToSlide(index){
+
+    const oldSlide = currentSlide;
+
+    if(index < 0){
+        index =
+            slideElements.length - 1;
+    }
+
+    if(index >= slideElements.length){
+        index = 0;
+    }
+
+    /* ---------- DETECT DIRECTION ---------- */
+
+    let direction = "next";
+
+    if(
+        oldSlide === slideElements.length - 1 &&
+        index === 0
+    ){
+        direction = "next";
+    }
+    else if(
+        oldSlide === 0 &&
+        index === slideElements.length - 1
+    ){
+        direction = "prev";
+    }
+    else if(index < oldSlide){
+        direction = "prev";
+    }
+    else{
+        direction = "next";
+    }
+
+    currentSlide = index;
+
+    /* ---------- TARGET SLIDE ---------- */
+
+    const targetSlide =
+        slideElements[index]
+            .parentElement;
+
+    if(targetSlide){
+
+        targetSlide.classList.remove(
+            "fj-enter-next",
+            "fj-enter-prev"
+        );
+
+        /* Restart animation */
+
+        void targetSlide.offsetWidth;
+
+        targetSlide.classList.add(
+            direction === "next"
+                ? "fj-enter-next"
+                : "fj-enter-prev"
+        );
+
+    }
+
+    /* ---------- CORRECT SLIDE POSITION ---------- */
+
+    const slideWidth =
+        slideElements[0]
+            ? slideElements[0].offsetWidth
+            : track.clientWidth;
+
+    const gap =
+        parseFloat(
+            getComputedStyle(track).gap
+        ) || 0;
+
+    track.scrollTo({
+
+        left:
+            currentSlide *
+            (slideWidth + gap),
+
+        behavior:"auto"
+
+    });
+
+    fjUpdateUI();
+
+    }
+
+
+        /*
+         * Make navigation available globally
+         * without changing existing functions.
+         */
+
+        window.fjSlideNext =
+            function(){
+
+                fjGoToSlide(
+                    currentSlide + 1
+                );
+
+            };
+
+
+        window.fjSlidePrevious =
+            function(){
+
+                fjGoToSlide(
+                    currentSlide - 1
+                );
+
+            };
+
+
+        previous.addEventListener(
+            "click",
+            function(){
+
+                window.fjSlidePrevious();
+
+            }
+        );
+
+
+        next.addEventListener(
+            "click",
+            function(){
+
+                window.fjSlideNext();
+
+            }
+        );
+
+
+        /*
+         * Detect manual finger swipe
+         */
+
+        let scrollTimeout;
+
+
+        track.addEventListener(
+            "scroll",
+            function(){
+
+                clearTimeout(
+                    scrollTimeout
+                );
+
+
+                scrollTimeout =
+                    setTimeout(
+                        function(){
+
+                    const slideWidth =
+    slideElements[0]
+        ? slideElements[0].offsetWidth
+        : track.clientWidth;
+
+const gap =
+    parseFloat(
+        getComputedStyle(track).gap
+    ) || 0;
+
+const width =
+    slideWidth + gap;
+
+
+                            if(!width) return;
+
+
+                            currentSlide =
+                                Math.round(
+                                    track.scrollLeft /
+                                    width
+                                );
+
+
+                            if(
+                                currentSlide < 0
+                            ){
+                                currentSlide = 0;
+                            }
+
+
+                            if(
+                                currentSlide >=
+                                slideElements.length
+                            ){
+                                currentSlide =
+                                    slideElements.length - 1;
+                            }
+
+
+                            fjUpdateUI();
+
+                        },
+                        100
+                    );
+
+            }
+        );
+
+
+        /*
+         * Keyboard support
+         */
+
+        document.addEventListener(
+            "keydown",
+            function(event){
+
+                /*
+                 * Don't interfere with typing
+                 */
+
+                const tag =
+                    document.activeElement
+                    ?.tagName;
+
+
+                if(
+                    tag === "INPUT" ||
+                    tag === "TEXTAREA" ||
+                    tag === "SELECT"
+                ){
+                    return;
+                }
+
+
+                if(
+                    event.key === "ArrowRight"
+                ){
+
+                    window.fjSlideNext();
+
+                }
+
+
+                if(
+                    event.key === "ArrowLeft"
+                ){
+
+                    window.fjSlidePrevious();
+
+                }
+
+            }
+        );
+
+
+        /*
+         * Keep current slide after screen resize
+         */
+
+        window.addEventListener(
+            "resize",
+            function(){
+
+                const slideWidth =
+    slideElements[0]
+        ? slideElements[0].offsetWidth
+        : track.clientWidth;
+
+const gap =
+    parseFloat(
+        getComputedStyle(track).gap
+    ) || 0;
+
+track.scrollTo({
+
+    left:
+        currentSlide *
+        (slideWidth + gap),
+
+    behavior:"auto"
+
+});
+
+            }
+        );
+
+
+        fjUpdateUI();
+
+    }
+
+
+    /* Expose safe rebuild hook for post-login role-specific dashboard content. */
+    window.fjSetupSlideDashboard = fjSetupSlideDashboard;
+
+    /*
+     * DOM ready
+     */
+
+    if(
+        document.readyState === "loading"
+    ){
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            fjSetupSlideDashboard
+        );
+
+    }
+    else{
+
+        fjSetupSlideDashboard();
+
+    }
+
+
+})();
+
+</script> 
+<meta name="application-version" content="Fresh Consolidated Candidate 2026-10-26">
+<!-- Note: this is a local candidate file, not automatically published to GitHub Pages. -->
+</head>
+
+<body>
+<div id="fjLoginScreen" style="max-width:420px;margin:40px auto;padding:25px;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.15);">
+
+<h2 style="text-align:center;">🌿 Phulo Jhano</h2>
+
+<p style="text-align:center;">Billing System Login</p>
+
+<label>Email</label>
+<input
+id="loginEmail"
+type="email"
+placeholder="আপনার Email লিখুন"
+style="width:100%;padding:14px;margin:8px 0 15px;"
+>
+
+<label>Password</label>
+<input
+id="loginPassword"
+type="password"
+placeholder="Password লিখুন"
+style="width:100%;padding:14px;margin:8px 0 15px;"
+>
+
+<button
+onclick="fjLogin()"
+style="width:100%;padding:14px;background:#166534;color:white;border:0;border-radius:10px;font-size:17px;font-weight:bold;"
+>
+🔐 Login
+</button>
+
+<p id="loginMessage" style="text-align:center;"></p>
+<button type="button" onclick="fjShowOutletLogin()" style="background:#2563eb">🏪 Outlet Login</button>
+</div>
+
+<div id="fjOutletLoginScreen" style="display:none;max-width:420px;margin:20px auto;padding:25px;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.15);">
+<h2 style="text-align:center;color:#166534">🏪 Outlet Login</h2>
+<p style="text-align:center">Outlet owner-এর অনুমোদিত Email ও Password দিয়ে লগইন করুন</p>
+<label>Outlet Email</label><input id="fjOutletLoginEmail" type="email" autocomplete="username" placeholder="Outlet Email">
+<label>Password</label><input id="fjOutletLoginPassword" type="password" autocomplete="current-password" placeholder="Password">
+<button type="button" onclick="fjOutletLogin()" style="background:#166534">🔐 Outlet Login</button>
+<button type="button" onclick="fjHideOutletLogin()" style="background:#6b7280">← মূল Login-এ ফিরুন</button>
+<p id="fjOutletLoginMessage" style="text-align:center"></p>
+</div>
+<!-- =========================
+     DASHBOARD
+========================= -->
+
+<div id="fjDashboard" class="dashboard" style="display:none;">
+
+    <div class="dashboard-header">
+        <h1>🏠 Phulo Jhano</h1>
+        <p>Billing Dashboard</p>
+    </div>
+
+    <div id="fjAdminOutletManager" class="card" style="display:none;border:2px solid #2563eb;margin-bottom:15px">
+      <h2>🛠️ Admin — Outlet Management</h2>
+      <p class="small">Outlet owner-এর Supabase Auth User UUID দিন। ওই account-এর profiles.role অবশ্যই outlet এবং approval_status approved হতে হবে।</p>
+      <label>Outlet / Stall Name</label><input id="fjAdminOutletName" placeholder="যেমন: Banshihari Main Outlet">
+      <label>Outlet Owner User UUID</label><input id="fjAdminOutletOwner" placeholder="Supabase Auth user UUID">
+      <label>Outlet Owner Name</label><input id="fjAdminOutletOwnerName" placeholder="Outlet Owner-এর আসল নাম">
+      <label>Outlet Owner Email</label><input id="fjAdminOutletOwnerEmail" type="email" autocomplete="email" placeholder="Authentication User-এর Email">
+      <button type="button" onclick="fjAdminCreateOutlet()" style="background:#2563eb">➕ Create Outlet</button>
+      <p id="fjAdminOutletMessage"></p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Outlet</th><th>Owner UUID</th><th>Status</th></tr></thead><tbody id="fjAdminOutletRows"></tbody></table></div>
+      <button type="button" onclick="fjAdminLoadOutlets()">🔄 Refresh Outlets</button>
+    </div>
+
+    <div id="fjOutletDashboard" class="card" style="display:none;border:2px solid #16a34a;margin-bottom:15px">
+      <h2>🏪 Outlet Dashboard</h2>
+      <p id="fjOutletWelcome" class="small">আপনার Outlet-এর বিক্রি, স্টক ও দৈনিক রিপোর্ট</p>
+      <div class="dashboard-grid">
+        <div class="dashboard-card"><b>আজকের বিক্রি</b><h2 id="fjOutletTodaySales">₹0.00</h2></div>
+        <div class="dashboard-card"><b>মোট Bill</b><h2 id="fjOutletBillCount">0</h2></div>
+        <div class="dashboard-card"><b>Outlet Stock</b><h2 id="fjOutletStockCount">0</h2></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+        <h3>🧾 নতুন Outlet Bill</h3>
+        <label>সদস্যের Member Code / UUID</label>
+        <input id="fjOutletMemberCode" placeholder="যাঁর নামে বিক্রি/কমিশন হবে তাঁর Member Code">
+        <p class="small">সদস্যের password চাইবেন না। Outlet account দিয়ে লগইন করে Member Code/UUID নির্বাচন করুন।</p>
+        <label>Product Barcode</label><input id="fjOutletBarcode" placeholder="Barcode লিখুন বা scan করুন">
+        <button type="button" onclick="fjOutletAddBarcode()">➕ Outlet Bill-এ Product যোগ করুন</button>
+        <div style="overflow-x:auto"><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th><th>Remove</th></tr></thead><tbody id="fjOutletBillItems"></tbody></table></div>
+        <div style="text-align:right;font-size:20px;font-weight:bold;margin:12px 0">Bill Total: ₹<span id="fjOutletBillTotal">0.00</span></div>
+        <button type="button" onclick="fjOutletSaveBill()" style="background:#166534">💾 Save Outlet Bill</button>
+        <button type="button" onclick="fjOutletPrintBill()" style="background:#ea580c">🖨️ Bill Hard Copy / Print</button>
+        <button type="button" onclick="fjOutletClearBill()" style="background:#6b7280">Clear Current Bill</button>
+        <p id="fjOutletMessage" role="status"></p>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+        <h3>📦 Outlet Stock</h3>
+        <label>Barcode</label><input id="fjOutletStockBarcode" placeholder="Barcode">
+        <label>Product Name</label><input id="fjOutletStockName" placeholder="Product name">
+        <div class="grid"><div><label>Rate ₹</label><input id="fjOutletStockPrice" type="number" min="0" step="0.01"></div><div><label>Opening / Add Stock</label><input id="fjOutletStockQty" type="number" min="0" step="1" value="0"></div></div>
+        <label>Commission % (configured rate)</label><input id="fjOutletStockCommission" type="number" min="0" max="100" step="0.01" value="0">
+        <button type="button" onclick="fjOutletSaveStock()">📦 Save / Add Outlet Stock</button>
+        <div style="overflow-x:auto"><table><thead><tr><th>Barcode</th><th>Product</th><th>Rate</th><th>Stock</th></tr></thead><tbody id="fjOutletStockRows"></tbody></table></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+        <h3>📅 Bill Search & Print (Member ID + Date)</h3>
+        <p class="small">Member Code/UUID এবং তারিখ বা তারিখের রেঞ্জ দিলে ওই Outlet-এর মিলে যাওয়া Bill-গুলি দেখা যাবে। এরপর একসঙ্গে Bill Print করা যাবে।</p>
+        <label>Member Code / Member UUID (ঐচ্ছিক)</label><input id="fjOutletBillSearchMember" placeholder="যেমন: FJ001 অথবা Member UUID">
+        <div class="grid"><div><label>শুরুর তারিখ (From)</label><input id="fjOutletReportDate" type="date"></div><div><label>শেষ তারিখ (To)</label><input id="fjOutletReportToDate" type="date"></div></div>
+        <button type="button" onclick="fjOutletLoadReport()">🔎 Search Bills</button>
+        <button type="button" onclick="fjOutletPrintFilteredBills()" style="background:#ea580c">🖨️ নির্বাচিত শর্তের সব Bill Print</button>
+        <div id="fjOutletReport" style="overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">💰</div>
+            <b>Total Business</b>
+            <h2 id="fjTotalSales">₹0.00</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">🧾</div>
+            <b>Total Bills</b>
+            <h2 id="fjTotalBills">0</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">📦</div>
+            <b>Products Sold</b>
+            <h2 id="fjProductsSold">0</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">📅</div>
+            <b>Today's Sales</b>
+            <h2 id="fjTodaySales">₹0.00</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">💸</div>
+            <b>Total Commission</b>
+            <h2 id="fjTotalCommission">₹0.00</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">📊</div>
+            <b>Current Stock</b>
+            <h2 id="fjCurrentStock">0</h2>
+        </div>
+
+    </div>
+    <!-- ================= MEMBER OPTIONS ================= -->
+
+<div style="
+margin-top:15px;
+background:#ffffff;
+border:1px solid #e5e7eb;
+border-radius:18px;
+padding:18px;
+box-shadow:0 5px 18px rgba(0,0,0,.07);
+">
+
+<h2 style="margin:0 0 15px;color:#166534;">
+👥 Member Management
+</h2>
+
+<div class="dashboard-grid">
+
+<button
+type="button"
+onclick="fjOpenRegistration()"
+style="
+padding:16px;
+border:0;
+border-radius:12px;
+background:#166534;
+color:white;
+font-size:17px;
+font-weight:bold;
+cursor:pointer;
+">
+📝 New Registration
+</button>
+
+<button
+type="button"
+onclick="fjOpenJoining()"
+style="
+padding:16px;
+border:0;
+border-radius:12px;
+background:#2563eb;
+color:white;
+font-size:17px;
+font-weight:bold;
+cursor:pointer;
+">
+👥 Joining Dashboard
+</button>
+
+</div>
+</div>
+<!-- ================= NEW REGISTRATION FORM ================= -->
+
+<section id="fjRegistrationForm"
+style="
+display:none;
+margin-top:15px;
+background:#fff;
+border:1px solid #e5e7eb;
+border-radius:18px;
+padding:18px;
+box-shadow:0 5px 18px rgba(0,0,0,.07);
+">
+
+<h2 style="margin:0 0 15px;color:#166534;">
+📝 New Member Registration
+</h2>
+
+<label>Full Name</label>
+<input
+id="fjRegFullName"
+type="text"
+placeholder="পূর্ণ নাম লিখুন"
+>
+
+<label>Mobile</label>
+<input
+id="fjRegMobile"
+type="tel"
+placeholder="মোবাইল নম্বর"
+>
+
+<label>Email</label>
+<input
+id="fjRegEmail"
+type="email"
+placeholder="Email"
+>
+
+<label>Password</label>
+<input
+id="fjRegPassword"
+type="password"
+placeholder="Password"
+>
+
+<label>Sponsor ID</label>
+<input
+id="fjRegSponsor"
+type="text"
+placeholder="Sponsor ID"
+>
+
+<button
+type="button"
+onclick="fjRegisterMember()"
+style="
+margin-top:10px;
+padding:14px;
+background:#166534;
+color:white;
+border:0;
+border-radius:12px;
+font-size:17px;
+font-weight:bold;
+">
+✅ Submit Registration
+</button>
+
+<button
+type="button"
+onclick="fjCloseRegistration()"
+style="
+padding:12px;
+background:#dc2626;
+color:white;
+border:0;
+border-radius:12px;
+font-size:15px;
+font-weight:bold;
+">
+✖ Close
+</button>
+
+<p
+id="fjRegistrationMessage"
+style="text-align:center;font-weight:bold;">
+</p>
+
+</section>
+
+<!-- ================= END NEW REGISTRATION FORM ================= -->
+<!-- ================= END MEMBER OPTIONS ================= -->
+<!-- ================= JOINING DASHBOARD ================= -->
+<section id="fjJoiningDashboard"
+style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.07);">
+
+<h2 style="margin:0 0 15px;color:#166534;">
+👥 Joining Dashboard
+</h2>
+
+<div class="dashboard-grid">
+
+<div class="dashboard-card">
+<b>Total Downline</b>
+<h2 id="fjTotalDownline">0</h2>
+</div>
+
+<div class="dashboard-card">
+<b>Direct Downline</b>
+<h2 id="fjDirectDownline">0</h2>
+</div>
+
+<div class="dashboard-card">
+<b>🟢 Active Members</b>
+<h2 id="fjActiveMembers">0</h2>
+</div>
+
+<div class="dashboard-card">
+<b>🔴 Inactive Members</b>
+<h2 id="fjInactiveMembers">0</h2>
+</div>
+
+</div>
+
+<div style="margin-top:15px;">
+<h3 style="margin-bottom:10px;">Member List</h3>
+
+<div style="overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;">
+<thead>
+<tr>
+<th>Member Name</th>
+<th>Mobile</th>
+<th>Level</th>
+<th>Status</th>
+<th>Sponsor</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="fjJoiningMemberTable">
+</tbody>
+
+</table>
+</div>
+</div>
+
+</section>
+<!-- ================= END JOINING DASHBOARD ================= -->
+    <!-- ==================== MEMBER PAYOUT REQUEST : PLUS ONLY ==================== -->
+
+<div id="fjMemberPayoutRequest" style="
+    margin-top:15px;
+    background:linear-gradient(145deg,#ffffff,#f8fafc);
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 5px 18px rgba(0,0,0,.07);
+">
+
+    <div style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:5px;
+    ">
+        <span style="font-size:27px;">💸</span>
+
+        <div style="
+            font-size:21px;
+            font-weight:800;
+            color:#166534;
+        ">
+            Request Payout
+        </div>
+    </div>
+
+    <div style="
+        font-size:13px;
+        color:#6b7280;
+        margin-bottom:14px;
+    ">
+        আপনার commission থেকে payout request পাঠান
+    </div>
+
+
+    <div style="
+        background:#ecfdf5;
+        border:1px solid #bbf7d0;
+        border-radius:14px;
+        padding:14px;
+        margin-bottom:12px;
+    ">
+
+        <div style="
+            font-size:12px;
+            color:#6b7280;
+        ">
+            Available Commission
+        </div>
+
+        <div id="fjAvailablePayout" style="
+            margin-top:3px;
+            font-size:25px;
+            font-weight:800;
+            color:#166534;
+        ">
+            ₹0.00
+        </div>
+
+    </div>
+
+
+    <label style="font-weight:bold;">
+        Payout Amount ₹
+    </label>
+
+    <input
+        id="fjPayoutAmount"
+        type="number"
+        min="1"
+        step="0.01"
+        placeholder="যেমন 100"
+        style="
+            width:100%;
+            padding:13px;
+            margin:7px 0 12px;
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            font-size:16px;
+        "
+    >
+
+
+    <label style="font-weight:bold;">
+        Payment Method
+    </label>
+
+    <select
+        id="fjPayoutMethod"
+        style="
+            width:100%;
+            padding:13px;
+            margin:7px 0 12px;
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            font-size:15px;
+            background:white;
+        "
+    >
+        <option value="">Payment Method নির্বাচন করুন</option>
+        <option value="UPI">📱 UPI</option>
+        <option value="Bank">🏦 Bank Account</option>
+    </select>
+
+
+    <label style="font-weight:bold;">
+        UPI / Bank Details
+    </label>
+
+    <input
+        id="fjPayoutDetails"
+        type="text"
+        placeholder="UPI ID / Bank details"
+        style="
+            width:100%;
+            padding:13px;
+            margin:7px 0 12px;
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            font-size:15px;
+        "
+    >
+
+
+    <div
+        id="fjPayoutMessage"
+        style="
+            display:none;
+            padding:10px;
+            margin-bottom:10px;
+            border-radius:9px;
+            font-size:13px;
+        "
+    ></div>
+
+
+    <button
+        type="button"
+        onclick="fjSubmitPayoutRequest()"
+        style="
+            width:100%;
+            padding:14px;
+            border:0;
+            border-radius:12px;
+            background:linear-gradient(135deg,#166534,#15803d);
+            color:white;
+            font-size:16px;
+            font-weight:800;
+            box-shadow:0 5px 12px rgba(22,101,52,.20);
+        "
+    >
+        📤 Send Payout Request
+    </button>
+
+</div>
+
+<!-- ==================== END MEMBER PAYOUT REQUEST ==================== -->
+    <!-- Combined Dashboard Tools: Today + New Billing + Refresh in one slide -->
+    <div id="fjDashboardToolsCard" style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(0,0,0,.07);">
+    <div class="dashboard-date">
+        📆 Today: <span id="fjTodayDate"></span>
+    </div>
+
+    <button
+        onclick="fjGoBilling()"
+        style="
+        width:100%;
+        margin-top:15px;
+        padding:16px;
+        border:0;
+        border-radius:12px;
+        background:#166534;
+        color:white;
+        font-size:18px;
+        font-weight:bold;">
+        🧾 New Billing
+    </button>
+
+    <button
+        onclick="fjRefreshDashboard()"
+        style="
+        width:100%;
+        margin-top:10px;
+        padding:14px;
+        border:0;
+        border-radius:12px;
+        background:#2563eb;
+        color:white;
+        font-size:17px;
+        font-weight:bold;">
+        🔄 Refresh Dashboard
+    </button>
+    </div>
+<!-- ==================== PAYOUT CENTER : PLUS ONLY ==================== -->
+
+<div id="fjPayoutCenter" style="
+  margin-top:18px;
+  background:linear-gradient(145deg,#ffffff,#f8fafc);
+  border:1px solid #e5e7eb;
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 8px 25px rgba(0,0,0,.08);
+">
+
+  <!-- Header -->
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+  ">
+
+    <div>
+      <div style="
+        font-size:22px;
+        font-weight:800;
+        color:#166534;
+      ">
+        💸 Payout Center
+      </div>
+
+      <div style="
+        margin-top:4px;
+        font-size:13px;
+        color:#6b7280;
+      ">
+        Member payout requests
+      </div>
+    </div>
+
+    <div style="
+      background:#fff1f2;
+      color:#be123c;
+      padding:8px 12px;
+      border-radius:30px;
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+    ">
+      🔴 <span id="fjPayoutPendingCount">0</span> Pending
+    </div>
+
+  </div>
+
+
+  <!-- Summary Cards -->
+  <div style="
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:16px;
+  ">
+
+    <div style="
+      background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
+      border:1px solid #bbf7d0;
+      border-radius:16px;
+      padding:14px;
+    ">
+
+      <div style="font-size:25px;">⏳</div>
+
+      <div style="
+        margin-top:5px;
+        font-size:12px;
+        color:#6b7280;
+      ">
+        Pending Amount
+      </div>
+
+      <div id="fjPayoutPendingAmount" style="
+        margin-top:3px;
+        font-size:21px;
+        font-weight:800;
+        color:#166534;
+      ">
+        ₹0
+      </div>
+
+    </div>
+
+
+    <div style="
+      background:linear-gradient(135deg,#eff6ff,#f8fafc);
+      border:1px solid #bfdbfe;
+      border-radius:16px;
+      padding:14px;
+    ">
+
+      <div style="font-size:25px;">📋</div>
+
+      <div style="
+        margin-top:5px;
+        font-size:12px;
+        color:#6b7280;
+      ">
+        Total Requests
+      </div>
+
+      <div id="fjPayoutTotalRequests" style="
+        margin-top:3px;
+        font-size:21px;
+        font-weight:800;
+        color:#1d4ed8;
+      ">
+        0
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Request List -->
+  <div style="
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    overflow:hidden;
+  ">
+
+    <div style="
+      padding:13px 14px;
+      background:#f8fafc;
+      border-bottom:1px solid #e5e7eb;
+      font-weight:800;
+      color:#374151;
+    ">
+      📥 New Payout Requests
+    </div>
+
+
+    <div id="fjPayoutRequestList" style="
+      padding:10px;
+    ">
+
+      <div style="
+        padding:25px 10px;
+        text-align:center;
+        color:#9ca3af;
+        font-size:14px;
+      ">
+        No payout requests yet
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Refresh -->
+  <button
+    type="button"
+    onclick="fjLoadPayoutRequests()"
+    style="
+      width:100%;
+      margin-top:12px;
+      padding:13px 15px;
+      border:0;
+      border-radius:14px;
+      background:linear-gradient(135deg,#166534,#15803d);
+      color:#ffffff;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 5px 12px rgba(22,101,52,.20);
+    "
+  >
+    🔄 Refresh Payout Requests
+  </button>
+
+</div>
+
+<!-- ==================== END PAYOUT CENTER ==================== -->
+</div>
+
+
+<header>
+    <h1>🌿 Phulo Jhano Billing System</h1>
+    <p>Barcode • GST • Commission • Stock • Billing</p>
+</header>
+
+
+<div class="container">
+
+<!-- =========================
+     BARCODE SCANNER
+========================= -->
+
+<div id="fjBarcodeCard" class="card no-print">
+
+    <h2>📷 Barcode Auto Scan</h2>
+
+    <div class="barcode-box">
+
+        <label><b>Barcode Scan করুন</b></label>
+
+        <input
+            id="barcodeInput"
+            type="text"
+            autocomplete="off"
+            inputmode="numeric"
+            placeholder="Barcode Scanner দিয়ে Scan করুন">
+
+        <button onclick="scanManualBarcode()">
+            🔎 Barcode Search
+        </button>
+
+        <div id="statusMessage" class="status"></div>
+
+    </div>
+
+    <p class="small">
+        USB/Bluetooth Barcode Scanner দিয়ে Scan করলে
+        Enter-এর সঙ্গে সঙ্গে Product Bill-এ Auto যোগ হবে।
+    </p>
+
+    <div class="camera-box">
+
+        <b>📱 Mobile Camera Scanner</b>
+
+        <button
+            class="btn-blue"
+            onclick="startMobileScanner()">
+            📷 Camera দিয়ে Barcode Scan
+        </button>
+
+        <div id="mobileScanner"></div>
+
+        <button
+            id="stopCameraBtn"
+            class="btn-red"
+            style="display:none;"
+            onclick="stopMobileScanner()">
+            ❌ Camera বন্ধ করুন
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     SCANNED PRODUCT
+========================= -->
+
+<div id="fjScannedProductCard" class="card no-print">
+
+    <h2>🛒 Scanned Product</h2>
+
+    <div class="grid">
+
+        <div>
+            <label>Barcode</label>
+            <input id="productBarcode" readonly>
+        </div>
+
+        <div>
+            <label>Product Name</label>
+            <input id="productName" readonly>
+        </div>
+
+        <div>
+            <label>Price ₹</label>
+            <input id="productPrice" readonly>
+        </div>
+
+        <div>
+            <label>GST %</label>
+            <input id="productGST" readonly>
+        </div>
+
+        <div>
+            <label>Commission %</label>
+            <input id="productCommission" readonly>
+        </div>
+
+        <div>
+            <label>Stock</label>
+            <input id="productStock" readonly>
+        </div>
+
+        <div>
+            <label>Quantity</label>
+            <input
+                id="productQty"
+                type="number"
+                min="1"
+                value="1">
+        </div>
+
+    </div>
+
+    <button
+        class="btn-orange no-print"
+        onclick="addCurrentProductManually()">
+        ➕ এই Product Bill-এ যোগ করুন
+    </button>
+
+</div>
+
+
+<!-- =========================
+     BILL
+========================= -->
+
+<div class="card" id="billSection">
+
+    <h2>🧾 Current Bill</h2>
+
+    <div class="no-print">
+
+        <label>Customer Name</label>
+
+        <input
+            id="customerName"
+            placeholder="Customer Name">
+
+        <label>Mobile</label>
+
+        <input
+            id="customerMobile"
+            placeholder="Mobile Number"
+            inputmode="numeric">
+
+    </div>
+<!-- PRINT CUSTOMER DETAILS -->
+<div id="fjPrintCustomer" class="fj-print-customer">
+
+    <div>
+        <b>Customer:</b>
+        <span id="fjPrintCustomerName"></span>
+    </div>
+
+    <div>
+        <b>Mobile:</b>
+        <span id="fjPrintCustomerMobile"></span>
+    </div>
+
+</div>
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th>Barcode</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>GST</th>
+                <th>Commission</th>
+                <th>Total</th>
+                <th class="no-print">Delete</th>
+            </tr>
+
+        </thead>
+
+        <tbody id="billBody"></tbody>
+
+    </table>
+
+    <div class="total-box">
+
+        <div>
+            Subtotal:
+            ₹<span id="subtotal">0.00</span>
+        </div>
+
+        <div>
+            GST:
+            ₹<span id="gstTotal">0.00</span>
+        </div>
+
+        <div>
+            Commission:
+            ₹<span id="commissionTotal">0.00</span>
+        </div>
+
+        <hr>
+
+        <div>
+            <strong>
+                Grand Total:
+                ₹<span id="grandTotal">0.00</span>
+            </strong>
+        </div>
+
+    </div>
+
+    <div class="grid no-print">
+
+        <button
+            class="btn-blue"
+            onclick="saveBill()">
+            💾 Save Bill
+        </button>
+
+        <button
+            class="btn-orange"
+            onclick="printBill()">
+            🖨️ Print Bill
+        </button>
+
+        <button
+            class="btn-red"
+            onclick="clearBill()">
+            🗑️ Clear Bill
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     PRODUCT MASTER
+========================= -->
+
+<div class="card product-master no-print">
+
+    <h2>📦 Product Master</h2>
+
+    <div class="grid">
+
+        <div>
+            <label>Barcode</label>
+            <input
+                id="masterBarcode"
+                placeholder="যেমন 1234567890">
+        </div>
+
+        <div>
+            <label>Product Name</label>
+            <input
+                id="masterName"
+                placeholder="Product Name">
+        </div>
+
+        <div>
+            <label>Price ₹</label>
+            <input
+                id="masterPrice"
+                type="number"
+                step="0.01"
+                placeholder="10">
+        </div>
+
+        <div>
+            <label>GST %</label>
+            <input
+                id="masterGST"
+                type="number"
+                step="0.01"
+                value="5">
+        </div>
+
+        <div>
+            <label>Commission %</label>
+            <input
+                id="masterCommission"
+                type="number"
+                step="0.01"
+                value="10">
+        </div>
+
+        <div>
+            <label>Stock</label>
+            <input
+                id="masterStock"
+                type="number"
+                value="5">
+        </div>
+
+    </div>
+
+    <button onclick="saveProduct()">
+        ➕ Save Product
+    </button>
+
+    <button
+        class="btn-blue"
+        onclick="loadDemoProduct()">
+        🧪 Load Test Product
+    </button>
+
+    <div class="product-list">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Barcode</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>GST</th>
+                    <th>Commission</th>
+                    <th>Stock</th>
+                    <th>Delete</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="productBody"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<!-- html5-qrcode camera library -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+
+<script>
+
+/* =====================================================
+   PHULO JHANO BILLING SYSTEM
+   FINAL VERSION
+===================================================== */
+
+
+/* =====================================================
+   PRODUCT DATABASE
+===================================================== */
+
+let products =
+    JSON.parse(
+        localStorage.getItem("phuloProducts") || "{}"
+    );
+
+
+/* পুরনো Product Database Preserve */
+
+let oldProducts =
+    JSON.parse(
+        localStorage.getItem("phuloJhanoProducts") || "{}"
+    );
+
+
+Object.keys(oldProducts).forEach(function(code){
+
+    if(!products[code]){
+        products[code] = oldProducts[code];
+    }
+
+});
+
+
+/* =====================================================
+   CURRENT BILL
+===================================================== */
+
+let billItems = [];
+
+
+/*
+   Bill Save হয়েছে কি না
+   Save হওয়ার পরে Clear করলে Stock ফেরত যাবে না।
+*/
+
+let billFinalized = false;
+
+
+/* =====================================================
+   SAVE PRODUCTS
+===================================================== */
+
+function saveProducts(){
+
+    localStorage.setItem(
+        "phuloProducts",
+        JSON.stringify(products)
+    );
+
+}
+
+
+/* =====================================================
+   MESSAGE
+===================================================== */
+
+function showMessage(
+    message,
+    type="success"
+){
+
+    const box =
+        document.getElementById("statusMessage");
+
+    if(!box) return;
+
+    box.innerText = message;
+
+    box.className =
+        "status " + type;
+
+    clearTimeout(
+        window.phuloMessageTimer
+    );
+
+    window.phuloMessageTimer =
+        setTimeout(function(){
+
+            box.className = "status";
+
+        },5000);
+
+}
+
+
+/* =====================================================
+   BARCODE INPUT
+===================================================== */
+
+const barcodeInput =
+    document.getElementById("barcodeInput");
+
+
+barcodeInput.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter"){
+
+            e.preventDefault();
+
+            scanManualBarcode();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   GLOBAL BARCODE SCANNER
+===================================================== */
+
+let scannerBuffer = "";
+
+
+document.addEventListener(
+    "keydown",
+    function(e){
+
+        if(
+            document.activeElement ===
+            barcodeInput
+        ){
+
+            return;
+        }
+
+
+        if(e.key === "Enter"){
+
+            if(scannerBuffer.length > 0){
+
+                const code =
+                    scannerBuffer.trim();
+
+                scannerBuffer = "";
+
+                autoBarcodeScan(code);
+
+            }
+
+            return;
+        }
+
+
+        if(
+            e.key.length === 1 &&
+            /^[A-Za-z0-9\-_]+$/.test(e.key)
+        ){
+
+            scannerBuffer += e.key;
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   MANUAL BARCODE SEARCH
+===================================================== */
+
+function scanManualBarcode(){
+
+    const code =
+        barcodeInput.value.trim();
+
+
+    if(!code){
+
+        showMessage(
+            "❌ Barcode দিন।",
+            "error"
+        );
+
+        barcodeInput.focus();
+
+        return;
+    }
+
+
+    autoBarcodeScan(code);
+
+}
+
+
+/* =====================================================
+   AUTO BARCODE SCAN
+===================================================== */
+
+async function autoBarcodeScan(barcode){
+
+    barcode =
+        String(barcode).trim();
+
+
+    barcodeInput.value =
+        barcode;
+
+
+    let product = products[barcode];
+
+if (!product) {
+    const { data, error } = await supabaseClient
+        .from("products")
+        .select("barcode, product_name, price, gst, commission, stock")
+        .eq("barcode", barcode)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Barcode lookup error:", error);
+        showMessage("Product Load Error: " + error.message, "error");
+        return;
+    }
+
+    if (data) {
+        product = {
+            barcode: String(data.barcode).trim(),
+            name: data.product_name,
+            price: Number(data.price) || 0,
+            gst: Number(data.gst) || 0,
+            commission: Number(data.commission) || 0,
+            stock: Number(data.stock) || 0
+        };
+
+        products[barcode] = product;
+        saveProducts();
+    }
+}
+
+
+    if(!product){
+
+        showMessage(
+            "❌ Product Master-এ Barcode পাওয়া যায়নি: " +
+            barcode,
+            "error"
+        );
+
+        barcodeInput.select();
+
+        return;
+    }
+
+
+    if(
+        Number(product.stock) <= 0
+    ){
+
+        showMessage(
+            "❌ Stock শেষ: " +
+            product.name,
+            "error"
+        );
+
+        return;
+    }
+
+
+    fillScannedProduct(product);
+
+
+    const added =
+        addToBill(
+            product,
+            1
+        );
+
+
+    if(!added){
+        return;
+    }
+
+
+    const commissionAmount =
+        Number(product.price) *
+        Number(product.commission) /
+        100;
+
+
+    const remainingStock =
+        Number(product.stock);
+
+
+    showMessage(
+
+        "✅ " +
+        product.name +
+        " Bill-এ যোগ হয়েছে | " +
+        "Price ₹" +
+        Number(product.price).toFixed(2) +
+        " | GST " +
+        product.gst +
+        "% | Commission ₹" +
+        commissionAmount.toFixed(2) +
+        " | Remaining Stock " +
+        remainingStock,
+
+        "success"
+
+    );
+
+
+    barcodeInput.value = "";
+
+    barcodeInput.focus();
+
+}
+
+
+/* =====================================================
+   FILL SCANNED PRODUCT
+===================================================== */
+
+function fillScannedProduct(product){
+
+    document.getElementById(
+        "productBarcode"
+    ).value =
+        product.barcode;
+
+
+    document.getElementById(
+        "productName"
+    ).value =
+        product.name;
+
+
+    document.getElementById(
+        "productPrice"
+    ).value =
+        product.price;
+
+
+    document.getElementById(
+        "productGST"
+    ).value =
+        product.gst;
+
+
+    document.getElementById(
+        "productCommission"
+    ).value =
+        product.commission;
+
+
+    document.getElementById(
+        "productStock"
+    ).value =
+        product.stock;
+
+
+    document.getElementById(
+        "productQty"
+    ).value = 1;
+
+}
+
+
+/* =====================================================
+   MANUAL ADD CURRENT PRODUCT
+===================================================== */
+
+function addCurrentProductManually(){
+
+    const barcode =
+        document.getElementById(
+            "productBarcode"
+        ).value.trim();
+
+
+    const qty =
+        Number(
+            document.getElementById(
+                "productQty"
+            ).value
+        );
+
+
+    if(!barcode){
+
+        showMessage(
+            "❌ আগে Barcode Scan করুন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const product =
+        products[barcode];
+
+
+    if(!product){
+
+        showMessage(
+            "❌ Product পাওয়া যায়নি।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if(!Number.isFinite(qty) || qty < 1){
+
+        showMessage(
+            "❌ Quantity সঠিক দিন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if(
+        qty >
+        Number(product.stock)
+    ){
+
+        showMessage(
+            "❌ Stock যথেষ্ট নেই। Available: " +
+            product.stock,
+            "error"
+        );
+
+        return;
+    }
+
+
+    const added =
+        addToBill(
+            product,
+            qty
+        );
+
+
+    if(added){
+
+        showMessage(
+            "✅ " +
+            product.name +
+            " × " +
+            qty +
+            " Bill-এ যোগ হয়েছে।"
+        );
+
+        barcodeInput.focus();
+
+    }
+
+}
+
+
+/* =====================================================
+   ADD TO BILL
+===================================================== */
+
+function addToBill(
+    product,
+    qty
+){
+
+    qty =
+        Number(qty) || 1;
+
+
+    if(
+        qty >
+        Number(product.stock)
+    ){
+
+        showMessage(
+            "❌ Stock যথেষ্ট নেই। Available Stock: " +
+            product.stock,
+            "error"
+        );
+
+        return false;
+    }
+
+
+    const existing =
+        billItems.find(
+            function(item){
+
+                return (
+                    item.barcode ===
+                    product.barcode
+                );
+
+            }
+        );
+
+
+    if(existing){
+
+        /*
+           Existing item-এর অতিরিক্ত Qty
+        */
+
+        existing.qty += qty;
+
+    }else{
+
+        billItems.push({
+
+            barcode:
+                product.barcode,
+
+            name:
+                product.name,
+
+            price:
+                Number(product.price),
+
+            gst:
+                Number(product.gst),
+
+            commission:
+                Number(product.commission),
+
+            qty:
+                qty
+
+        });
+
+    }
+
+
+    /*
+       Stock কমানো
+    */
+
+    product.stock =
+        Number(product.stock) -
+        qty;
+
+
+    products[
+        product.barcode
+    ] = product;
+
+
+    saveProducts();
+
+    renderBill();
+
+    renderProducts();
+
+    updateDashboard();
+
+
+    return true;
+
+}
+
+
+/* =====================================================
+   RENDER BILL
+===================================================== */
+
+function renderBill(){
+
+    const body =
+        document.getElementById(
+            "billBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    let subtotal = 0;
+    let gstTotal = 0;
+    let commissionTotal = 0;
+
+
+    billItems.forEach(
+        function(item,index){
+
+            const base =
+                Number(item.price) *
+                Number(item.qty);
+
+
+            const gstAmount =
+                base *
+                Number(item.gst) /
+                100;
+
+
+            const commissionAmount =
+                base *
+                Number(item.commission) /
+                100;
+
+
+            const total =
+                base +
+                gstAmount;
+
+
+            subtotal += base;
+
+            gstTotal += gstAmount;
+
+            commissionTotal +=
+                commissionAmount;
+
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>${index + 1}</td>
+
+                <td>
+                    ${escapeHtml(item.name)}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.barcode)}
+                </td>
+
+                <td>
+                    ${item.qty}
+                </td>
+
+                <td>
+                    ₹${item.price.toFixed(2)}
+                </td>
+
+                <td>
+                    ${item.gst}%
+                    <br>
+                    ₹${gstAmount.toFixed(2)}
+                </td>
+
+                <td>
+                    ${item.commission}%
+                    <br>
+                    ₹${commissionAmount.toFixed(2)}
+                </td>
+
+                <td>
+                    ₹${total.toFixed(2)}
+                </td>
+
+                <td class="no-print">
+
+                    <button
+                        class="btn-red"
+                        onclick="removeBillItem(${index})">
+                        ✕
+                    </button>
+
+                </td>
+
+            `;
+
+
+            body.appendChild(row);
+
+        }
+    );
+
+
+    document.getElementById(
+        "subtotal"
+    ).innerText =
+        subtotal.toFixed(2);
+
+
+    document.getElementById(
+        "gstTotal"
+    ).innerText =
+        gstTotal.toFixed(2);
+
+
+    document.getElementById(
+        "commissionTotal"
+    ).innerText =
+        commissionTotal.toFixed(2);
+
+
+    document.getElementById(
+        "grandTotal"
+    ).innerText =
+        (
+            subtotal +
+            gstTotal
+        ).toFixed(2);
+
+}
+
+
+/* =====================================================
+   DELETE BILL ITEM
+===================================================== */
+
+function removeBillItem(index){
+
+    /*
+       Saved Bill-এর পরে delete করা যাবে না
+       কারণ Stock already finalized.
+    */
+
+    if(billFinalized){
+
+        showMessage(
+            "❌ Bill Save হয়ে গেছে। নতুন Billing শুরু করুন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const item =
+        billItems[index];
+
+
+    if(!item){
+        return;
+    }
+
+
+    if(
+        products[item.barcode]
+    ){
+
+        products[
+            item.barcode
+        ].stock +=
+            Number(item.qty);
+
+    }
+
+
+    billItems.splice(
+        index,
+        1
+    );
+
+
+    saveProducts();
+
+    renderBill();
+
+    renderProducts();
+
+    updateDashboard();
+
+
+    showMessage(
+        "✅ Product Delete হয়েছে। Stock ফেরত গেছে।"
+    );
+
+
+    barcodeInput.focus();
+
+}
+
+
+/* =====================================================
+   CLEAR BILL
+===================================================== */
+
+function clearBill(){
+
+    if(
+        billItems.length === 0
+    ){
+
+        showMessage(
+            "Bill খালি আছে।"
+        );
+
+        return;
+    }
+
+
+    if(billFinalized){
+
+        /*
+           Save হয়ে যাওয়া Bill-এর Stock
+           কখনো ফেরত যাবে না।
+        */
+
+        resetBillForm();
+
+        showMessage(
+            "✅ নতুন Billing-এর জন্য প্রস্তুত।"
+        );
+
+        return;
+    }
+
+
+    if(
+        !confirm(
+            "Bill Clear করবেন? এই Bill Save হয়নি, তাই Stock ফেরত যাবে।"
+        )
+    ){
+
+        return;
+    }
+
+
+    billItems.forEach(
+        function(item){
+
+            if(
+                products[item.barcode]
+            ){
+
+                products[
+                    item.barcode
+                ].stock +=
+                    Number(item.qty);
+
+            }
+
+        }
+    );
+
+
+    billItems = [];
+
+
+    saveProducts();
+
+    renderBill();
+
+    renderProducts();
+
+    updateDashboard();
+
+
+    resetBillForm();
+
+
+    showMessage(
+        "✅ Bill Clear হয়েছে। Stock ফেরত দেওয়া হয়েছে।"
+    );
+
+}
+
+
+/* =====================================================
+   RESET BILL FORM
+===================================================== */
+
+function resetBillForm(){
+
+    billItems = [];
+
+    billFinalized = false;
+
+
+    document.getElementById(
+        "customerName"
+    ).value = "";
+
+
+    document.getElementById(
+        "customerMobile"
+    ).value = "";
+
+
+    document.getElementById(
+        "productBarcode"
+    ).value = "";
+
+
+    document.getElementById(
+        "productName"
+    ).value = "";
+
+
+    document.getElementById(
+        "productPrice"
+    ).value = "";
+
+
+    document.getElementById(
+        "productGST"
+    ).value = "";
+
+
+    document.getElementById(
+        "productCommission"
+    ).value = "";
+
+
+    document.getElementById(
+        "productStock"
+    ).value = "";
+
+
+    document.getElementById(
+        "productQty"
+    ).value = 1;
+
+
+    barcodeInput.value = "";
+
+
+    renderBill();
+
+
+    barcodeInput.focus();
+
+}
+
+
+/* =====================================================
+   SAVE PRODUCT
+===================================================== */
+
+async function saveProduct(){
+
+    const barcode =
+        document.getElementById("masterBarcode").value.trim();
+
+    const name =
+        document.getElementById("masterName").value.trim();
+
+    const price =
+        Number(
+            document.getElementById("masterPrice").value
+        );
+
+    const gst =
+        Number(
+            document.getElementById("masterGST").value
+        );
+
+    const commission =
+        Number(
+            document.getElementById("masterCommission").value
+        );
+
+    const stock =
+        Number(
+            document.getElementById("masterStock").value
+        );
+
+
+    if(
+        !barcode ||
+        !name ||
+        !Number.isFinite(price) ||
+        price < 0 ||
+        !Number.isFinite(gst) ||
+        gst < 0 ||
+        !Number.isFinite(commission) ||
+        commission < 0 ||
+        !Number.isFinite(stock) ||
+        stock < 0
+    ){
+
+        showMessage(
+            "❌ সব Product তথ্য সঠিকভাবে দিন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* Logged-in User */
+    const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
+
+
+    if(userError || !userData || !userData.user){
+
+        showMessage(
+            "❌ Login session পাওয়া যায়নি। আবার Login করুন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const userId =
+        userData.user.id;
+
+
+    /* Supabase Database-এ Product Save */
+    const { data, error } =
+        await supabaseClient
+        .from("products")
+        .insert([
+            {
+                barcode: barcode,
+                product_name: name,
+                price: price,
+                gst: gst,
+                commission: commission,
+                stock: stock,
+                created_by: userId
+            }
+        ])
+        .select()
+        .single();
+
+
+    if(error){
+
+        console.error("Product Save Error:", error);
+
+        showMessage(
+            "❌ Supabase-এ Product Save হয়নি: " +
+            error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* Local copy-ও রাখছি */
+    products[barcode] = {
+
+        barcode: barcode,
+
+        name: name,
+
+        price: price,
+
+        gst: gst,
+
+        commission: commission,
+
+        stock: stock
+
+    };
+
+
+    saveProducts();
+
+    renderProducts();
+
+    updateDashboard();
+
+
+    /* Form Clear */
+
+    document.getElementById(
+        "masterBarcode"
+    ).value = "";
+
+    document.getElementById(
+        "masterName"
+    ).value = "";
+
+    document.getElementById(
+        "masterPrice"
+    ).value = "";
+
+    document.getElementById(
+        "masterGST"
+    ).value = 5;
+
+    document.getElementById(
+        "masterCommission"
+    ).value = 10;
+
+    document.getElementById(
+        "masterStock"
+    ).value = 0;
+
+
+    showMessage(
+        "✅ Product Supabase Database-এ Save হয়েছে: " +
+        name
+    );
+
+
+    barcodeInput.focus();
+
+        }
+
+
+/* =====================================================
+   TEST PRODUCT
+===================================================== */
+
+function loadDemoProduct(){
+
+    products["1234567890"] = {
+
+        barcode:
+            "1234567890",
+
+        name:
+            "গায়ে মাখা Dettol সাবান",
+
+        price:
+            10,
+
+        gst:
+            5,
+
+        commission:
+            10,
+
+        stock:
+            5
+
+    };
+
+
+    saveProducts();
+
+    renderProducts();
+
+    updateDashboard();
+
+
+    document.getElementById(
+        "masterBarcode"
+    ).value =
+        "1234567890";
+
+
+    document.getElementById(
+        "masterName"
+    ).value =
+        "গায়ে মাখা Dettol সাবান";
+
+
+    document.getElementById(
+        "masterPrice"
+    ).value =
+        10;
+
+
+    document.getElementById(
+        "masterGST"
+    ).value =
+        5;
+
+
+    document.getElementById(
+        "masterCommission"
+    ).value =
+        10;
+
+
+    document.getElementById(
+        "masterStock"
+    ).value =
+        5;
+
+
+    showMessage(
+
+        "🧪 Test Product তৈরি হয়েছে। " +
+        "Barcode 1234567890 Scan করুন।"
+
+    );
+
+
+    barcodeInput.focus();
+
+}
+
+
+/* =====================================================
+   DELETE PRODUCT
+===================================================== */
+
+function deleteProduct(
+    encodedBarcode
+){
+
+    const barcode =
+        decodeURIComponent(
+            encodedBarcode
+        );
+
+
+    if(
+        !confirm(
+            "এই Product Delete করবেন?"
+        )
+    ){
+
+        return;
+    }
+
+
+    delete products[barcode];
+
+
+    saveProducts();
+
+    renderProducts();
+
+    updateDashboard();
+
+
+    showMessage(
+        "✅ Product Master থেকে Delete হয়েছে।"
+    );
+
+}
+
+
+/* =====================================================
+   RENDER PRODUCT MASTER
+===================================================== */
+
+function renderProducts(){
+
+    const body =
+        document.getElementById(
+            "productBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    Object.keys(products).forEach(
+        function(barcode){
+
+            const product =
+                products[barcode];
+
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${escapeHtml(
+                        product.barcode
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        product.name
+                    )}
+                </td>
+
+                <td>
+                    ₹${Number(
+                        product.price
+                    ).toFixed(2)}
+                </td>
+
+                <td>
+                    ${product.gst}%
+                </td>
+
+                <td>
+                    ${product.commission}%
+                </td>
+
+                <td>
+                    ${product.stock}
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn-red"
+                        onclick="
+                            deleteProduct(
+                                '${encodeURIComponent(
+                                    product.barcode
+                                )}'
+                            )
+                        ">
+                        Delete
+                    </button>
+
+                </td>
+
+            `;
+
+
+            body.appendChild(row);
+
+        }
+    );
+
+}
+
+
+
+
+/* =====================================================
+   SAVE BILL
+===================================================== */
+
+async function saveBill(){
+
+    if(
+        billItems.length === 0
+    ){
+
+        showMessage(
+            "❌ Bill-এ কোনো Product নেই।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if(billFinalized){
+
+        showMessage(
+            "❌ এই Bill ইতিমধ্যে Save হয়েছে।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* ===============================
+       LOGIN USER CHECK
+    =============================== */
+
+    const {
+        data: { user },
+        error: userError
+    } =
+        await supabaseClient.auth.getUser();
+
+
+    if(userError || !user){
+
+        showMessage(
+            "❌ Login পাওয়া যায়নি। আবার Login করুন।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* ===============================
+       BILL NUMBER
+    =============================== */
+
+    const billNumber =
+        "FJ-" +
+        Date.now();
+
+
+    const now =
+        new Date();
+
+
+    /* ===============================
+       BILL DATA
+    =============================== */
+
+    const bill = {
+
+        billNumber:
+            billNumber,
+
+        date:
+            now.toISOString(),
+
+        displayDate:
+            now.toLocaleString(
+                "en-IN"
+            ),
+
+        customerName:
+            document.getElementById(
+                "customerName"
+            ).value.trim(),
+
+        customerMobile:
+            document.getElementById(
+                "customerMobile"
+            ).value.trim(),
+
+        items:
+            JSON.parse(
+                JSON.stringify(
+                    billItems
+                )
+            ),
+
+        subtotal:
+            Number(
+                document.getElementById(
+                    "subtotal"
+                ).innerText
+            ) || 0,
+
+        gst:
+            Number(
+                document.getElementById(
+                    "gstTotal"
+                ).innerText
+            ) || 0,
+
+        commission:
+            Number(
+                document.getElementById(
+                    "commissionTotal"
+                ).innerText
+            ) || 0,
+
+        grandTotal:
+            Number(
+                document.getElementById(
+                    "grandTotal"
+                ).innerText
+            ) || 0
+
+    };
+
+
+    /* =====================================
+       SUPABASE-এ BILL SAVE
+    ===================================== */
+
+    const {
+        error: supabaseError
+    } =
+        await supabaseClient
+            .from("bills")
+            .insert({
+
+                bill_number:
+                    bill.billNumber,
+
+                user_id:
+                    user.id,
+
+                user_email:
+                    user.email || "",
+
+                customer_name:
+                    bill.customerName,
+
+                customer_mobile:
+                    bill.customerMobile,
+
+                items:
+                    bill.items,
+
+                subtotal:
+                    bill.subtotal,
+
+                gst:
+                    bill.gst,
+
+                commission:
+                    bill.commission,
+
+                grand_total:
+                    bill.grandTotal,
+
+                created_at:
+                    bill.date
+
+            });
+
+
+    /* ===============================
+       SUPABASE SAVE ERROR
+    =============================== */
+
+    if(supabaseError){
+
+        console.error(
+            "Supabase Bill Error:",
+            supabaseError
+        );
+
+        showMessage(
+            "❌ Bill Save হয়নি: " +
+            supabaseError.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* =====================================
+       LOCAL STORAGE-এও SAVE
+       পুরনো Data নিরাপদ রাখার জন্য
+    ===================================== */
+
+    let savedBills = [];
+
+
+    try{
+
+        savedBills =
+            JSON.parse(
+                localStorage.getItem(
+                    "phuloBills"
+                ) || "[]"
+            );
+
+
+        if(
+            !Array.isArray(
+                savedBills
+            )
+        ){
+
+            savedBills = [];
+
+        }
+
+    }catch(e){
+
+        savedBills = [];
+
+    }
+
+
+    savedBills.push(
+        bill
+    );
+
+
+    localStorage.setItem(
+        "phuloBills",
+        JSON.stringify(
+            savedBills
+        )
+    );
+
+
+    /* =====================================
+       BILL FINALIZED
+       Stock ইতিমধ্যেই কমেছে
+    ===================================== */
+ /* ================================
+   STOCK UPDATE
+   ================================ */
+
+for (const item of bill.items) {
+
+    const barcode = item.barcode;
+    const qty = Number(item.qty) || 0;
+
+    if (!barcode || qty <= 0) {
+        continue;
+    }
+
+    // বর্তমান stock বের করুন
+    const { data: product, error: stockFetchError } =
+        await supabaseClient
+            .from("products")
+            .select("stock")
+            .eq("barcode", barcode)
+            .single();
+
+    if (stockFetchError || !product) {
+        console.error("Stock Fetch Error:", stockFetchError);
+
+        showMessage(
+            "❌ Stock পাওয়া যায়নি: " + barcode,
+            "error"
+        );
+
+        return;
+    }
+
+    const currentStock = Number(product.stock) || 0;
+    const newStock = currentStock - qty;
+
+    // Stock পর্যাপ্ত না থাকলে Bill finalized হবে না
+    if (newStock < 0) {
+
+        showMessage(
+            "❌ পর্যাপ্ত Stock নেই: " + barcode,
+            "error"
+        );
+
+        return;
+    }
+
+    // নতুন Stock Save করুন
+    const { error: stockUpdateError } =
+        await supabaseClient
+            .from("products")
+            .update({
+                stock: newStock
+            })
+            .eq("barcode", barcode);
+
+    if (stockUpdateError) {
+
+        console.error(
+            "Stock Update Error:",
+            stockUpdateError
+        );
+
+        showMessage(
+            "❌ Stock Update হয়নি: " + barcode,
+            "error"
+        );
+
+        return;
+    }
+                }
+    billFinalized =
+        true;
+
+
+    /* =====================================
+       DASHBOARD UPDATE
+    ===================================== */
+
+    updateDashboard();
+
+
+    /* =====================================
+       SUCCESS
+    ===================================== */
+
+    showMessage(
+
+        "✅ Bill Save হয়েছে। Bill No: " +
+        billNumber +
+        " | Total ₹" +
+        bill.grandTotal.toFixed(2)
+
+    );
+
+
+    /* =====================================
+       নতুন Bill
+    ===================================== */
+
+    setTimeout(
+
+        function(){
+
+            resetBillForm();
+
+        },
+
+        1200
+
+    );
+
+}
+
+
+        
+
+
+/* =====================================================
+   PRINT BILL
+===================================================== */
+
+function printBill(){
+
+    if(
+        billItems.length === 0
+    ){
+        showMessage(
+            "❌ Print করার জন্য Bill নেই",
+            "error"
+        );
+
+        return;
+    }
+
+    const bill = document.getElementById("billSection");
+
+    if(!bill){
+        alert("❌ Bill Section পাওয়া যায়নি।");
+        return;
+    }
+    /* CUSTOMER DETAILS FOR PRINT */
+
+    const customerName =
+        document.getElementById("customerName")?.value.trim() || "";
+
+    const customerMobile =
+        document.getElementById("customerMobile")?.value.trim() || "";
+
+    const printCustomerName =
+        document.getElementById("fjPrintCustomerName");
+
+    const printCustomerMobile =
+        document.getElementById("fjPrintCustomerMobile");
+
+    if(printCustomerName){
+        printCustomerName.textContent =
+            customerName || "N/A";
+    }
+
+    if(printCustomerMobile){
+        printCustomerMobile.textContent =
+            customerMobile || "N/A";
+    }
+    document.body.classList.add("fj-thermal-print");
+
+    bill.style.display = "block";
+
+    setTimeout(function(){
+
+        window.print();
+
+    }, 300);
+}
+
+
+window.addEventListener("afterprint", function(){
+
+    document.body.classList.remove("fj-thermal-print");
+
+});
+
+/* =====================================================
+   SECURITY
+===================================================== */
+
+function escapeHtml(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* =====================================================
+   MOBILE CAMERA SCANNER
+===================================================== */
+
+let mobileScanner = null;
+let cameraRunning = false;
+let lastCameraBarcode = "";
+
+
+function startMobileScanner(){
+
+    if(
+        typeof Html5Qrcode ===
+        "undefined"
+    ){
+
+        alert(
+            "Camera Scanner Library Load হয়নি। Internet চালু করুন।"
+        );
+
+        return;
+    }
+
+
+    if(cameraRunning){
+
+        return;
+    }
+
+
+    document.getElementById(
+        "mobileScanner"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "stopCameraBtn"
+    ).style.display = "block";
+
+
+    mobileScanner =
+        new Html5Qrcode(
+            "mobileScanner"
+        );
+
+
+    lastCameraBarcode = "";
+
+
+    mobileScanner.start(
+
+        {
+            facingMode:"environment"
+        },
+
+        {
+            fps:10,
+            qrbox:{
+                width:280,
+                height:120
+            },
+
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_93,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E
+            ]
+
+        },
+
+        function(decodedText){
+
+            if(
+                decodedText ===
+                lastCameraBarcode
+            ){
+
+                return;
+            }
+
+
+            lastCameraBarcode =
+                decodedText;
+
+
+            console.log(
+                "Camera Barcode:",
+                decodedText
+            );
+
+
+            stopMobileScanner();
+
+
+            autoBarcodeScan(
+                decodedText
+            );
+
+        },
+
+        function(errorMessage){
+
+            /*
+               Scan না হলে কিছু দেখাবে না।
+            */
+
+        }
+
+    )
+    .then(function(){
+
+        cameraRunning = true;
+
+    })
+    .catch(function(err){
+
+        cameraRunning = false;
+
+        document.getElementById(
+            "mobileScanner"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "stopCameraBtn"
+        ).style.display = "none";
+
+
+        alert(
+            "Camera চালু করা যাচ্ছে না। Camera Permission Allow করুন।"
+        );
+
+        console.error(err);
+
+    });
+
+}
+
+
+/* =====================================================
+   STOP CAMERA
+===================================================== */
+
+function stopMobileScanner(){
+
+    if(
+        mobileScanner &&
+        cameraRunning
+    ){
+
+        mobileScanner.stop()
+        .then(function(){
+
+            mobileScanner.clear();
+
+            cameraRunning = false;
+
+            document.getElementById(
+                "mobileScanner"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "stopCameraBtn"
+            ).style.display = "none";
+
+        })
+        .catch(function(){
+
+            cameraRunning = false;
+
+            document.getElementById(
+                "mobileScanner"
+            ).style.display = "none";
+
+
+            document.getElementById(
+                "stopCameraBtn"
+            ).style.display = "none";
+
+        });
+
+    }else{
+
+        document.getElementById(
+            "mobileScanner"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "stopCameraBtn"
+        ).style.display = "none";
+
+    }
+
+}
+
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+async function getSavedBills(){
+    try {
+        const { data: authData, error: userError } = await supabaseClient.auth.getUser();
+        const user = authData?.user;
+        if (userError || !user) return [];
+
+        const { data: profile, error: profileError } = await supabaseClient
+            .from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if (profileError) console.warn("Bill visibility role lookup:", profileError.message);
+        const role = String(profile?.role || window.fjCurrentUserRole || "user").toLowerCase();
+        const isAdmin = role === "admin";
+
+        let query = supabaseClient.from("bills").select("*").order("created_at", { ascending: false });
+        // Non-admin accounts only request their own bills; Supabase RLS must enforce this server-side too.
+        if (!isAdmin) query = query.eq("user_id", user.id);
+
+        const { data, error } = await query;
+        if (error) {
+            console.error("Load Bills Error:", error);
+            return [];
+        }
+        return (data || []).map(row => ({
+            billNumber: row.bill_number,
+            date: row.created_at,
+            displayDate: row.created_at ? new Date(row.created_at).toLocaleString("en-IN") : "",
+            customerName: row.customer_name || "",
+            customerMobile: row.customer_mobile || "",
+            items: Array.isArray(row.items) ? row.items : [],
+            subtotal: Number(row.subtotal) || 0,
+            gst: Number(row.gst) || 0,
+            commission: Number(row.commission) || 0,
+            grandTotal: Number(row.grand_total) || 0
+        }));
+    } catch (error) {
+        console.error("Load Bills System Error:", error);
+        return [];
+    }
+}
+
+
+/* =====================================================
+   CHECK BILL DATE
+===================================================== */
+
+function isBillToday(bill){
+
+    if(!bill || !bill.date){
+        return false;
+    }
+
+
+    const billDate =
+        new Date(
+            bill.date
+        );
+
+
+    if(
+        !isNaN(
+            billDate.getTime()
+        )
+    ){
+
+        const now =
+            new Date();
+
+
+        return (
+            billDate.getFullYear() ===
+            now.getFullYear() &&
+
+            billDate.getMonth() ===
+            now.getMonth() &&
+
+            billDate.getDate() ===
+            now.getDate()
+        );
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =====================================================
+   UPDATE DASHBOARD
+===================================================== */
+
+async function updateDashboard(){
+
+    const bills =
+    await getSavedBills();
+
+
+    let totalSales = 0;
+    let totalProducts = 0;
+    let totalCommission = 0;
+    let todaySales = 0;
+
+
+    bills.forEach(function(bill){
+
+        const amount =
+            Number(
+                bill.grandTotal
+            ) || 0;
+
+
+        const commission =
+            Number(
+                bill.commission
+            ) || 0;
+
+
+        totalSales += amount;
+
+        totalCommission +=
+            commission;
+
+
+        if(
+            isBillToday(bill)
+        ){
+
+            todaySales +=
+                amount;
+
+        }
+
+
+        if(
+            Array.isArray(
+                bill.items
+            )
+        ){
+
+            bill.items.forEach(
+                function(item){
+
+                    totalProducts +=
+                        Number(
+                            item.qty
+                        ) || 0;
+
+                }
+            );
+
+        }
+
+    });
+
+
+    /*
+       Current Stock
+    */
+
+    let currentStock = 0;
+
+
+    Object.keys(products).forEach(
+        function(code){
+
+            currentStock +=
+                Number(
+                    products[code].stock
+                ) || 0;
+
+        }
+    );
+
+
+    document.getElementById(
+        "fjTotalSales"
+    ).innerText =
+        "₹" +
+        totalSales.toFixed(2);
+
+
+    document.getElementById(
+        "fjTotalBills"
+    ).innerText =
+        bills.length;
+
+
+    document.getElementById(
+        "fjProductsSold"
+    ).innerText =
+        totalProducts;
+
+
+    document.getElementById(
+        "fjTodaySales"
+    ).innerText =
+        "₹" +
+        todaySales.toFixed(2);
+
+
+    document.getElementById(
+        "fjTotalCommission"
+    ).innerText =
+        "₹" +
+        totalCommission.toFixed(2);
+
+
+    document.getElementById(
+        "fjCurrentStock"
+    ).innerText =
+        currentStock;
+
+
+    document.getElementById(
+        "fjTodayDate"
+    ).innerText =
+        new Date().toLocaleDateString(
+            "en-IN",
+            {
+                day:"2-digit",
+                month:"long",
+                year:"numeric"
+            }
+        );
+
+}
+
+
+/* =====================================================
+   NEW BILLING
+===================================================== */
+
+function fjGoBilling(){
+
+    const billSection =
+        document.getElementById(
+            "billSection"
+        );
+
+
+    if(billSection){
+
+        billSection.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+        });
+
+
+        setTimeout(function(){
+
+            barcodeInput.focus();
+
+        },600);
+
+    }
+
+}
+
+
+/* =====================================================
+   REFRESH DASHBOARD
+===================================================== */
+
+function fjRefreshDashboard(){
+
+    updateDashboard();
+
+    renderProducts();
+
+    renderBill();
+
+
+    showMessage(
+        "✅ Dashboard Update হয়েছে।"
+    );
+
+}
+
+
+/* =====================================================
+   START SYSTEM
+===================================================== */
+
+saveProducts();
+
+renderProducts();
+
+renderBill();
+
+updateDashboard();
+
+
+window.addEventListener(
+    "load",
+    function(){
+
+        updateDashboard();
+
+        barcodeInput.focus();
+
+    }
+);
+
+</script>
+<script>
+/* MEMBER PAYOUT - AVAILABLE COMMISSION SYNC */
+
+async function fjSyncAvailablePayout() {
+    const totalEl = document.getElementById("fjTotalCommission");
+    const payoutEl = document.getElementById("fjAvailablePayout");
+
+    if (!totalEl || !payoutEl) return;
+
+    const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+
+    if (authError || !authData.user) return;
+
+    const userId = authData.user.id;
+
+    const total = parseFloat(
+        totalEl.innerText.replace("₹", "").replace(/,/g, "").trim()
+    ) || 0;
+
+    const { data, error } = await supabaseClient
+        .from("payout_requests")
+        .select("amount")
+        .eq("user_id", userId)
+        .eq("status", "paid");
+
+    if (error) {
+        console.error("Paid payout load error:", error);
+        return;
+    }
+
+    const paidTotal = (data || []).reduce(
+        (sum, row) => sum + (Number(row.amount) || 0),
+        0
+    );
+
+    const available = Math.max(0, total - paidTotal);
+
+    payoutEl.innerText = "₹" + available.toFixed(2);
+}
+
+setTimeout(fjSyncAvailablePayout, 1000);
+
+setInterval(fjSyncAvailablePayout, 3000);
+
+/* Page load */
+setTimeout(function () {
+    fjSyncAvailablePayout();
+}, 1000);
+
+/* Dashboard data update হওয়ার পরও sync হবে */
+setInterval(function () {
+    fjSyncAvailablePayout();
+}, 1000);
+/* MEMBER PAYOUT REQUEST - SUPABASE */
+
+async function fjSubmitPayoutRequest() {
+
+    const amountEl =
+        document.getElementById("fjPayoutAmount");
+
+    const methodEl =
+        document.getElementById("fjPayoutMethod");
+
+    const detailsEl =
+        document.getElementById("fjPayoutDetails");
+
+    const amount =
+        parseFloat(amountEl.value) || 0;
+
+    const paymentMethod =
+        methodEl.value.trim();
+
+    const paymentDetails =
+        detailsEl.value.trim();
+
+    /* Login user check */
+    const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+
+    if (authError || !authData.user) {
+        alert("❌ আগে Login করুন।");
+        return;
+    }
+
+    /* Amount check */
+    const availableEl =
+        document.getElementById("fjAvailablePayout");
+
+    const available =
+        parseFloat(
+            availableEl.innerText
+                .replace("₹", "")
+                .replace(/,/g, "")
+                .trim()
+        ) || 0;
+
+    if (amount <= 0) {
+        alert("❌ Payout Amount দিন।");
+        return;
+    }
+
+    if (amount > available) {
+        alert("❌ আপনার Available Commission-এর চেয়ে বেশি payout চাওয়া যাবে না।");
+        return;
+    }
+
+    if (!paymentMethod) {
+        alert("❌ Payment Method নির্বাচন করুন।");
+        return;
+    }
+
+    if (!paymentDetails) {
+        alert("❌ UPI / Bank Details দিন।");
+        return;
+    }
+
+    /* Supabase-এ Request পাঠানো */
+    const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+if (userError || !user) {
+    alert("❌ Login session পাওয়া যাচ্ছে না। আবার Login করুন।");
+    return;
+}
+const { data: sessionData } = await supabaseClient.auth.getSession();
+
+if (!sessionData.session) {
+    alert("❌ Login Session পাওয়া যাচ্ছে না। আবার Login করুন।");
+    return;
+}
+ alert("User ID: " + user.id + "\nSession User ID: " + sessionData.session.user.id);   
+const { data, error } =
+    await supabaseClient
+    .from("payout_requests")
+    .insert({
+        user_id: user.id,
+        requester_user_id: user.id,
+        amount: amount,
+        payment_method: paymentMethod,
+        payment_details: paymentDetails,
+        status: "pending"
+    })
+    .select()
+    .single();
+
+    if (error) {
+        console.error(error);
+        alert("❌ Payout Request ব্যর্থ:\n" + error.message);
+        return;
+    }
+
+    alert("✅ Payout Request সফলভাবে পাঠানো হয়েছে।");
+
+    /* Form পরিষ্কার */
+    amountEl.value = "";
+    methodEl.value = "";
+    detailsEl.value = "";
+
+}
+async function fjLoadPayoutRequests() {
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") {
+        const payoutCenter = document.getElementById("fjPayoutCenter");
+        if (payoutCenter) payoutCenter.style.display = "none";
+        return;
+    }
+    try {
+        const { data: requests, error } = await supabaseClient
+            .from("payout_requests")
+            .select("*")
+            
+
+        if (error) {
+            console.error("Payout Request Load Error:", error);
+            alert("❌ Payout Requests লোড হচ্ছে না:\n" + error.message);
+            return;
+        }
+
+        const listEl = document.getElementById("fjPayoutRequestList");
+
+        if (!listEl) {
+            console.error("fjPayoutRequestList পাওয়া যায়নি");
+            return;
+        }
+
+        if (!requests || requests.length === 0) {
+            listEl.innerHTML = `
+                <div style="
+                    padding:25px 10px;
+                    text-align:center;
+                    color:#9ca3af;
+                    font-size:14px;
+                ">
+                    No payout requests yet
+                </div>
+            `;
+
+            const countEl = document.getElementById("fjPayoutPendingCount");
+            if (countEl) countEl.textContent = "0";
+
+            return;
+        }
+
+        const pendingCount = requests.filter(
+            r => String(r.status || "").toLowerCase() === "pending"
+        ).length;
+
+        const countEl = document.getElementById("fjPayoutPendingCount");
+        if (countEl) countEl.textContent = pendingCount;
+const totalRequestsEl = document.getElementById("fjPayoutTotalRequests");
+if (totalRequestsEl) totalRequestsEl.textContent = requests.length;
+       const pendingAmount = requests
+    .filter(r => String(r.status || "").toLowerCase() === "pending")
+    .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+const pendingAmountEl = document.getElementById("fjPayoutPendingAmount");
+if (pendingAmountEl) pendingAmountEl.textContent = "₹" + pendingAmount.toFixed(2);
+        listEl.innerHTML = requests.map(r => `
+            <div style="
+                background:#ffffff;
+                border:1px solid #e5e7eb;
+                border-radius:14px;
+                padding:14px;
+                margin-bottom:12px;
+                box-shadow:0 3px 10px rgba(0,0,0,.06);
+            ">
+                <div style="font-weight:800;color:#166534;">
+                    💰 Payout Request
+                </div>
+
+                <div style="margin-top:8px;">
+                    <b>Amount:</b> ₹${Number(r.amount || 0).toFixed(2)}
+                </div>
+
+                <div>
+                    <b>Payment Method:</b>
+                    ${r.payment_method || "-"}
+                </div>
+
+                <div>
+                    <b>Payment Details:</b>
+                    ${r.payment_details || "-"}
+                </div>
+
+                <div>
+                    <b>Status:</b>
+                    ${r.status || "-"}
+                </div>
+
+                <div style="
+                    margin-top:6px;
+                    font-size:12px;
+                    color:#6b7280;
+                ">
+                    User ID: ${r.user_id || "-"}
+                </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+    <button
+        onclick="fjApprovePayoutRequest('${r.id}')"
+        style="flex:1;background:#198754;color:white;border:none;border-radius:10px;padding:10px;font-weight:700;">
+        ✅ Approve & Pay
+    </button>
+
+    <button
+        onclick="fjRejectPayoutRequest('${r.id}')"
+        style="flex:1;background:#dc3545;color:white;border:none;border-radius:10px;padding:10px;font-weight:700;">
+        ❌ Reject
+    </button>
+</div>
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error("Payout Request Error:", err);
+        alert("❌ Payout Requests লোড করতে সমস্যা হয়েছে");
+    }
+        }
+async function fjApprovePayoutRequest(requestId) {
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") { alert("শুধু Admin payout approve করতে পারবেন।"); return; }
+    if (!confirm("এই payout request-টি Approve & Pay করবেন?")) {
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from("payout_requests")
+            .update({
+                status: "paid",
+                approved_at: new Date().toISOString(),
+                paid_at: new Date().toISOString()
+            })
+            .eq("id", requestId);
+
+        if (error) {
+            console.error("Approve Payout Error:", error);
+            alert("❌ Payout Approve করা যায়নি:\n" + error.message);
+            return;
+        }
+
+        alert("✅ Payout Successfully Paid!");
+
+        await fjLoadPayoutRequests();
+
+    } catch (err) {
+        console.error("Approve Payout Error:", err);
+        alert("❌ Error: " + err.message);
+    }
+}
+
+
+async function fjRejectPayoutRequest(requestId) {
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") { alert("শুধু Admin payout reject করতে পারবেন।"); return; }
+    if (!confirm("এই payout request-টি Reject করবেন?")) {
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from("payout_requests")
+            .update({
+                status: "rejected",
+                rejected_at: new Date().toISOString()
+            })
+            .eq("id", requestId);
+
+        if (error) {
+            console.error("Reject Payout Error:", error);
+            alert("❌ Payout Reject করা যায়নি:\n" + error.message);
+            return;
+        }
+
+        alert("❌ Payout Request Rejected!");
+
+        await fjLoadPayoutRequests();
+
+    } catch (err) {
+        console.error("Reject Payout Error:", err);
+        alert("❌ Error: " + err.message);
+    }
+}
+async function fjLoadJoiningDashboard() {
+    const { data: authData, error: userError } = await supabaseClient.auth.getUser();
+    const user = authData?.user;
+    if (userError || !user) return;
+
+    try {
+        // Resolve role from database each load; UI visibility is not the security boundary.
+        const { data: profile, error: profileError } = await supabaseClient
+            .from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if (profileError) console.error("Joining role lookup:", profileError);
+        window.fjCurrentUserRole = String(profile?.role || window.fjCurrentUserRole || "user").toLowerCase();
+        window.fjIsAdmin = window.fjCurrentUserRole === "admin";
+
+        const { data, error } = await supabaseClient.rpc("fj_get_joining_dashboard_v2", { p_user_id: user.id });
+        if (error) {
+            console.error("Joining Dashboard v2 Error:", error);
+            // Compatibility fallback for installations that have only the older RPC.
+            const fallback = await supabaseClient.rpc("fj_get_joining_dashboard", { p_user_id: user.id });
+            if (fallback.error) {
+                console.error("Joining Dashboard fallback Error:", fallback.error);
+                return;
+            }
+            const fd = fallback.data;
+            var result = Array.isArray(fd) ? fd[0] : fd;
+        } else {
+            var result = Array.isArray(data) ? data[0] : data;
+        }
+        if (!result) return;
+
+        const setCount = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value ?? 0;
+        };
+        const members = Array.isArray(result.members) ? result.members :
+            (typeof result.members === "string" ? (() => { try { const parsed = JSON.parse(result.members); return Array.isArray(parsed) ? parsed : []; } catch (_) { return []; } })() : []);
+        const statusOf = m => String(m.status || m.approval_status || (m.is_active === true ? "active" : "inactive")).toLowerCase();
+        const directMembers = members.filter(m => Number(m.level || 1) === 1 || m.is_direct === true);
+        const activeMembers = members.filter(m => ["active", "approved", "approved_active"].includes(statusOf(m)) || m.is_active === true);
+        const inactiveMembers = members.filter(m => !(["active", "approved", "approved_active", "pending"].includes(statusOf(m)) || m.is_active === true));
+        setCount("fjTotalDownline", result.total_downline ?? result.totalDownline ?? members.length);
+        setCount("fjDirectDownline", result.direct_downline ?? result.directDownline ?? directMembers.length);
+        setCount("fjActiveMembers", result.active_members ?? result.activeMembers ?? activeMembers.length);
+        setCount("fjInactiveMembers", result.inactive_members ?? result.inactiveMembers ?? inactiveMembers.length);
+
+        const table = document.getElementById("fjJoiningMemberTable");
+        if (!table) return;
+        table.innerHTML = "";
+
+        members.forEach(member => {
+            const row = document.createElement("tr");
+            const status = String(member.status || member.approval_status || "inactive").toLowerCase();
+            let actionHtml = "-";
+            if (window.fjIsAdmin && status === "pending") {
+                actionHtml = `<button class="fj-admin-only" data-role="admin" type="button" onclick="fjApproveMember('${String(member.id || "").replace(/[^a-fA-F0-9-]/g, "")}')" style="background:#16a34a;color:white;border:0;border-radius:7px;padding:7px 10px;font-weight:bold;cursor:pointer">✅ Approve</button>`;
+            }
+            const cells = [
+                member.full_name || "-",
+                member.mobile || "-",
+                "Level " + (member.level || "-"),
+                status,
+                member.sponsor_name || "-",
+                actionHtml
+            ];
+            cells.forEach((value, i) => {
+                const td = document.createElement("td");
+                if (i === 5) td.innerHTML = value;
+                else td.textContent = String(value);
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+        });
+    } catch (err) {
+        console.error("Joining Dashboard System Error:", err);
+    }
+}
+
+async function fjApproveMember(memberId) {
+
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") {
+        alert("❌ শুধু Admin Member Approve করতে পারবেন।");
+        return;
+    }
+
+    if (!confirm("এই Member-কে Approve করতে চান?")) {
+        return;
+    }
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .rpc("fj_approve_member", {
+                p_member_id: memberId
+            });
+
+        if (error) {
+            console.error("Approve Member Error:", error);
+            alert("❌ Approve করা যায়নি:\n" + error.message);
+            return;
+        }
+
+        if (!data || data.success !== true) {
+            alert(
+                "❌ " +
+                (data?.message || "Approve করা যায়নি")
+            );
+            return;
+        }
+
+        alert("✅ Member সফলভাবে Approved হয়েছে।");
+
+        await fjLoadJoiningDashboard();
+
+    } catch (err) {
+
+        console.error(
+            "Approve Member System Error:",
+            err
+        );
+
+        alert(
+            "❌ System Error: " +
+            err.message
+        );
+    }
+    }
+// =============================
+// MEMBER REGISTRATION
+// =============================
+
+function fjOpenRegistration() {
+
+    const form = document.getElementById("fjRegistrationForm");
+
+    if (!form) {
+        alert("Registration Form পাওয়া যায়নি");
+        return;
+    }
+
+    form.style.display = "block";
+
+    form.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+
+// =============================
+// CLOSE REGISTRATION FORM
+// =============================
+
+function fjCloseRegistration() {
+
+    const form = document.getElementById("fjRegistrationForm");
+
+    if (form) {
+        form.style.display = "none";
+    }
+}
+
+
+// =============================
+// REGISTER NEW MEMBER
+// =============================
+
+async function fjRegisterMember() {
+
+    const fullName =
+        document.getElementById("fjRegFullName").value.trim();
+
+    const mobile =
+        document.getElementById("fjRegMobile").value.trim();
+
+    const email =
+        document.getElementById("fjRegEmail").value.trim();
+
+    const password =
+        document.getElementById("fjRegPassword").value;
+
+    const sponsorId =
+        document.getElementById("fjRegSponsor").value.trim();
+
+    const message =
+        document.getElementById("fjRegistrationMessage");
+
+
+    // -----------------------------
+    // Basic validation
+    // -----------------------------
+
+    if (!fullName || !mobile || !email || !password || !sponsorId) {
+
+        message.textContent =
+            "নাম, মোবাইল, Email, Password এবং Sponsor ID—সব তথ্য পূরণ করুন";
+
+        message.style.color = "red";
+
+        return;
+    }
+
+
+    if (password.length < 6) {
+
+        message.textContent =
+            "Password কমপক্ষে 6 অক্ষরের হতে হবে";
+
+        message.style.color = "red";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Registration হচ্ছে...";
+
+    message.style.color = "#166534";
+
+
+    try {
+
+        // -----------------------------
+        // Create Supabase Auth User
+        // -----------------------------
+
+        const { data, error } =
+            await supabaseClient.auth.signUp({
+
+                email: email,
+
+                password: password,
+
+                options: {
+                    data: {
+                        full_name: fullName,
+                        mobile: mobile,
+                        sponsor_id: sponsorId
+                    }
+                }
+
+            });
+
+
+        if (error) {
+
+            message.textContent =
+                "Registration ব্যর্থ: " + error.message;
+
+            message.style.color = "red";
+
+            return;
+        }
+
+
+        if (!data || !data.user) {
+
+            message.textContent =
+                "User তৈরি হয়নি";
+
+            message.style.color = "red";
+
+            return;
+        }
+
+
+        
+
+
+        // -----------------------------
+        // Success
+        // -----------------------------
+
+        message.textContent =
+            "✅ Registration সফল হয়েছে। Admin approval-এর জন্য অপেক্ষা করুন। Sponsor mapping database trigger-এর মাধ্যমে হবে।";
+
+        message.style.color = "green";
+        setTimeout(function () { fjLoadJoiningDashboard(); }, 1200);
+
+
+        // Clear form
+
+        document.getElementById("fjRegFullName").value = "";
+        document.getElementById("fjRegMobile").value = "";
+        document.getElementById("fjRegEmail").value = "";
+        document.getElementById("fjRegPassword").value = "";
+        document.getElementById("fjRegSponsor").value = "";
+
+
+    } catch (err) {
+
+        message.textContent =
+            "System Error: " + err.message;
+
+        message.style.color = "red";
+    }
+    }
+</script>
+<!-- ================= BULK MESSAGE CENTER ================= -->
+
+<section id="bulkMessage" class="page" style="display:none;">
+
+<div class="card">
+
+<h2>📢 Phulo Jhano Bulk Message</h2>
+
+<p class="small">
+Customer-দের জন্য Thank You, Offer, Festival ও অন্যান্য Message পাঠানোর প্রস্তুতি করুন।
+</p>
+
+<div class="row">
+
+<div class="c6">
+<label>Message Type</label>
+
+<select id="bulkMsgType" onchange="pjLoadMessage()">
+
+<option value="thankyou">
+🛒 Shopping Thank You
+</option>
+
+<option value="festival">
+🎉 Festival Message
+</option>
+
+<option value="offer">
+🎁 Special Offer
+</option>
+
+<option value="rank">
+🏆 Rank Achievement
+</option>
+
+<option value="price">
+💰 Product Rate Change
+</option>
+
+<option value="birthday">
+🎂 Birthday Wishes
+</option>
+
+<option value="custom">
+✍️ Custom Message
+</option>
+
+</select>
+</div>
+
+<div class="c6">
+
+<label>Test Mobile Number</label>
+
+<input
+id="pjTestMobile"
+type="tel"
+placeholder="যেমন: 9876543210"
+>
+
+</div>
+
+<div class="c12">
+
+<label>Message</label>
+
+<textarea
+id="pjBulkMessage"
+rows="5"
+placeholder="আপনার Message লিখুন..."
+></textarea>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn"
+onclick="pjTestWhatsApp()"
+>
+📲 Test WhatsApp
+</button>
+
+<button
+class="btn secondary"
+onclick="pjLoadMessage()"
+>
+🔄 Message Reset
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>👥 Customer List</h3>
+
+<p class="small">
+বর্তমানে Billing System-এ যেসব Customer-এর mobile number আছে।
+</p>
+
+<div class="actions">
+
+<button
+class="btn secondary"
+onclick="pjShowCustomers()"
+>
+👥 Customer দেখুন
+</button>
+
+<button
+class="btn gold"
+onclick="pjSelectAllCustomers()"
+>
+☑️ Select All
+</button>
+
+</div>
+
+<div
+class="tablewrap"
+style="margin-top:15px"
+>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Select</th>
+<th>Name</th>
+<th>Mobile</th>
+
+</tr>
+
+</thead>
+
+<tbody id="pjBulkCustomerList">
+
+<tr>
+<td colspan="3" class="empty">
+Customer list দেখতে "Customer দেখুন" চাপুন
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<script>
+
+/* ================= PHULO JHANO BULK MESSAGE ================= */
+
+function pjLoadMessage(){
+
+    const type =
+        document.getElementById(
+            "bulkMsgType"
+        ).value;
+
+    const messages = {
+
+        thankyou:
+        "Dear {name},\n\nThank you for shopping with Phulo Jhano. We are happy to serve you. Please visit again. 🙏",
+
+        festival:
+        "🎉 শুভ উৎসব! Phulo Jhano পরিবারের পক্ষ থেকে আপনাকে ও আপনার পরিবারকে আন্তরিক শুভেচ্ছা।",
+
+        offer:
+        "🎁 Special Offer from Phulo Jhano! আপনার জন্য বিশেষ অফার চলছে। আজই যোগাযোগ করুন।",
+
+        rank:
+        "🏆 Congratulations! Phulo Jhano-এর পক্ষ থেকে আপনার Rank Achievement-এর জন্য আন্তরিক অভিনন্দন।",
+
+        price:
+        "💰 Important Update from Phulo Jhano: আমাদের একটি Product-এর Rate পরিবর্তন করা হয়েছে। বিস্তারিত জানতে যোগাযোগ করুন।",
+
+        birthday:
+        "🎂 Happy Birthday! Phulo Jhano পরিবারের পক্ষ থেকে আপনার জন্মদিনে অনেক শুভেচ্ছা ও শুভকামনা।",
+
+        custom:
+        ""
+
+    };
+
+    document.getElementById(
+        "pjBulkMessage"
+    ).value =
+        messages[type] || "";
+
+}
+
+
+/* ---------- SHOW CUSTOMERS ---------- */
+
+function pjShowCustomers(){
+
+    const box =
+        document.getElementById("pjBulkCustomerList");
+
+    if(!box) return;
+
+    box.innerHTML =
+        `<tr>
+            <td colspan="3" class="empty">
+                Customer list লোড হচ্ছে...
+            </td>
+        </tr>`;
+
+    supabaseClient
+        .from("bills")
+        .select("customer_name, customer_mobile, created_at")
+        .not("customer_mobile", "is", null)
+        .order("created_at", { ascending: false })
+
+        .then(function(result){
+
+            const data = result.data;
+            const error = result.error;
+
+            if(error){
+
+                console.error(
+                    "Bulk Customer Load Error:",
+                    error
+                );
+
+                box.innerHTML =
+                    `<tr>
+                        <td colspan="3" class="empty">
+                            Customer list লোড করা যায়নি।
+                        </td>
+                    </tr>`;
+
+                return;
+            }
+
+            const seen = new Set();
+
+            const customers = [];
+
+            (data || []).forEach(function(row){
+
+                const mobile =
+                    String(
+                        row.customer_mobile || ""
+                    ).replace(/\D/g, "");
+
+                if(!mobile) return;
+
+                if(seen.has(mobile)) return;
+
+                seen.add(mobile);
+
+                customers.push({
+
+                    name:
+                        row.customer_name ||
+                        "Customer",
+
+                    mobile:
+                        mobile
+
+                });
+
+            });
+
+            /* Bulk Queue-এর জন্য Customer list সংরক্ষণ */
+
+            window.pjBulkCustomers =
+                customers;
+
+            if(!customers.length){
+
+                box.innerHTML =
+                    `<tr>
+                        <td colspan="3" class="empty">
+                            কোনো Customer Mobile Number পাওয়া যায়নি।
+                        </td>
+                    </tr>`;
+
+                return;
+            }
+
+            box.innerHTML =
+                customers.map(function(c, i){
+
+                    return `
+                        <tr>
+
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    class="pjCustomerCheck"
+                                    value="${i}"
+                                >
+                            </td>
+
+                            <td>
+                                ${escapeHtml(c.name)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(c.mobile)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }).join("");
+
+        })
+
+        .catch(function(error){
+
+            console.error(
+                "Customer List Error:",
+                error
+            );
+
+            box.innerHTML =
+                `<tr>
+                    <td colspan="3" class="empty">
+                        Customer list লোড করার সময় সমস্যা হয়েছে।
+                    </td>
+                </tr>`;
+
+        });
+
+}
+
+
+/* ---------- SELECT ALL ---------- */
+
+function pjSelectAllCustomers(){
+
+    pjShowCustomers();
+
+    setTimeout(()=>{
+
+        document
+        .querySelectorAll(
+            ".pjCustomerCheck"
+        )
+        .forEach(x =>
+            x.checked = true
+        );
+
+    },50);
+
+}
+
+
+/* ---------- TEST WHATSAPP ---------- */
+
+function pjTestWhatsApp(){
+
+    let mobile =
+        document.getElementById(
+            "pjTestMobile"
+        ).value.trim();
+
+    let message =
+        document.getElementById(
+            "pjBulkMessage"
+        ).value.trim();
+
+    if(!mobile){
+
+        alert(
+            "Test Mobile Number দিন।"
+        );
+
+        return;
+    }
+
+    if(!message){
+
+        alert(
+            "Message লিখুন।"
+        );
+
+        return;
+    }
+
+
+    /* Remove spaces and symbols */
+
+    mobile =
+        mobile.replace(/\D/g,"");
+
+
+    /* Indian number */
+
+    if(mobile.length === 10){
+
+        mobile =
+            "91" + mobile;
+
+    }
+
+
+    const url =
+        "https://wa.me/" +
+        mobile +
+        "?text=" +
+        encodeURIComponent(
+            message
+        );
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* ---------- DEFAULT MESSAGE ---------- */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        if(
+            document.getElementById(
+                "bulkMsgType"
+            )
+        ){
+
+            pjLoadMessage();
+
+        }
+
+    }
+);
+/* =====================================================
+   PHULO JHANO - SIMPLE BULK WHATSAPP QUEUE
+   Existing code untouched
+   ===================================================== */
+
+let pjBulkQueue = [];
+let pjBulkIndex = 0;
+
+
+/* ---------- START BULK WHATSAPP ---------- */
+
+function pjStartBulkWhatsApp(){
+
+    const selected =
+        Array.from(
+            document.querySelectorAll(".pjCustomerCheck:checked")
+        );
+
+    if(!selected.length){
+
+        alert("প্রথমে Customer নির্বাচন করুন।");
+
+        return;
+    }
+
+
+    const messageBox =
+        document.getElementById("pjBulkMessage");
+
+    if(!messageBox){
+
+        alert("Message box পাওয়া যায়নি।");
+
+        return;
+    }
+
+
+    const message =
+        messageBox.value.trim();
+
+    if(!message){
+
+        alert("প্রথমে Message নির্বাচন করুন।");
+
+        return;
+    }
+
+
+    pjBulkQueue =
+        selected
+        .map(function(check){
+
+            const index =
+                Number(check.value);
+
+            const customer =
+    (window.pjBulkCustomers || [])[index];
+
+            if(!customer || !customer.mobile){
+
+                return null;
+            }
+
+            return {
+
+                name:
+                    customer.name || "Customer",
+
+                mobile:
+                    String(customer.mobile)
+                    .replace(/\D/g,""),
+
+                message:
+                    message
+
+            };
+
+        })
+        .filter(Boolean);
+
+
+    if(!pjBulkQueue.length){
+
+        alert("নির্বাচিত Customer-এর কোনো Mobile Number পাওয়া যায়নি।");
+
+        return;
+    }
+
+
+    pjBulkIndex = 0;
+
+    pjShowBulkQueue();
+
+
+    alert(
+        "Bulk WhatsApp প্রস্তুত হয়েছে।\n\n" +
+        "মোট Customer: " +
+        pjBulkQueue.length +
+        "\n\n" +
+        "এখন 'WhatsApp খুলুন' চাপুন।"
+    );
+
+}
+
+
+/* ---------- SHOW CURRENT CUSTOMER ---------- */
+
+function pjShowBulkQueue(){
+
+    const box =
+        document.getElementById("pjBulkQueueBox");
+
+    if(!box) return;
+
+
+    if(pjBulkIndex >= pjBulkQueue.length){
+
+        box.innerHTML =
+
+            "<div style='padding:15px;" +
+            "background:#e8f5e9;" +
+            "border-radius:10px;" +
+            "text-align:center;" +
+            "font-weight:bold;'>" +
+
+            "✅ সব Customer-এর Bulk Message সম্পন্ন হয়েছে" +
+
+            "</div>";
+
+        return;
+    }
+
+
+    const customer =
+        pjBulkQueue[pjBulkIndex];
+
+
+    box.innerHTML =
+
+        "<div style='padding:15px;" +
+        "background:#f8fafc;" +
+        "border-radius:12px;" +
+        "border:1px solid #ddd;'>" +
+
+        "<div style='font-size:18px;" +
+        "font-weight:bold;" +
+        "margin-bottom:8px;'>" +
+
+        "📲 Bulk WhatsApp" +
+
+        "</div>" +
+
+        "<div>" +
+        "Customer: <b>" +
+        pjEscapeText(customer.name) +
+        "</b>" +
+        "</div>" +
+
+        "<div>" +
+        "Mobile: <b>" +
+        customer.mobile +
+        "</b>" +
+        "</div>" +
+
+        "<div style='margin-top:8px;'>" +
+        "Customer " +
+        (pjBulkIndex + 1) +
+        " / " +
+        pjBulkQueue.length +
+        "</div>" +
+
+        "<button " +
+        "onclick='pjOpenBulkWhatsApp()' " +
+        "style='margin-top:12px;" +
+        "width:100%;" +
+        "padding:12px;" +
+        "border:0;" +
+        "border-radius:8px;" +
+        "background:#25D366;" +
+        "color:white;" +
+        "font-size:16px;" +
+        "font-weight:bold;'>" +
+
+        "📱 WhatsApp খুলুন" +
+
+        "</button>" +
+
+        "<button " +
+        "onclick='pjNextBulkCustomer()' " +
+        "style='margin-top:8px;" +
+        "width:100%;" +
+        "padding:10px;" +
+        "border:1px solid #ccc;" +
+        "border-radius:8px;" +
+        "background:white;" +
+        "font-size:15px;'>" +
+
+        "➡️ Message পাঠানো হয়েছে — পরবর্তী Customer" +
+
+        "</button>" +
+
+        "</div>";
+
+}
+
+
+/* ---------- OPEN WHATSAPP ---------- */
+
+function pjOpenBulkWhatsApp(){
+
+    if(
+        pjBulkIndex >=
+        pjBulkQueue.length
+    ){
+
+        return;
+    }
+
+
+    const customer =
+        pjBulkQueue[pjBulkIndex];
+
+
+    const message =
+        customer.message
+        .replace(
+            /\{name\}/gi,
+            customer.name
+        );
+
+
+    let mobile =
+        customer.mobile;
+
+
+    if(mobile.length === 10){
+
+        mobile =
+            "91" + mobile;
+
+    }
+
+
+    const url =
+        "https://wa.me/" +
+        mobile +
+        "?text=" +
+        encodeURIComponent(message);
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* ---------- NEXT CUSTOMER ---------- */
+
+function pjNextBulkCustomer(){
+
+    if(
+        pjBulkIndex <
+        pjBulkQueue.length
+    ){
+
+        pjBulkIndex++;
+
+    }
+
+
+    pjShowBulkQueue();
+
+}
+
+
+/* ---------- SAFE TEXT ---------- */
+
+function pjEscapeText(text){
+
+    return String(text || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ---------- ADD BULK UI ---------- */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        setTimeout(
+            function(){
+
+                const messageBox =
+                    document.getElementById(
+                        "pjBulkMessage"
+                    );
+
+
+                if(!messageBox) return;
+
+
+                if(
+                    document.getElementById(
+                        "pjBulkQueueBox"
+                    )
+                ){
+
+                    return;
+
+                }
+
+
+                const box =
+                    document.createElement("div");
+
+
+                box.id =
+                    "pjBulkQueueBox";
+
+
+                box.style.marginTop =
+                    "15px";
+
+
+                messageBox.parentElement
+                    .appendChild(box);
+
+
+                const button =
+                    document.createElement("button");
+
+
+                button.type =
+                    "button";
+
+
+                button.innerHTML =
+                    "📲 Bulk WhatsApp শুরু করুন";
+
+
+                button.onclick =
+                    pjStartBulkWhatsApp;
+
+
+                button.style.width =
+                    "100%";
+
+
+                button.style.padding =
+                    "13px";
+
+
+                button.style.marginTop =
+                    "10px";
+
+
+                button.style.border =
+                    "0";
+
+
+                button.style.borderRadius =
+                    "10px";
+
+
+                button.style.background =
+                    "#128C7E";
+
+
+                button.style.color =
+                    "white";
+
+
+                button.style.fontSize =
+                    "16px";
+
+
+                button.style.fontWeight =
+                    "bold";
+
+
+                messageBox.parentElement
+                    .appendChild(button);
+
+
+            },
+            500
+        );
+
+    }
+);
+</script>
+
+<!-- ================= END BULK MESSAGE CENTER ================= -->
+
+<script>
+function fjPrintBill() {
+    const bill = document.getElementById("billSection");
+
+    if (!bill) {
+        alert("Bill পাওয়া যাচ্ছে না। আগে Bill তৈরি করুন।");
+        return;
+    }
+
+    bill.style.display = "block";
+
+    setTimeout(function () {
+        window.print();
+    }, 200);
+}
+</script>
+<script>
+/* ================= OUTLET MODULE (isolated tables; existing billing untouched) ================= */
+window.fjOutletItems = [];
+window.fjOutletId = null;
+window.fjOutletName = '';
+function fjShowOutletLogin(){document.getElementById('fjLoginScreen').style.display='none';document.getElementById('fjOutletLoginScreen').style.display='block';}
+function fjHideOutletLogin(){document.getElementById('fjOutletLoginScreen').style.display='none';document.getElementById('fjLoginScreen').style.display='block';}
+async function fjOutletLogin(){
+ const email=document.getElementById('fjOutletLoginEmail').value.trim(); const password=document.getElementById('fjOutletLoginPassword').value; const msg=document.getElementById('fjOutletLoginMessage');
+ if(!email||!password){msg.textContent='Email ও Password দিন';return;}
+ msg.textContent='লগইন হচ্ছে...';
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error||!data?.user){msg.textContent='Login ব্যর্থ: '+(error?.message||'User পাওয়া যায়নি');return;}
+ const {data:profile,error:pe}=await supabaseClient.from('profiles').select('role,approval_status').eq('id',data.user.id).maybeSingle();
+ if(pe||!profile||String(profile.role||'').toLowerCase()!=='outlet'||String(profile.approval_status||'').toLowerCase()!=='approved'){
+   await supabaseClient.auth.signOut();msg.textContent='এই Account অনুমোদিত Outlet account নয়। Admin-কে Outlet Owner হিসেবে অনুমোদন দিতে বলুন।';return;
+ }
+ document.getElementById('loginEmail').value=email; document.getElementById('loginPassword').value=password;
+ // Session is already established; route via shared role setup without requiring another sign-in.
+ document.getElementById('fjOutletLoginScreen').style.display='none';
+ document.getElementById('fjLoginScreen').style.display='none'; document.getElementById('fjDashboard').style.display='block';
+ window.fjCurrentUserRole='outlet'; window.fjIsAdmin=false;
+ await fjApplyRoleAccess('outlet');
+}
+async function fjApplyRoleAccess(role){
+ role=String(role||'user').toLowerCase();
+ window.fjCurrentUserRole=role; window.fjIsAdmin=role==='admin';
+ const admin=role==='admin', outlet=role==='outlet', member=!admin&&!outlet;
+ const show=(el,yes,display='')=>{if(el)el.style.display=yes?display:'none';};
+ document.body.classList.toggle('fj-admin-mode',admin);
+ document.body.classList.toggle('fj-member-mode',member);
+ document.body.classList.toggle('fj-outlet-mode',outlet);
+ document.body.classList.add('fj-authenticated');
+ const dash=document.getElementById('fjDashboard'); if(dash)dash.style.display='block';
+ // Explicit role boundaries: all controls with admin-only marker are hidden from members/outlets.
+ document.querySelectorAll('.fj-admin-only,[data-role="admin"]').forEach(el=>show(el,admin));
+ // Billing/POS and product master are admin-only until the member/outlet commission flow is verified.
+ ['fjBarcodeCard','fjScannedProductCard','billSection','fjPayoutCenter','bulkMessage','fjAdminOutletManager'].forEach(id=>show(document.getElementById(id),admin));
+ document.querySelectorAll('.product-master').forEach(el=>show(el,admin));
+ // Registration is available to Admin and approved regular members so they can
+ // register their direct recruits. Approval/rejection controls remain Admin-only.
+ show(document.getElementById('fjRegistrationForm'),false); // opened only when the user taps New Registration
+ document.querySelectorAll('[onclick*="fjOpenRegistration"]').forEach(el=>show(el,admin||member));
+ document.querySelectorAll('[onclick*="fjApproveMember"],[onclick*="fjRejectMember"],[onclick*="fjApprovePayoutRequest"],[onclick*="fjRejectPayoutRequest"]').forEach(el=>show(el,admin));
+ // Joining dashboard belongs to admin/member; outlet has its own dashboard.
+ show(document.getElementById('fjJoiningDashboard'),!outlet);
+ show(document.getElementById('fjMemberPayoutRequest'),member);
+ show(document.getElementById('fjOutletDashboard'),outlet);
+ // Hide any slide/card that is explicitly admin-only even if the slide engine wrapped it.
+ if(outlet){
+   const d=document.getElementById('fjDashboard');
+   if(d) Array.from(d.querySelectorAll(':scope > *')).forEach(el=>{
+     if(el.classList.contains('dashboard-header')||el.id==='fjOutletDashboard'||el.id==='fjMemberPayoutRequest'||el.classList.contains('fj-slide-area')||el.classList.contains('fj-slide-navigation')||el.classList.contains('fj-slide-dots')||el.classList.contains('fj-swipe-message')) return;
+     el.style.display='none';
+   });
+   if(typeof fjOutletLoad==='function') await fjOutletLoad();
+ } else {
+   if(typeof fjSetupSlideDashboard==='function') { try{ fjSetupSlideDashboard(); }catch(e){console.warn('Slide dashboard setup:',e); } }
+   if(admin && typeof fjAdminLoadOutlets==='function') await fjAdminLoadOutlets();
+   if(member && typeof fjLoadJoiningDashboard==='function') await fjLoadJoiningDashboard();
+ }
+ // Fix blank dashboard slides: role-restricted content must hide its entire slide,
+ // not leave a title-only empty card visible to the user.
+ requestAnimationFrame(()=>{
+   document.querySelectorAll('#fjDashboard .fj-slide').forEach(slide=>{
+     const content = slide.children[1];
+     if(!content) return;
+     const hidden = content.style.display === 'none' || getComputedStyle(content).display === 'none';
+     slide.style.display = hidden ? 'none' : '';
+   });
+ });
+}
+async function fjAdminCreateOutlet(){
+  if(String(window.fjCurrentUserRole||'').toLowerCase()!=='admin'){alert('শুধু Admin Outlet তৈরি করতে পারবেন');return;}
+  const name=document.getElementById('fjAdminOutletName').value.trim();
+  const owner=document.getElementById('fjAdminOutletOwner').value.trim();
+  const ownerName=document.getElementById('fjAdminOutletOwnerName').value.trim();
+  const email=document.getElementById('fjAdminOutletOwnerEmail').value.trim().toLowerCase();
+  const msg=document.getElementById('fjAdminOutletMessage');
+  if(!name||!owner||!ownerName||!email){msg.textContent='Outlet Name, Owner UUID, Owner Name ও Email দিন';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.textContent='সঠিক Owner Email দিন';return;}
+  const {data:profile,error:pe}=await supabaseClient.from('profiles').select('id,role,approval_status,full_name').eq('id',owner).maybeSingle();
+  if(pe||!profile){msg.textContent='এই UUID-এর Profile পাওয়া যায়নি: '+(pe?.message||'Not found');return;}
+  if(String(profile.role||'').toLowerCase()!=='outlet'||String(profile.approval_status||'').toLowerCase()!=='approved'){msg.textContent='প্রথমে profiles-এ এই user-এর role=outlet এবং approval_status=approved করতে হবে।';return;}
+  const {data:existing,error:existingError}=await supabaseClient.from('outlets').select('id,outlet_name').eq('owner_user_id',owner).eq('active',true).limit(1);
+  if(existingError){msg.textContent='আগের Outlet যাচাই করা যায়নি: '+existingError.message;return;}
+  if(existing&&existing.length){msg.textContent='এই Owner-এর Active Outlet আগে থেকেই আছে: '+existing[0].outlet_name+'। আবার তৈরি করা হয়নি।';return;}
+  const payload={outlet_name:name,owner_name:ownerName,owner_user_id:owner,email:email,active:true};
+  const {error}=await supabaseClient.from('outlets').insert(payload);
+  if(error){msg.textContent='Outlet তৈরি হয়নি: '+error.message;return;}
+  document.getElementById('fjAdminOutletName').value='';
+  document.getElementById('fjAdminOutletOwner').value='';
+  document.getElementById('fjAdminOutletOwnerName').value='';
+  document.getElementById('fjAdminOutletOwnerEmail').value='';
+  msg.textContent='Outlet তৈরি হয়েছে। এখন Outlet Login দিয়ে এই Email ও Password ব্যবহার করে লগইন পরীক্ষা করুন।';
+  await fjAdminLoadOutlets();
+}
+async function fjAdminLoadOutlets(){
+ if(String(window.fjCurrentUserRole||'').toLowerCase()!=='admin')return;
+ const box=document.getElementById('fjAdminOutletRows');if(!box)return;
+ const {data,error}=await supabaseClient.from('outlets').select('id,outlet_name,owner_user_id,active').order('created_at',{ascending:false});
+ if(error){box.innerHTML='<tr><td colspan="3">Outlet list load error: '+String(error.message)+'</td></tr>';return;}
+ box.innerHTML='';(data||[]).forEach(o=>{const tr=document.createElement('tr');[o.outlet_name,o.owner_user_id,o.active?'Active':'Inactive'].forEach(v=>{const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td)});box.appendChild(tr)});
+}
+async function fjOutletLoad(){
+ const {data:{user},error:ue}=await supabaseClient.auth.getUser(); if(ue||!user)return;
+ const {data:outlets,error}=await supabaseClient.from('outlets').select('id,outlet_name,owner_user_id,active').eq('owner_user_id',user.id).eq('active',true).limit(1);
+ if(error){fjOutletMsg('Outlet setup পাওয়া যায়নি। Admin-কে outlets SQL setup এবং owner mapping পরীক্ষা করতে বলুন: '+error.message,true);return;}
+ if(!outlets?.length){fjOutletMsg('আপনার Login-এর সঙ্গে কোনো Active Outlet যুক্ত নেই। Admin-কে Outlet তৈরি করে এই account-এর UUID দিতে বলুন।',true);return;}
+ window.fjOutletId=outlets[0].id; window.fjOutletName=outlets[0].outlet_name;
+ document.getElementById('fjOutletWelcome').textContent='🏪 '+window.fjOutletName+' — Daily Sales, Stock ও Bills';
+ const today=new Date().toISOString().slice(0,10);const date=document.getElementById('fjOutletReportDate');const toDate=document.getElementById('fjOutletReportToDate');if(date&&!date.value)date.value=today;if(toDate&&!toDate.value)toDate.value=today;
+ await fjOutletLoadStock(); await fjOutletLoadReport();
+}
+function fjOutletMsg(text,bad=false){const e=document.getElementById('fjOutletMessage');if(e){e.textContent=text;e.style.color=bad?'#b91c1c':'#166534';}}
+async function fjOutletLoadStock(){
+ if(!window.fjOutletId)return;
+ const {data,error}=await supabaseClient.from('outlet_stock').select('id,barcode,product_name,price,commission_pct,stock').eq('outlet_id',window.fjOutletId).order('product_name');
+ if(error){fjOutletMsg('Outlet stock লোড হয়নি: '+error.message,true);return;}
+ const rows=document.getElementById('fjOutletStockRows');rows.innerHTML='';let total=0;
+ (data||[]).forEach(p=>{total+=Number(p.stock)||0;const tr=document.createElement('tr');[p.barcode,p.product_name,'₹'+Number(p.price||0).toFixed(2),String(p.stock??0)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});rows.appendChild(tr)});
+ document.getElementById('fjOutletStockCount').textContent=total;
+ window.fjOutletStockCache=data||[];
+}
+async function fjOutletSaveStock(){
+ if(!window.fjOutletId){fjOutletMsg('Active Outlet পাওয়া যায়নি',true);return;}
+ const barcode=document.getElementById('fjOutletStockBarcode').value.trim(), name=document.getElementById('fjOutletStockName').value.trim(), price=Number(document.getElementById('fjOutletStockPrice').value), qty=Number(document.getElementById('fjOutletStockQty').value), commission=Number(document.getElementById('fjOutletStockCommission').value);
+ if(!barcode||!name||!Number.isFinite(price)||price<0||!Number.isInteger(qty)||qty<0||!Number.isFinite(commission)||commission<0||commission>100){fjOutletMsg('Barcode, Product Name, সঠিক Rate, Stock ও Commission দিন',true);return;}
+ const {data:old,error:oe}=await supabaseClient.from('outlet_stock').select('id,stock').eq('outlet_id',window.fjOutletId).eq('barcode',barcode).maybeSingle();if(oe){fjOutletMsg(oe.message,true);return;}
+ let result;
+ if(old){result=await supabaseClient.from('outlet_stock').update({product_name:name,price,commission_pct:commission,stock:Number(old.stock||0)+qty,updated_at:new Date().toISOString()}).eq('id',old.id)}
+ else{result=await supabaseClient.from('outlet_stock').insert({outlet_id:window.fjOutletId,barcode,product_name:name,price,commission_pct:commission,stock:qty})}
+ if(result.error){fjOutletMsg('Stock save হয়নি: '+result.error.message,true);return;}
+ ['fjOutletStockBarcode','fjOutletStockName','fjOutletStockPrice'].forEach(id=>document.getElementById(id).value='');document.getElementById('fjOutletStockQty').value='0';await fjOutletLoadStock();fjOutletMsg('Outlet stock update হয়েছে।');
+}
+async function fjOutletAddBarcode(){
+ const code=document.getElementById('fjOutletBarcode').value.trim();if(!code){fjOutletMsg('Barcode দিন',true);return;}
+ if(!window.fjOutletId){fjOutletMsg('Outlet পাওয়া যায়নি',true);return;}
+ const {data:p,error}=await supabaseClient.from('outlet_stock').select('barcode,product_name,price,commission_pct,stock').eq('outlet_id',window.fjOutletId).eq('barcode',code).maybeSingle();
+ if(error||!p){fjOutletMsg('এই Barcode আপনার Outlet Stock-এ নেই। আগে Outlet Stock-এ যোগ করুন.',true);return;}
+ if(Number(p.stock)<=0){fjOutletMsg('এই Product-এর Outlet Stock শেষ',true);return;}
+ const existing=window.fjOutletItems.find(x=>x.barcode===p.barcode);if(existing){if(existing.qty+1>Number(p.stock)){fjOutletMsg('Stock যথেষ্ট নেই',true);return;}existing.qty++}else window.fjOutletItems.push({...p,qty:1});
+ document.getElementById('fjOutletBarcode').value='';fjOutletRenderBill();
+}
+function fjOutletRenderBill(){const body=document.getElementById('fjOutletBillItems');body.innerHTML='';let total=0;window.fjOutletItems.forEach((p,i)=>{const sum=Number(p.price)*p.qty;total+=sum;const tr=document.createElement('tr');[p.product_name,p.qty,'₹'+Number(p.price).toFixed(2),'₹'+sum.toFixed(2)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});const td=document.createElement('td'),b=document.createElement('button');b.textContent='Remove';b.type='button';b.style.background='#dc2626';b.onclick=()=>{window.fjOutletItems.splice(i,1);fjOutletRenderBill()};td.appendChild(b);tr.appendChild(td);body.appendChild(tr)});document.getElementById('fjOutletBillTotal').textContent=total.toFixed(2);}
+async function fjOutletResolveMember(value){
+ value=String(value||'').trim();if(!value)return {member:null,error:'সদস্যের Member Code বা UUID দিন'};
+ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+ let q=supabaseClient.from('profiles').select('id,full_name,member_code,role,approval_status');q=uuid?q.eq('id',value):q.eq('member_code',value);
+ const {data,error}=await q.maybeSingle();if(error)return {member:null,error:error.message};if(!data)return {member:null,error:'সদস্য পাওয়া যায়নি। Member Code/UUID পরীক্ষা করুন'};
+ if(String(data.role||'user').toLowerCase()==='admin')return {member:null,error:'Admin ID-কে Member হিসেবে bill করা যাবে না'};
+ if(String(data.approval_status||'approved').toLowerCase()!=='approved')return {member:null,error:'এই Member এখনো approved নন'};
+ return {member:data,error:null};
+}
+async function fjOutletSaveBill(){
+ if(!window.fjOutletId){fjOutletMsg('Outlet পাওয়া যায়নি',true);return;}if(!window.fjOutletItems.length){fjOutletMsg('Bill-এ Product যোগ করুন',true);return;}
+ const memberCode=document.getElementById('fjOutletMemberCode').value.trim();if(!memberCode){fjOutletMsg('সদস্যের Member Code বা UUID দিন',true);return;}
+ const payload=window.fjOutletItems.map(p=>({barcode:p.barcode,qty:p.qty}));
+ const {data,error}=await supabaseClient.rpc('fj_outlet_create_bill',{p_outlet_id:window.fjOutletId,p_member_code:memberCode,p_items:payload});
+ if(error){fjOutletMsg('Bill Save হয়নি: '+error.message,true);return;}
+ const bill=Array.isArray(data)?data[0]:data;
+ if(!bill||bill.success!==true){fjOutletMsg(bill?.message||'Bill Save হয়নি',true);return;}
+ window.fjOutletLastBill={id:bill.id,bill_number:bill.bill_number,created_at:bill.created_at,member_name:bill.member_name,member_code:bill.member_code,items:bill.items||[],subtotal:Number(bill.subtotal||0),grand_total:Number(bill.grand_total||0),commission_amount:Number(bill.commission_amount||0)};
+ window.fjOutletItems=[];fjOutletRenderBill();await fjOutletLoadStock();await fjOutletLoadReport();
+ fjOutletMsg('Bill Save হয়েছে: '+bill.bill_number+'। Member: '+bill.member_name+'। Product commission amount record হয়েছে; বিদ্যমান downline/rank/royalty ledger-এ যুক্ত করার আগে সেই commission engine-এর schema যাচাই প্রয়োজন।');
+}
+function fjOutletClearBill(){window.fjOutletItems=[];fjOutletRenderBill();fjOutletMsg('Current Bill clear হয়েছে।');}
+function fjOutletPrintBill(){const b=window.fjOutletLastBill;if(!b){fjOutletMsg('আগে Bill Save করুন, তারপর print করুন',true);return;}const w=window.open('','_blank','width=420,height=650');if(!w){fjOutletMsg('Print window blocked—browser popup allow করুন',true);return;}const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Outlet Bill</title><style>body{font:14px Arial;padding:12px}h2,p{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #444;padding:5px;text-align:left}@media print{@page{size:58mm auto;margin:3mm}body{width:52mm}}</style></head><body><h2>Phulo Jhano</h2><p>'+esc(window.fjOutletName)+'<br>Outlet Bill: '+esc(b.bill_number||b.id)+'<br>'+esc(new Date(b.created_at||Date.now()).toLocaleString('en-IN'))+'</p><p>Member: '+esc(b.member_name)+' ('+esc(b.member_code||'')+')</p><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>'+b.items.map(i=>'<tr><td>'+esc(i.product_name)+'</td><td>'+i.qty+'</td><td>'+Number(i.price).toFixed(2)+'</td><td>'+(Number(i.price)*i.qty).toFixed(2)+'</td></tr>').join('')+'</tbody></table><h3>Total: ₹'+Number(b.grand_total).toFixed(2)+'</h3><p>Thank you</p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();}
+async function fjOutletLoadReport(){
+ if(!window.fjOutletId)return;
+ const from=document.getElementById('fjOutletReportDate').value;
+ const to=document.getElementById('fjOutletReportToDate').value||from;
+ const memberInput=document.getElementById('fjOutletBillSearchMember').value.trim();
+ if(!from||!to){fjOutletMsg('শুরুর ও শেষ তারিখ দিন',true);return;}
+ if(to<from){fjOutletMsg('শেষ তারিখ শুরুর তারিখের আগে হতে পারে না',true);return;}
+ const start=new Date(from+'T00:00:00');const end=new Date(to+'T00:00:00');end.setDate(end.getDate()+1);
+ let q=supabaseClient.from('outlet_bills').select('id,bill_number,created_at,member_name,member_code,grand_total,commission_amount,items').eq('outlet_id',window.fjOutletId).gte('created_at',start.toISOString()).lt('created_at',end.toISOString()).order('created_at',{ascending:false});
+ if(memberInput)q=q.eq('member_code',memberInput);
+ const {data,error}=await q;
+ if(error){fjOutletMsg('Bill search হয়নি: '+error.message,true);return;}
+ const bills=data||[];window.fjOutletFilteredBills=bills;
+ const total=bills.reduce((sum,b)=>sum+Number(b.grand_total||0),0);
+ document.getElementById('fjOutletTodaySales').textContent='₹'+total.toFixed(2);
+ document.getElementById('fjOutletBillCount').textContent=bills.length;
+ const box=document.getElementById('fjOutletReport');
+ if(!bills.length){box.innerHTML='<p>এই Member ID ও তারিখের মধ্যে কোনো Bill পাওয়া যায়নি। Member Code ঠিক আছে কি না পরীক্ষা করুন।</p>';return;}
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ box.innerHTML='<p><b>মোট Bill: '+bills.length+' | মোট বিক্রি: ₹'+total.toFixed(2)+'</b></p><table><thead><tr><th>Date/Time</th><th>Bill No.</th><th>Member</th><th>Member Code</th><th>Amount</th><th>Print</th></tr></thead><tbody>'+bills.map((b,i)=>'<tr><td>'+esc(new Date(b.created_at).toLocaleString('en-IN'))+'</td><td>'+esc(b.bill_number||b.id)+'</td><td>'+esc(b.member_name||'-')+'</td><td>'+esc(b.member_code||'-')+'</td><td>₹'+Number(b.grand_total||0).toFixed(2)+'</td><td><button type="button" onclick="fjOutletPrintFilteredBill('+i+')">🖨️ Print</button></td></tr>').join('')+'</tbody></table><p><b>Report Total: ₹'+total.toFixed(2)+'</b></p>';
+ fjOutletMsg('Search সম্পন্ন: '+bills.length+'টি Bill পাওয়া গেছে।');
+}
+function fjOutletPrintFilteredBill(index){const b=(window.fjOutletFilteredBills||[])[index];if(!b){fjOutletMsg('Bill পাওয়া যায়নি',true);return;}fjOutletPrintRecord(b);}
+function fjOutletPrintFilteredBills(){const bills=window.fjOutletFilteredBills||[];if(!bills.length){fjOutletMsg('আগে Member ID/তারিখ দিয়ে Search Bills করুন',true);return;}const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const pages=bills.map(b=>'<section class="bill"><h2>Phulo Jhano</h2><p>'+esc(window.fjOutletName)+'<br>Bill No: '+esc(b.bill_number||b.id)+'<br>'+esc(new Date(b.created_at).toLocaleString('en-IN'))+'</p><p>Member: '+esc(b.member_name)+' ('+esc(b.member_code||'')+')</p><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>'+((Array.isArray(b.items)?b.items:[]).map(i=>'<tr><td>'+esc(i.product_name||i.name||i.barcode||'Product')+'</td><td>'+Number(i.qty||i.quantity||0)+'</td><td>₹'+Number(i.price||i.rate||0).toFixed(2)+'</td><td>₹'+(Number(i.price||i.rate||0)*Number(i.qty||i.quantity||0)).toFixed(2)+'</td></tr>').join(''))+'</tbody></table><h3>Total: ₹'+Number(b.grand_total||0).toFixed(2)+'</h3><p>Thank you</p></section>').join('');const w=window.open('','_blank','width=800,height=700');if(!w){fjOutletMsg('Print window blocked—browser popup allow করুন',true);return;}w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Outlet Bills Print</title><style>body{font:13px Arial;padding:10px}.bill{page-break-after:always;break-after:page;padding:8px;max-width:700px;margin:auto}h2,p{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #444;padding:5px;text-align:left}@media print{@page{margin:8mm}.bill:last-child{page-break-after:auto;break-after:auto}}</style></head><body>'+pages+'<script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();}
+function fjOutletPrintRecord(b){const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const items=Array.isArray(b.items)?b.items:[];const w=window.open('','_blank','width=420,height=650');if(!w){fjOutletMsg('Print window blocked—browser popup allow করুন',true);return;}w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Outlet Bill</title><style>body{font:14px Arial;padding:12px}h2,p{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #444;padding:5px;text-align:left}@media print{@page{size:58mm auto;margin:3mm}body{width:52mm}}</style></head><body><h2>Phulo Jhano</h2><p>'+esc(window.fjOutletName)+'<br>Outlet Bill: '+esc(b.bill_number||b.id)+'<br>'+esc(new Date(b.created_at||Date.now()).toLocaleString('en-IN'))+'</p><p>Member: '+esc(b.member_name)+' ('+esc(b.member_code||'')+')</p><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>'+items.map(i=>'<tr><td>'+esc(i.product_name||i.name||i.barcode||'Product')+'</td><td>'+Number(i.qty||i.quantity||0)+'</td><td>'+Number(i.price||i.rate||0).toFixed(2)+'</td><td>'+(Number(i.price||i.rate||0)*Number(i.qty||i.quantity||0)).toFixed(2)+'</td></tr>').join('')+'</tbody></table><h3>Total: ₹'+Number(b.grand_total||0).toFixed(2)+'</h3><p>Thank you</p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();}
+
+</script>
+
+</body>
+<!-- IMPORTANT BACKEND NOTE (2026-10-26): This HTML can improve client-side role visibility and count fallbacks, but cannot change Supabase database functions/RLS. To fully activate sponsor mapping, secure admin approval, accurate recursive downline totals, and self 5% / levels 1-5 10% / levels 6-10 3% commission generation, the matching Supabase RPCs and create_bill_commissions() trigger function must also be updated in Supabase SQL Editor. Never rely on browser-only role checks for security. -->
+</html>
