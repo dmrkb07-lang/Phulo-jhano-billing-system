@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+<!-- UPDATED 2026-10-26: consolidated dashboard/access/count and bill-visibility fixes; preserve existing features. Backend RPC/commission SQL still requires Supabase-side installation and live testing. -->
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phulo Jhano Billing System</title>
+<title>Phulo Jhano Billing System — Fresh Consolidated 2026-10-26</title>
 
 <style>
 *{box-sizing:border-box}
@@ -553,6 +554,9 @@ if (
 
 /* ================= LOGIN SUCCESS ================= */
 
+window.fjCurrentUserRole = String(profile.role || "user").toLowerCase();
+window.fjIsAdmin = window.fjCurrentUserRole === "admin";
+
 message.textContent = "✅ Login সফল হয়েছে";
 
 document.getElementById("fjLoginScreen").style.display = "none";
@@ -563,7 +567,21 @@ if (bulkMessage) {
     bulkMessage.style.display =
         profile.role === "admin" ? "block" : "none";
 }
+const payoutCenter = document.getElementById("fjPayoutCenter");
+if (payoutCenter) {
+    payoutCenter.style.display =
+        String(profile.role || "").toLowerCase() === "admin" ? "block" : "none";
+}
 fjLoadJoiningDashboard();
+updateDashboard();
+await fjApplyRoleAccess(profile.role);
+if (window.fjIsAdmin && typeof fjLoadPayoutRequests === "function") fjLoadPayoutRequests();
+if (window.fjJoiningRefreshTimer) clearInterval(window.fjJoiningRefreshTimer);
+window.fjJoiningRefreshTimer = setInterval(function () {
+    if (document.visibilityState === "visible" && document.getElementById("fjDashboard")?.style.display !== "none") {
+        fjLoadJoiningDashboard();
+    }
+}, 30000);
     } catch (err) {
 
         message.textContent = "System Error: " + err.message;
@@ -1016,12 +1034,20 @@ fjLoadJoiningDashboard();
 
         if(!dashboard) return;
 
-        /* Prevent duplicate setup */
-
+        /* Rebuild slides after role access changes. Restore each original dashboard
+           block first, then create slides from the blocks currently visible to this role. */
         if(dashboard.dataset.slideReady === "yes"){
-            return;
+            const oldArea = dashboard.querySelector(":scope > .fj-slide-area");
+            if(oldArea){
+                Array.from(oldArea.querySelectorAll(":scope > .fj-slide-track > .fj-slide")).forEach(function(slide){
+                    const original = Array.from(slide.children).find(function(child){ return !child.classList.contains("fj-slide-title"); });
+                    if(original) dashboard.insertBefore(original, oldArea);
+                });
+                oldArea.remove();
+            }
+            dashboard.querySelectorAll(":scope > .fj-slide-navigation, :scope > .fj-swipe-message, :scope > .fj-slide-dots").forEach(function(el){ el.remove(); });
+            delete dashboard.dataset.slideReady;
         }
-
         dashboard.dataset.slideReady = "yes";
 
 
@@ -1042,15 +1068,20 @@ fjLoadJoiningDashboard();
 
         const slideElements =
             elements.filter(function(el){
+                if (
+                    el === header ||
+                    el.classList.contains("fj-slide-area") ||
+                    el.classList.contains("fj-slide-navigation") ||
+                    el.classList.contains("fj-swipe-message") ||
+                    el.classList.contains("fj-slide-dots")
+                ) return false;
 
-                return (
-                    el !== header &&
-                    !el.classList.contains("fj-slide-area") &&
-                    !el.classList.contains("fj-slide-navigation") &&
-                    !el.classList.contains("fj-swipe-message") &&
-                    !el.classList.contains("fj-slide-dots")
-                );
-
+                /* Do not create blank slides for role-specific panels that
+                   are hidden for the currently logged-in account. */
+                const style = window.getComputedStyle(el);
+                if (style.display === "none" || style.visibility === "hidden") return false;
+                if (el.hidden || el.getAttribute("aria-hidden") === "true") return false;
+                return true;
             });
 
 
@@ -1098,29 +1129,45 @@ fjLoadJoiningDashboard();
 
 
             let titleText = "Dashboard";
+            const elementId = element.id || "";
+            const elementText = (element.innerText || element.textContent || "").toLowerCase();
 
-            if(index === 0){
-                titleText = "📊 Overview";
-            }
-            else if(index === 1){
-                titleText = "👥 Member Management";
-            }
-            else if(index === 2){
+            /* Assign slide headings from the actual content, never from the
+               slide index. Hidden Admin/Outlet panels previously shifted all
+               headings and made Overview appear under Registration. */
+            if (elementId === "fjDashboardToolsCard") {
+                titleText = "🔄 Dashboard Tools";
+            } else if (elementId === "fjAdminOutletManager") {
+                titleText = "🛠️ Outlet Management";
+            } else if (elementId === "fjOutletDashboard") {
+                titleText = "🏪 Outlet Dashboard";
+            } else if (elementId === "fjRegistrationForm") {
                 titleText = "📝 Registration";
-            }
-            else if(index === 3){
+            } else if (elementId === "fjJoiningDashboard") {
                 titleText = "🌐 Joining Dashboard";
-            }
-            else if(index === 4){
+            } else if (elementId === "fjMemberPayoutRequest" || elementId === "fjPayoutCenter") {
                 titleText = "💸 Payout";
-            }
-            else if(index === 5){
+            } else if (elementId === "fjAdminOutletManager") {
+                titleText = "🛠️ Outlet Management";
+            } else if (element.querySelector && element.querySelector("#fjTotalSales, #fjTotalBills, #fjProductsSold, #fjTodaySales")) {
+                titleText = "📊 Overview";
+            } else if (element.querySelector && element.querySelector("#fjRegFullName, #fjRegSponsor")) {
+                titleText = "📝 Registration";
+            } else if (element.querySelector && element.querySelector("#fjJoiningMemberTable, #fjTotalDownline")) {
+                titleText = "🌐 Joining Dashboard";
+            } else if (element.querySelector && element.querySelector("#fjPayoutPendingCount, #fjPayoutRequestList")) {
+                titleText = "💸 Payout Center";
+            } else if (elementText.includes("member management") || elementText.includes("new registration") || elementText.includes("joining dashboard")) {
+                titleText = "👥 Member Management";
+            } else if (elementText.includes("new billing")) {
                 titleText = "🧾 Billing";
-            }
-            else{
+            } else if (elementText.includes("refresh dashboard")) {
+                titleText = "🔄 Dashboard Tools";
+            } else if (element.classList.contains("dashboard-date")) {
+                titleText = "📅 Today";
+            } else {
                 titleText = "🌿 Phulo Jhano";
             }
-
 
             title.innerHTML =
                 "<strong>" +
@@ -1580,6 +1627,9 @@ track.scrollTo({
     }
 
 
+    /* Expose safe rebuild hook for post-login role-specific dashboard content. */
+    window.fjSetupSlideDashboard = fjSetupSlideDashboard;
+
     /*
      * DOM ready
      */
@@ -1604,6 +1654,8 @@ track.scrollTo({
 })();
 
 </script> 
+<meta name="application-version" content="Phulo Jhano Ready 2026-10-26">
+<!-- Ready file prepared from the user-provided HTML; GitHub Pages must be updated separately. -->
 </head>
 
 <body>
@@ -1637,7 +1689,17 @@ style="width:100%;padding:14px;background:#166534;color:white;border:0;border-ra
 </button>
 
 <p id="loginMessage" style="text-align:center;"></p>
+<button type="button" onclick="fjShowOutletLogin()" style="background:#2563eb">🏪 Outlet Login</button>
+</div>
 
+<div id="fjOutletLoginScreen" style="display:none;max-width:420px;margin:20px auto;padding:25px;background:white;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.15);">
+<h2 style="text-align:center;color:#166534">🏪 Outlet Login</h2>
+<p style="text-align:center">Outlet owner-এর অনুমোদিত Email ও Password দিয়ে লগইন করুন</p>
+<label>Outlet Email</label><input id="fjOutletLoginEmail" type="email" autocomplete="username" placeholder="Outlet Email">
+<label>Password</label><input id="fjOutletLoginPassword" type="password" autocomplete="current-password" placeholder="Password">
+<button type="button" onclick="fjOutletLogin()" style="background:#166534">🔐 Outlet Login</button>
+<button type="button" onclick="fjHideOutletLogin()" style="background:#6b7280">← মূল Login-এ ফিরুন</button>
+<p id="fjOutletLoginMessage" style="text-align:center"></p>
 </div>
 <!-- =========================
      DASHBOARD
@@ -1648,6 +1710,61 @@ style="width:100%;padding:14px;background:#166534;color:white;border:0;border-ra
     <div class="dashboard-header">
         <h1>🏠 Phulo Jhano</h1>
         <p>Billing Dashboard</p>
+    </div>
+
+    <div id="fjAdminOutletManager" class="card" style="display:none;border:2px solid #2563eb;margin-bottom:15px">
+      <h2>🛠️ Admin — Outlet Management</h2>
+      <p class="small">Outlet owner-এর Supabase Auth User UUID দিন। ওই account-এর profiles.role অবশ্যই outlet এবং approval_status approved হতে হবে।</p>
+      <label>Outlet / Stall Name</label><input id="fjAdminOutletName" placeholder="যেমন: Banshihari Main Outlet">
+      <label>Outlet Owner User UUID</label><input id="fjAdminOutletOwner" placeholder="Supabase Auth user UUID">
+      <label>Outlet Owner Name</label><input id="fjAdminOutletOwnerName" placeholder="Outlet Owner-এর আসল নাম">
+      <label>Outlet Owner Email</label><input id="fjAdminOutletOwnerEmail" type="email" autocomplete="email" placeholder="Authentication User-এর Email">
+      <button type="button" onclick="fjAdminCreateOutlet()" style="background:#2563eb">➕ Create Outlet</button>
+      <p id="fjAdminOutletMessage"></p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Outlet</th><th>Owner UUID</th><th>Status</th></tr></thead><tbody id="fjAdminOutletRows"></tbody></table></div>
+      <button type="button" onclick="fjAdminLoadOutlets()">🔄 Refresh Outlets</button>
+    </div>
+
+    <div id="fjOutletDashboard" class="card" style="display:none;border:2px solid #16a34a;margin-bottom:15px">
+      <h2>🏪 Outlet Dashboard</h2>
+      <p id="fjOutletWelcome" class="small">আপনার Outlet-এর বিক্রি, স্টক ও দৈনিক রিপোর্ট</p>
+      <div class="dashboard-grid">
+        <div class="dashboard-card"><b>আজকের বিক্রি</b><h2 id="fjOutletTodaySales">₹0.00</h2></div>
+        <div class="dashboard-card"><b>মোট Bill</b><h2 id="fjOutletBillCount">0</h2></div>
+        <div class="dashboard-card"><b>Outlet Stock</b><h2 id="fjOutletStockCount">0</h2></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+        <h3>🧾 নতুন Outlet Bill</h3>
+        <label>সদস্যের Member Code / UUID</label>
+        <input id="fjOutletMemberCode" placeholder="যাঁর নামে বিক্রি/কমিশন হবে তাঁর Member Code">
+        <p class="small">সদস্যের password চাইবেন না। Outlet account দিয়ে লগইন করে Member Code/UUID নির্বাচন করুন।</p>
+        <label>Product Barcode</label><input id="fjOutletBarcode" placeholder="Barcode লিখুন বা scan করুন">
+        <button type="button" onclick="fjOutletAddBarcode()">➕ Outlet Bill-এ Product যোগ করুন</button>
+        <div style="overflow-x:auto"><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th><th>Remove</th></tr></thead><tbody id="fjOutletBillItems"></tbody></table></div>
+        <div style="text-align:right;font-size:20px;font-weight:bold;margin:12px 0">Bill Total: ₹<span id="fjOutletBillTotal">0.00</span></div>
+        <button type="button" onclick="fjOutletSaveBill()" style="background:#166534">💾 Save Outlet Bill</button>
+        <button type="button" onclick="fjOutletPrintBill()" style="background:#ea580c">🖨️ Bill Hard Copy / Print</button>
+        <button type="button" onclick="fjOutletClearBill()" style="background:#6b7280">Clear Current Bill</button>
+        <p id="fjOutletMessage" role="status"></p>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+        <h3>📦 Outlet Stock</h3>
+        <label>Barcode</label><input id="fjOutletStockBarcode" placeholder="Barcode">
+        <label>Product Name</label><input id="fjOutletStockName" placeholder="Product name">
+        <div class="grid"><div><label>Rate ₹</label><input id="fjOutletStockPrice" type="number" min="0" step="0.01"></div><div><label>Opening / Add Stock</label><input id="fjOutletStockQty" type="number" min="0" step="1" value="0"></div></div>
+        <label>Commission % (configured rate)</label><input id="fjOutletStockCommission" type="number" min="0" max="100" step="0.01" value="0">
+        <button type="button" onclick="fjOutletSaveStock()">📦 Save / Add Outlet Stock</button>
+        <div style="overflow-x:auto"><table><thead><tr><th>Barcode</th><th>Product</th><th>Rate</th><th>Stock</th></tr></thead><tbody id="fjOutletStockRows"></tbody></table></div>
+      </div>
+      <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+        <h3>📅 Bill Search & Print (Member ID + Date)</h3>
+        <p class="small">Member Code/UUID এবং তারিখ বা তারিখের রেঞ্জ দিলে ওই Outlet-এর মিলে যাওয়া Bill-গুলি দেখা যাবে। এরপর একসঙ্গে Bill Print করা যাবে।</p>
+        <label>Member Code / Member UUID (ঐচ্ছিক)</label><input id="fjOutletBillSearchMember" placeholder="যেমন: FJ001 অথবা Member UUID">
+        <div class="grid"><div><label>শুরুর তারিখ (From)</label><input id="fjOutletReportDate" type="date"></div><div><label>শেষ তারিখ (To)</label><input id="fjOutletReportToDate" type="date"></div></div>
+        <button type="button" onclick="fjOutletLoadReport()">🔎 Search Bills</button>
+        <button type="button" onclick="fjOutletPrintFilteredBills()" style="background:#ea580c">🖨️ নির্বাচিত শর্তের সব Bill Print</button>
+        <div id="fjOutletReport" style="overflow-x:auto"></div>
+      </div>
     </div>
 
     <div class="dashboard-grid">
@@ -2048,6 +2165,8 @@ style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18
 </div>
 
 <!-- ==================== END MEMBER PAYOUT REQUEST ==================== -->
+    <!-- Combined Dashboard Tools: Today + New Billing + Refresh in one slide -->
+    <div id="fjDashboardToolsCard" style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(0,0,0,.07);">
     <div class="dashboard-date">
         📆 Today: <span id="fjTodayDate"></span>
     </div>
@@ -2081,6 +2200,7 @@ style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18
         font-weight:bold;">
         🔄 Refresh Dashboard
     </button>
+    </div>
 <!-- ==================== PAYOUT CENTER : PLUS ONLY ==================== -->
 
 <div id="fjPayoutCenter" style="
@@ -2278,7 +2398,7 @@ style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18
      BARCODE SCANNER
 ========================= -->
 
-<div class="card no-print">
+<div id="fjBarcodeCard" class="card no-print">
 
     <h2>📷 Barcode Auto Scan</h2>
 
@@ -2335,7 +2455,7 @@ style="margin-top:15px;background:#fff;border:1px solid #e5e7eb;border-radius:18
      SCANNED PRODUCT
 ========================= -->
 
-<div class="card no-print">
+<div id="fjScannedProductCard" class="card no-print">
 
     <h2>🛒 Scanned Product</h2>
 
@@ -4579,152 +4699,43 @@ function stopMobileScanner(){
 ===================================================== */
 
 async function getSavedBills(){
+    try {
+        const { data: authData, error: userError } = await supabaseClient.auth.getUser();
+        const user = authData?.user;
+        if (userError || !user) return [];
 
-    try{
+        const { data: profile, error: profileError } = await supabaseClient
+            .from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if (profileError) console.warn("Bill visibility role lookup:", profileError.message);
+        const role = String(profile?.role || window.fjCurrentUserRole || "user").toLowerCase();
+        const isAdmin = role === "admin";
 
-        const {
-            data: { user },
-            error: userError
-        } =
-            await supabaseClient.auth.getUser();
+        let query = supabaseClient.from("bills").select("*").order("created_at", { ascending: false });
+        // Non-admin accounts only request their own bills; Supabase RLS must enforce this server-side too.
+        if (!isAdmin) query = query.eq("user_id", user.id);
 
-        if(userError || !user){
+        const { data, error } = await query;
+        if (error) {
+            console.error("Load Bills Error:", error);
             return [];
         }
-
-
-        /* =================================
-           ADMIN EMAIL
-           এখানে আপনার ADMIN-এর Login Email
-           বসাবেন
-        ================================= */
-
-        const ADMIN_EMAIL =
-    "admin123@gmail.com";
-
-
-        const isAdmin =
-            (user.email || "")
-                .toLowerCase()
-                .trim() ===
-            ADMIN_EMAIL
-                .toLowerCase()
-                .trim();
-
-
-        /* =================================
-           SUPABASE থেকে BILL LOAD
-        ================================= */
-
-        let query =
-            supabaseClient
-                .from("bills")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-
-        /* =================================
-           ADMIN → সব Bill
-           A/B/USER → নিজের Bill
-        ================================= */
-
-        
-
-
-        const {
-            data,
-            error
-        } = await query;
-
-
-        if(error){
-
-            console.error(
-                "Load Bills Error:",
-                error
-            );
-
-            return [];
-
-        }
-
-
-        /* =================================
-           Supabase Data → পুরনো Bill Format
-        ================================= */
-
-        return (data || []).map(
-            function(row){
-
-                return {
-
-                    billNumber:
-                        row.bill_number,
-
-                    date:
-                        row.created_at,
-
-                    displayDate:
-                        new Date(
-                            row.created_at
-                        ).toLocaleString(
-                            "en-IN"
-                        ),
-
-                    customerName:
-                        row.customer_name || "",
-
-                    customerMobile:
-                        row.customer_mobile || "",
-
-                    items:
-                        Array.isArray(row.items)
-                            ? row.items
-                            : [],
-
-                    subtotal:
-                        Number(
-                            row.subtotal
-                        ) || 0,
-
-                    gst:
-                        Number(
-                            row.gst
-                        ) || 0,
-
-                    commission:
-                        Number(
-                            row.commission
-                        ) || 0,
-
-                    grandTotal:
-                        Number(
-                            row.grand_total
-                        ) || 0
-
-                };
-
-            }
-        );
-
-
-    }catch(error){
-
-        console.error(
-            "getSavedBills Error:",
-            error
-        );
-
+        return (data || []).map(row => ({
+            billNumber: row.bill_number,
+            date: row.created_at,
+            displayDate: row.created_at ? new Date(row.created_at).toLocaleString("en-IN") : "",
+            customerName: row.customer_name || "",
+            customerMobile: row.customer_mobile || "",
+            items: Array.isArray(row.items) ? row.items : [],
+            subtotal: Number(row.subtotal) || 0,
+            gst: Number(row.gst) || 0,
+            commission: Number(row.commission) || 0,
+            grandTotal: Number(row.grand_total) || 0
+        }));
+    } catch (error) {
+        console.error("Load Bills System Error:", error);
         return [];
-
     }
-
-            }
+}
 
 
 /* =====================================================
@@ -5151,6 +5162,11 @@ const { data, error } =
 
 }
 async function fjLoadPayoutRequests() {
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") {
+        const payoutCenter = document.getElementById("fjPayoutCenter");
+        if (payoutCenter) payoutCenter.style.display = "none";
+        return;
+    }
     try {
         const { data: requests, error } = await supabaseClient
             .from("payout_requests")
@@ -5263,6 +5279,7 @@ if (pendingAmountEl) pendingAmountEl.textContent = "₹" + pendingAmount.toFixed
     }
         }
 async function fjApprovePayoutRequest(requestId) {
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") { alert("শুধু Admin payout approve করতে পারবেন।"); return; }
     if (!confirm("এই payout request-টি Approve & Pay করবেন?")) {
         return;
     }
@@ -5295,6 +5312,7 @@ async function fjApprovePayoutRequest(requestId) {
 
 
 async function fjRejectPayoutRequest(requestId) {
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") { alert("শুধু Admin payout reject করতে পারবেন।"); return; }
     if (!confirm("এই payout request-টি Reject করবেন?")) {
         return;
     }
@@ -5324,101 +5342,88 @@ async function fjRejectPayoutRequest(requestId) {
     }
 }
 async function fjLoadJoiningDashboard() {
-
-    const {
-        data: { user },
-        error: userError
-    } = await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
-        console.log("Joining Dashboard: user পাওয়া যায়নি");
-        return;
-    }
+    const { data: authData, error: userError } = await supabaseClient.auth.getUser();
+    const user = authData?.user;
+    if (userError || !user) return;
 
     try {
+        // Resolve role from database each load; UI visibility is not the security boundary.
+        const { data: profile, error: profileError } = await supabaseClient
+            .from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if (profileError) console.error("Joining role lookup:", profileError);
+        window.fjCurrentUserRole = String(profile?.role || window.fjCurrentUserRole || "user").toLowerCase();
+        window.fjIsAdmin = window.fjCurrentUserRole === "admin";
 
-        const { data, error } = await supabaseClient
-            .rpc("fj_get_joining_dashboard", {
-                p_user_id: user.id
-            });
-
+        const { data, error } = await supabaseClient.rpc("fj_get_joining_dashboard_v2", { p_user_id: user.id });
         if (error) {
-            console.error("Joining Dashboard Error:", error);
-            return;
+            console.error("Joining Dashboard v2 Error:", error);
+            // Compatibility fallback for installations that have only the older RPC.
+            const fallback = await supabaseClient.rpc("fj_get_joining_dashboard", { p_user_id: user.id });
+            if (fallback.error) {
+                console.error("Joining Dashboard fallback Error:", fallback.error);
+                return;
+            }
+            const fd = fallback.data;
+            var result = Array.isArray(fd) ? fd[0] : fd;
+        } else {
+            var result = Array.isArray(data) ? data[0] : data;
         }
+        if (!result) return;
 
-        if (!data || data.length === 0) {
-            console.log("Joining Dashboard: কোনো data নেই");
-            return;
-        }
-
-        const result = data[0];
-
-        document.getElementById("fjTotalDownline").textContent =
-            result.total_downline ?? 0;
-
-        document.getElementById("fjDirectDownline").textContent =
-            result.direct_downline ?? 0;
-
-        document.getElementById("fjActiveMembers").textContent =
-            result.active_members ?? 0;
-
-        document.getElementById("fjInactiveMembers").textContent =
-            result.inactive_members ?? 0;
+        const setCount = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value ?? 0;
+        };
+        const members = Array.isArray(result.members) ? result.members :
+            (typeof result.members === "string" ? (() => { try { const parsed = JSON.parse(result.members); return Array.isArray(parsed) ? parsed : []; } catch (_) { return []; } })() : []);
+        const statusOf = m => String(m.status || m.approval_status || (m.is_active === true ? "active" : "inactive")).toLowerCase();
+        // Directs must be explicitly marked direct or be Level 1; do not assume missing level means Level 1.
+        const directMembers = members.filter(m => m.is_direct === true || Number(m.level) === 1);
+        const activeMembers = members.filter(m => ["active", "approved", "approved_active"].includes(statusOf(m)) || m.is_active === true);
+        const inactiveMembers = members.filter(m => !(["active", "approved", "approved_active"].includes(statusOf(m)) || m.is_active === true));
+        setCount("fjTotalDownline", result.total_downline ?? result.totalDownline ?? members.length);
+        setCount("fjDirectDownline", result.direct_downline ?? result.directDownline ?? directMembers.length);
+        setCount("fjActiveMembers", result.active_members ?? result.activeMembers ?? activeMembers.length);
+        setCount("fjInactiveMembers", result.inactive_members ?? result.inactiveMembers ?? inactiveMembers.length);
 
         const table = document.getElementById("fjJoiningMemberTable");
-
         if (!table) return;
-
         table.innerHTML = "";
 
-        const members = result.members || [];
-
-    members.forEach(member => {
-
-    const row = document.createElement("tr");
-
-    let actionHtml = "-";
-
-    if (member.status === "pending") {
-        actionHtml = `
-            <button
-                type="button"
-                onclick="fjApproveMember('${member.id}')"
-                style="
-                    background:#16a34a;
-                    color:white;
-                    border:0;
-                    border-radius:7px;
-                    padding:7px 10px;
-                    font-weight:bold;
-                    cursor:pointer;
-                "
-            >
-                ✅ Approve
-            </button>
-        `;
-    }
-
-    row.innerHTML = `
-        <td>${member.full_name || "-"}</td>
-        <td>${member.mobile || "-"}</td>
-        <td>Level ${member.level || "-"}</td>
-        <td>${member.status || "-"}</td>
-        <td>${member.sponsor_name || "-"}</td>
-        <td>${actionHtml}</td>
-    `;
-
-    table.appendChild(row);
-});
-
+        members.forEach(member => {
+            const row = document.createElement("tr");
+            const status = String(member.status || member.approval_status || "inactive").toLowerCase();
+            let actionHtml = "-";
+            if (window.fjIsAdmin && status.trim() === "pending") {
+                actionHtml = `<button class="fj-admin-only" data-role="admin" type="button" onclick="fjApproveMember('${String(member.id || "").replace(/[^a-fA-F0-9-]/g, "")}')" style="background:#16a34a;color:white;border:0;border-radius:7px;padding:7px 10px;font-weight:bold;cursor:pointer">✅ Approve</button>`;
+            }
+            const cells = [
+                member.full_name || "-",
+                member.mobile || "-",
+                "Level " + (member.level || "-"),
+                status,
+                member.sponsor_name || "-",
+                actionHtml
+            ];
+            cells.forEach((value, i) => {
+                const td = document.createElement("td");
+                if (i === 5) td.innerHTML = value;
+                else td.textContent = String(value);
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+        });
     } catch (err) {
-
         console.error("Joining Dashboard System Error:", err);
-
     }
 }
+
 async function fjApproveMember(memberId) {
+
+    if (String(window.fjCurrentUserRole || "").toLowerCase() !== "admin") {
+        alert("❌ শুধু Admin Member Approve করতে পারবেন।");
+        return;
+    }
 
     if (!confirm("এই Member-কে Approve করতে চান?")) {
         return;
@@ -5527,10 +5532,10 @@ async function fjRegisterMember() {
     // Basic validation
     // -----------------------------
 
-    if (!fullName || !mobile || !email || !password) {
+    if (!fullName || !mobile || !email || !password || !sponsorId) {
 
         message.textContent =
-            "সব প্রয়োজনীয় তথ্য পূরণ করুন";
+            "নাম, মোবাইল, Email, Password এবং Sponsor ID—সব তথ্য পূরণ করুন";
 
         message.style.color = "red";
 
@@ -5609,9 +5614,10 @@ async function fjRegisterMember() {
         // -----------------------------
 
         message.textContent =
-            "✅ Registration সফল হয়েছে। Admin approval-এর জন্য অপেক্ষা করুন।";
+            "✅ Registration সফল হয়েছে। Admin approval-এর জন্য অপেক্ষা করুন। Sponsor mapping database trigger-এর মাধ্যমে হবে।";
 
         message.style.color = "green";
+        setTimeout(function () { fjLoadJoiningDashboard(); }, 1200);
 
 
         // Clear form
@@ -6498,5 +6504,203 @@ function fjPrintBill() {
         window.print();
     }, 200);
 }
-</script></body>
-</html>
+</script>
+<script>
+/* ================= OUTLET MODULE (isolated tables; existing billing untouched) ================= */
+window.fjOutletItems = [];
+window.fjOutletId = null;
+window.fjOutletName = '';
+function fjShowOutletLogin(){document.getElementById('fjLoginScreen').style.display='none';document.getElementById('fjOutletLoginScreen').style.display='block';}
+function fjHideOutletLogin(){document.getElementById('fjOutletLoginScreen').style.display='none';document.getElementById('fjLoginScreen').style.display='block';}
+async function fjOutletLogin(){
+ const email=document.getElementById('fjOutletLoginEmail').value.trim(); const password=document.getElementById('fjOutletLoginPassword').value; const msg=document.getElementById('fjOutletLoginMessage');
+ if(!email||!password){msg.textContent='Email ও Password দিন';return;}
+ msg.textContent='লগইন হচ্ছে...';
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error||!data?.user){msg.textContent='Login ব্যর্থ: '+(error?.message||'User পাওয়া যায়নি');return;}
+ const {data:profile,error:pe}=await supabaseClient.from('profiles').select('role,approval_status').eq('id',data.user.id).maybeSingle();
+ if(pe||!profile||String(profile.role||'').toLowerCase()!=='outlet'||String(profile.approval_status||'').toLowerCase()!=='approved'){
+   await supabaseClient.auth.signOut();msg.textContent='এই Account অনুমোদিত Outlet account নয়। Admin-কে Outlet Owner হিসেবে অনুমোদন দিতে বলুন।';return;
+ }
+ document.getElementById('loginEmail').value=email; document.getElementById('loginPassword').value=password;
+ // Session is already established; route via shared role setup without requiring another sign-in.
+ document.getElementById('fjOutletLoginScreen').style.display='none';
+ document.getElementById('fjLoginScreen').style.display='none'; document.getElementById('fjDashboard').style.display='block';
+ window.fjCurrentUserRole='outlet'; window.fjIsAdmin=false;
+ await fjApplyRoleAccess('outlet');
+}
+async function fjApplyRoleAccess(role){
+ role=String(role||'user').toLowerCase();
+ window.fjCurrentUserRole=role; window.fjIsAdmin=role==='admin';
+ const admin=role==='admin', outlet=role==='outlet', member=!admin&&!outlet;
+ const show=(el,yes,display='')=>{if(el)el.style.display=yes?display:'none';};
+ document.body.classList.toggle('fj-admin-mode',admin);
+ document.body.classList.toggle('fj-member-mode',member);
+ document.body.classList.toggle('fj-outlet-mode',outlet);
+ document.body.classList.add('fj-authenticated');
+ const dash=document.getElementById('fjDashboard'); if(dash)dash.style.display='block';
+ // Explicit role boundaries: all controls with admin-only marker are hidden from members/outlets.
+ document.querySelectorAll('.fj-admin-only,[data-role="admin"]').forEach(el=>show(el,admin));
+ // Billing/POS and product master are admin-only until the member/outlet commission flow is verified.
+ ['fjBarcodeCard','fjScannedProductCard','billSection','fjPayoutCenter','bulkMessage','fjAdminOutletManager'].forEach(id=>show(document.getElementById(id),admin));
+ document.querySelectorAll('.product-master').forEach(el=>show(el,admin));
+ // Registration is available to Admin and approved regular members so they can
+ // register their direct recruits. Approval/rejection controls remain Admin-only.
+ show(document.getElementById('fjRegistrationForm'),false); // opened only when the user taps New Registration
+ document.querySelectorAll('[onclick*="fjOpenRegistration"]').forEach(el=>show(el,admin||member));
+ document.querySelectorAll('[onclick*="fjApproveMember"],[onclick*="fjRejectMember"],[onclick*="fjApprovePayoutRequest"],[onclick*="fjRejectPayoutRequest"]').forEach(el=>show(el,admin));
+ // Joining dashboard belongs to admin/member; outlet has its own dashboard.
+ show(document.getElementById('fjJoiningDashboard'),!outlet);
+ show(document.getElementById('fjMemberPayoutRequest'),member);
+ show(document.getElementById('fjOutletDashboard'),outlet);
+ // Hide any slide/card that is explicitly admin-only even if the slide engine wrapped it.
+ if(outlet){
+   const d=document.getElementById('fjDashboard');
+   if(d) Array.from(d.querySelectorAll(':scope > *')).forEach(el=>{
+     if(el.classList.contains('dashboard-header')||el.id==='fjOutletDashboard'||el.id==='fjMemberPayoutRequest'||el.classList.contains('fj-slide-area')||el.classList.contains('fj-slide-navigation')||el.classList.contains('fj-slide-dots')||el.classList.contains('fj-swipe-message')) return;
+     el.style.display='none';
+   });
+   if(typeof fjOutletLoad==='function') await fjOutletLoad();
+ } else {
+   if(typeof fjSetupSlideDashboard==='function') { try{ fjSetupSlideDashboard(); }catch(e){console.warn('Slide dashboard setup:',e); } }
+   if(admin && typeof fjAdminLoadOutlets==='function') await fjAdminLoadOutlets();
+   if(member && typeof fjLoadJoiningDashboard==='function') await fjLoadJoiningDashboard();
+ }
+ // Fix blank dashboard slides: role-restricted content must hide its entire slide,
+ // not leave a title-only empty card visible to the user.
+ requestAnimationFrame(()=>{
+   document.querySelectorAll('#fjDashboard .fj-slide').forEach(slide=>{
+     const content = slide.children[1];
+     if(!content) return;
+     const hidden = content.style.display === 'none' || getComputedStyle(content).display === 'none';
+     slide.style.display = hidden ? 'none' : '';
+   });
+ });
+}
+async function fjAdminCreateOutlet(){
+  if(String(window.fjCurrentUserRole||'').toLowerCase()!=='admin'){alert('শুধু Admin Outlet তৈরি করতে পারবেন');return;}
+  const name=document.getElementById('fjAdminOutletName').value.trim();
+  const owner=document.getElementById('fjAdminOutletOwner').value.trim();
+  const ownerName=document.getElementById('fjAdminOutletOwnerName').value.trim();
+  const email=document.getElementById('fjAdminOutletOwnerEmail').value.trim().toLowerCase();
+  const msg=document.getElementById('fjAdminOutletMessage');
+  if(!name||!owner||!ownerName||!email){msg.textContent='Outlet Name, Owner UUID, Owner Name ও Email দিন';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.textContent='সঠিক Owner Email দিন';return;}
+  const {data:profile,error:pe}=await supabaseClient.from('profiles').select('id,role,approval_status,full_name').eq('id',owner).maybeSingle();
+  if(pe||!profile){msg.textContent='এই UUID-এর Profile পাওয়া যায়নি: '+(pe?.message||'Not found');return;}
+  if(String(profile.role||'').toLowerCase()!=='outlet'||String(profile.approval_status||'').toLowerCase()!=='approved'){msg.textContent='প্রথমে profiles-এ এই user-এর role=outlet এবং approval_status=approved করতে হবে।';return;}
+  const {data:existing,error:existingError}=await supabaseClient.from('outlets').select('id,outlet_name').eq('owner_user_id',owner).eq('active',true).limit(1);
+  if(existingError){msg.textContent='আগের Outlet যাচাই করা যায়নি: '+existingError.message;return;}
+  if(existing&&existing.length){msg.textContent='এই Owner-এর Active Outlet আগে থেকেই আছে: '+existing[0].outlet_name+'। আবার তৈরি করা হয়নি।';return;}
+  const payload={outlet_name:name,owner_name:ownerName,owner_user_id:owner,email:email,active:true};
+  const {error}=await supabaseClient.from('outlets').insert(payload);
+  if(error){msg.textContent='Outlet তৈরি হয়নি: '+error.message;return;}
+  document.getElementById('fjAdminOutletName').value='';
+  document.getElementById('fjAdminOutletOwner').value='';
+  document.getElementById('fjAdminOutletOwnerName').value='';
+  document.getElementById('fjAdminOutletOwnerEmail').value='';
+  msg.textContent='Outlet তৈরি হয়েছে। এখন Outlet Login দিয়ে এই Email ও Password ব্যবহার করে লগইন পরীক্ষা করুন।';
+  await fjAdminLoadOutlets();
+}
+async function fjAdminLoadOutlets(){
+ if(String(window.fjCurrentUserRole||'').toLowerCase()!=='admin')return;
+ const box=document.getElementById('fjAdminOutletRows');if(!box)return;
+ const {data,error}=await supabaseClient.from('outlets').select('id,outlet_name,owner_user_id,active').order('created_at',{ascending:false});
+ if(error){box.innerHTML='<tr><td colspan="3">Outlet list load error: '+String(error.message)+'</td></tr>';return;}
+ box.innerHTML='';(data||[]).forEach(o=>{const tr=document.createElement('tr');[o.outlet_name,o.owner_user_id,o.active?'Active':'Inactive'].forEach(v=>{const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td)});box.appendChild(tr)});
+}
+async function fjOutletLoad(){
+ const {data:{user},error:ue}=await supabaseClient.auth.getUser(); if(ue||!user)return;
+ const {data:outlets,error}=await supabaseClient.from('outlets').select('id,outlet_name,owner_user_id,active').eq('owner_user_id',user.id).eq('active',true).limit(1);
+ if(error){fjOutletMsg('Outlet setup পাওয়া যায়নি। Admin-কে outlets SQL setup এবং owner mapping পরীক্ষা করতে বলুন: '+error.message,true);return;}
+ if(!outlets?.length){fjOutletMsg('আপনার Login-এর সঙ্গে কোনো Active Outlet যুক্ত নেই। Admin-কে Outlet তৈরি করে এই account-এর UUID দিতে বলুন।',true);return;}
+ window.fjOutletId=outlets[0].id; window.fjOutletName=outlets[0].outlet_name;
+ document.getElementById('fjOutletWelcome').textContent='🏪 '+window.fjOutletName+' — Daily Sales, Stock ও Bills';
+ const today=new Date().toISOString().slice(0,10);const date=document.getElementById('fjOutletReportDate');const toDate=document.getElementById('fjOutletReportToDate');if(date&&!date.value)date.value=today;if(toDate&&!toDate.value)toDate.value=today;
+ await fjOutletLoadStock(); await fjOutletLoadReport();
+}
+function fjOutletMsg(text,bad=false){const e=document.getElementById('fjOutletMessage');if(e){e.textContent=text;e.style.color=bad?'#b91c1c':'#166534';}}
+async function fjOutletLoadStock(){
+ if(!window.fjOutletId)return;
+ const {data,error}=await supabaseClient.from('outlet_stock').select('id,barcode,product_name,price,commission_pct,stock').eq('outlet_id',window.fjOutletId).order('product_name');
+ if(error){fjOutletMsg('Outlet stock লোড হয়নি: '+error.message,true);return;}
+ const rows=document.getElementById('fjOutletStockRows');rows.innerHTML='';let total=0;
+ (data||[]).forEach(p=>{total+=Number(p.stock)||0;const tr=document.createElement('tr');[p.barcode,p.product_name,'₹'+Number(p.price||0).toFixed(2),String(p.stock??0)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});rows.appendChild(tr)});
+ document.getElementById('fjOutletStockCount').textContent=total;
+ window.fjOutletStockCache=data||[];
+}
+async function fjOutletSaveStock(){
+ if(!window.fjOutletId){fjOutletMsg('Active Outlet পাওয়া যায়নি',true);return;}
+ const barcode=document.getElementById('fjOutletStockBarcode').value.trim(), name=document.getElementById('fjOutletStockName').value.trim(), price=Number(document.getElementById('fjOutletStockPrice').value), qty=Number(document.getElementById('fjOutletStockQty').value), commission=Number(document.getElementById('fjOutletStockCommission').value);
+ if(!barcode||!name||!Number.isFinite(price)||price<0||!Number.isInteger(qty)||qty<0||!Number.isFinite(commission)||commission<0||commission>100){fjOutletMsg('Barcode, Product Name, সঠিক Rate, Stock ও Commission দিন',true);return;}
+ const {data:old,error:oe}=await supabaseClient.from('outlet_stock').select('id,stock').eq('outlet_id',window.fjOutletId).eq('barcode',barcode).maybeSingle();if(oe){fjOutletMsg(oe.message,true);return;}
+ let result;
+ if(old){result=await supabaseClient.from('outlet_stock').update({product_name:name,price,commission_pct:commission,stock:Number(old.stock||0)+qty,updated_at:new Date().toISOString()}).eq('id',old.id)}
+ else{result=await supabaseClient.from('outlet_stock').insert({outlet_id:window.fjOutletId,barcode,product_name:name,price,commission_pct:commission,stock:qty})}
+ if(result.error){fjOutletMsg('Stock save হয়নি: '+result.error.message,true);return;}
+ ['fjOutletStockBarcode','fjOutletStockName','fjOutletStockPrice'].forEach(id=>document.getElementById(id).value='');document.getElementById('fjOutletStockQty').value='0';await fjOutletLoadStock();fjOutletMsg('Outlet stock update হয়েছে।');
+}
+async function fjOutletAddBarcode(){
+ const code=document.getElementById('fjOutletBarcode').value.trim();if(!code){fjOutletMsg('Barcode দিন',true);return;}
+ if(!window.fjOutletId){fjOutletMsg('Outlet পাওয়া যায়নি',true);return;}
+ const {data:p,error}=await supabaseClient.from('outlet_stock').select('barcode,product_name,price,commission_pct,stock').eq('outlet_id',window.fjOutletId).eq('barcode',code).maybeSingle();
+ if(error||!p){fjOutletMsg('এই Barcode আপনার Outlet Stock-এ নেই। আগে Outlet Stock-এ যোগ করুন.',true);return;}
+ if(Number(p.stock)<=0){fjOutletMsg('এই Product-এর Outlet Stock শেষ',true);return;}
+ const existing=window.fjOutletItems.find(x=>x.barcode===p.barcode);if(existing){if(existing.qty+1>Number(p.stock)){fjOutletMsg('Stock যথেষ্ট নেই',true);return;}existing.qty++}else window.fjOutletItems.push({...p,qty:1});
+ document.getElementById('fjOutletBarcode').value='';fjOutletRenderBill();
+}
+function fjOutletRenderBill(){const body=document.getElementById('fjOutletBillItems');body.innerHTML='';let total=0;window.fjOutletItems.forEach((p,i)=>{const sum=Number(p.price)*p.qty;total+=sum;const tr=document.createElement('tr');[p.product_name,p.qty,'₹'+Number(p.price).toFixed(2),'₹'+sum.toFixed(2)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});const td=document.createElement('td'),b=document.createElement('button');b.textContent='Remove';b.type='button';b.style.background='#dc2626';b.onclick=()=>{window.fjOutletItems.splice(i,1);fjOutletRenderBill()};td.appendChild(b);tr.appendChild(td);body.appendChild(tr)});document.getElementById('fjOutletBillTotal').textContent=total.toFixed(2);}
+async function fjOutletResolveMember(value){
+ value=String(value||'').trim();if(!value)return {member:null,error:'সদস্যের Member Code বা UUID দিন'};
+ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+ let q=supabaseClient.from('profiles').select('id,full_name,member_code,role,approval_status');q=uuid?q.eq('id',value):q.eq('member_code',value);
+ const {data,error}=await q.maybeSingle();if(error)return {member:null,error:error.message};if(!data)return {member:null,error:'সদস্য পাওয়া যায়নি। Member Code/UUID পরীক্ষা করুন'};
+ if(String(data.role||'user').toLowerCase()==='admin')return {member:null,error:'Admin ID-কে Member হিসেবে bill করা যাবে না'};
+ if(String(data.approval_status||'approved').toLowerCase()!=='approved')return {member:null,error:'এই Member এখনো approved নন'};
+ return {member:data,error:null};
+}
+async function fjOutletSaveBill(){
+ if(!window.fjOutletId){fjOutletMsg('Outlet পাওয়া যায়নি',true);return;}if(!window.fjOutletItems.length){fjOutletMsg('Bill-এ Product যোগ করুন',true);return;}
+ const memberCode=document.getElementById('fjOutletMemberCode').value.trim();if(!memberCode){fjOutletMsg('সদস্যের Member Code বা UUID দিন',true);return;}
+ const payload=window.fjOutletItems.map(p=>({barcode:p.barcode,qty:p.qty}));
+ const {data,error}=await supabaseClient.rpc('fj_outlet_create_bill',{p_outlet_id:window.fjOutletId,p_member_code:memberCode,p_items:payload});
+ if(error){fjOutletMsg('Bill Save হয়নি: '+error.message,true);return;}
+ const bill=Array.isArray(data)?data[0]:data;
+ if(!bill||bill.success!==true){fjOutletMsg(bill?.message||'Bill Save হয়নি',true);return;}
+ window.fjOutletLastBill={id:bill.id,bill_number:bill.bill_number,created_at:bill.created_at,member_name:bill.member_name,member_code:bill.member_code,items:bill.items||[],subtotal:Number(bill.subtotal||0),grand_total:Number(bill.grand_total||0),commission_amount:Number(bill.commission_amount||0)};
+ window.fjOutletItems=[];fjOutletRenderBill();await fjOutletLoadStock();await fjOutletLoadReport();
+ fjOutletMsg('Bill Save হয়েছে: '+bill.bill_number+'। Member: '+bill.member_name+'। Product commission amount record হয়েছে; বিদ্যমান downline/rank/royalty ledger-এ যুক্ত করার আগে সেই commission engine-এর schema যাচাই প্রয়োজন।');
+}
+function fjOutletClearBill(){window.fjOutletItems=[];fjOutletRenderBill();fjOutletMsg('Current Bill clear হয়েছে।');}
+function fjOutletPrintBill(){const b=window.fjOutletLastBill;if(!b){fjOutletMsg('আগে Bill Save করুন, তারপর print করুন',true);return;}const w=window.open('','_blank','width=420,height=650');if(!w){fjOutletMsg('Print window blocked—browser popup allow করুন',true);return;}const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Outlet Bill</title><style>body{font:14px Arial;padding:12px}h2,p{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #444;padding:5px;text-align:left}@media print{@page{size:58mm auto;margin:3mm}body{width:52mm}}</style></head><body><h2>Phulo Jhano</h2><p>'+esc(window.fjOutletName)+'<br>Outlet Bill: '+esc(b.bill_number||b.id)+'<br>'+esc(new Date(b.created_at||Date.now()).toLocaleString('en-IN'))+'</p><p>Member: '+esc(b.member_name)+' ('+esc(b.member_code||'')+')</p><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>'+b.items.map(i=>'<tr><td>'+esc(i.product_name)+'</td><td>'+i.qty+'</td><td>'+Number(i.price).toFixed(2)+'</td><td>'+(Number(i.price)*i.qty).toFixed(2)+'</td></tr>').join('')+'</tbody></table><h3>Total: ₹'+Number(b.grand_total).toFixed(2)+'</h3><p>Thank you</p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();}
+async function fjOutletLoadReport(){
+ if(!window.fjOutletId)return;
+ const from=document.getElementById('fjOutletReportDate').value;
+ const to=document.getElementById('fjOutletReportToDate').value||from;
+ const memberInput=document.getElementById('fjOutletBillSearchMember').value.trim();
+ if(!from||!to){fjOutletMsg('শুরুর ও শেষ তারিখ দিন',true);return;}
+ if(to<from){fjOutletMsg('শেষ তারিখ শুরুর তারিখের আগে হতে পারে না',true);return;}
+ const start=new Date(from+'T00:00:00');const end=new Date(to+'T00:00:00');end.setDate(end.getDate()+1);
+ let q=supabaseClient.from('outlet_bills').select('id,bill_number,created_at,member_name,member_code,grand_total,commission_amount,items').eq('outlet_id',window.fjOutletId).gte('created_at',start.toISOString()).lt('created_at',end.toISOString()).order('created_at',{ascending:false});
+ if(memberInput)q=q.eq('member_code',memberInput);
+ const {data,error}=await q;
+ if(error){fjOutletMsg('Bill search হয়নি: '+error.message,true);return;}
+ const bills=data||[];window.fjOutletFilteredBills=bills;
+ const total=bills.reduce((sum,b)=>sum+Number(b.grand_total||0),0);
+ document.getElementById('fjOutletTodaySales').textContent='₹'+total.toFixed(2);
+ document.getElementById('fjOutletBillCount').textContent=bills.length;
+ const box=document.getElementById('fjOutletReport');
+ if(!bills.length){box.innerHTML='<p>এই Member ID ও তারিখের মধ্যে কোনো Bill পাওয়া যায়নি। Member Code ঠিক আছে কি না পরীক্ষা করুন।</p>';return;}
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ box.innerHTML='<p><b>মোট Bill: '+bills.length+' | মোট বিক্রি: ₹'+total.toFixed(2)+'</b></p><table><thead><tr><th>Date/Time</th><th>Bill No.</th><th>Member</th><th>Member Code</th><th>Amount</th><th>Print</th></tr></thead><tbody>'+bills.map((b,i)=>'<tr><td>'+esc(new Date(b.created_at).toLocaleString('en-IN'))+'</td><td>'+esc(b.bill_number||b.id)+'</td><td>'+esc(b.member_name||'-')+'</td><td>'+esc(b.member_code||'-')+'</td><td>₹'+Number(b.grand_total||0).toFixed(2)+'</td><td><button type="button" onclick="fjOutletPrintFilteredBill('+i+')">🖨️ Print</button></td></tr>').join('')+'</tbody></table><p><b>Report Total: ₹'+total.toFixed(2)+'</b></p>';
+ fjOutletMsg('Search সম্পন্ন: '+bills.length+'টি Bill পাওয়া গেছে।');
+}
+function fjOutletPrintFilteredBill(index){const b=(window.fjOutletFilteredBills||[])[index];if(!b){fjOutletMsg('Bill পাওয়া যায়নি',true);return;}fjOutletPrintRecord(b);}
+function fjOutletPrintFilteredBills(){const bills=window.fjOutletFilteredBills||[];if(!bills.length){fjOutletMsg('আগে Member ID/তারিখ দিয়ে Search Bills করুন',true);return;}const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const pages=bills.map(b=>'<section class="bill"><h2>Phulo Jhano</h2><p>'+esc(window.fjOutletName)+'<br>Bill No: '+esc(b.bill_number||b.id)+'<br>'+esc(new Date(b.created_at).toLocaleString('en-IN'))+'</p><p>Member: '+esc(b.member_name)+' ('+esc(b.member_code||'')+')</p><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>'+((Array.isArray(b.items)?b.items:[]).map(i=>'<tr><td>'+esc(i.product_name||i.name||i.barcode||'Product')+'</td><td>'+Number(i.qty||i.quantity||0)+'</td><td>₹'+Number(i.price||i.rate||0).toFixed(2)+'</td><td>₹'+(Number(i.price||i.rate||0)*Number(i.qty||i.quantity||0)).toFixed(2)+'</td></tr>').join(''))+'</tbody></table><h3>Total: ₹'+Number(b.grand_total||0).toFixed(2)+'</h3><p>Thank you</p></section>').join('');const w=window.open('','_blank','width=800,height=700');if(!w){fjOutletMsg('Print window blocked—browser popup allow করুন',true);return;}w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Outlet Bills Print</title><style>body{font:13px Arial;padding:10px}.bill{page-break-after:always;break-after:page;padding:8px;max-width:700px;margin:auto}h2,p{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #444;padding:5px;text-align:left}@media print{@page{margin:8mm}.bill:last-child{page-break-after:auto;break-after:auto}}</style></head><body>'+pages+'<script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();}
+function fjOutletPrintRecord(b){const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const items=Array.isArray(b.items)?b.items:[];const w=window.open('','_blank','width=420,height=650');if(!w){fjOutletMsg('Print window blocked—browser popup allow করুন',true);return;}w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Outlet Bill</title><style>body{font:14px Arial;padding:12px}h2,p{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #444;padding:5px;text-align:left}@media print{@page{size:58mm auto;margin:3mm}body{width:52mm}}</style></head><body><h2>Phulo Jhano</h2><p>'+esc(window.fjOutletName)+'<br>Outlet Bill: '+esc(b.bill_number||b.id)+'<br>'+esc(new Date(b.created_at||Date.now()).toLocaleString('en-IN'))+'</p><p>Member: '+esc(b.member_name)+' ('+esc(b.member_code||'')+')</p><table><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>'+items.map(i=>'<tr><td>'+esc(i.product_name||i.name||i.barcode||'Product')+'</td><td>'+Number(i.qty||i.quantity||0)+'</td><td>'+Number(i.price||i.rate||0).toFixed(2)+'</td><td>'+(Number(i.price||i.rate||0)*Number(i.qty||i.quantity||0)).toFixed(2)+'</td></tr>').join('')+'</tbody></table><h3>Total: ₹'+Number(b.grand_total||0).toFixed(2)+'</h3><p>Thank you</p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close();}
+
+</script>
+
+</body>
+<!-- IMPORTANT BACKEND NOTE (2026-10-26): This HTML can improve client-side role visibility and count fallbacks, but cannot change Supabase database functions/RLS. To fully activate sponsor mapping, secure admin approval, accurate recursive downline totals, and self 5% / levels 1-5 10% / levels 6-10 3% commission generation, the matching Supabase RPCs and create_bill_commissions() trigger function must also be updated in Supabase SQL Editor. Never rely on browser-only role checks for security. -->
+    </html>
